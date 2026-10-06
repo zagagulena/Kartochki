@@ -168,7 +168,7 @@
 
         .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
 
-        select, input, textarea, .ib, .sm {
+        select, input, textarea, .ib, .sm, .pick {
             background: var(--glass);
             border: 1px solid var(--bd);
             backdrop-filter: var(--blur);
@@ -191,8 +191,8 @@
         input::placeholder { color: var(--cmut); }
         input:focus, select:focus { border-color: rgba(255, 255, 255, .8); }
 
-        .row select { flex: 1 1 100%; }
-        @media (min-width: 400px) { .row select { flex: 1; } }
+        .row select, .row .pick { flex: 1 1 100%; }
+        @media (min-width: 400px) { .row select, .row .pick { flex: 1; } }
 
         .ib {
             min-height: 52px;
@@ -409,6 +409,74 @@
             background-clip: padding-box;
             flex: none;
         }
+        /* Кнопки выбора (тема / режим) */
+        .pick { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 8px 14px 8px 16px; border-radius: 16px; cursor: pointer; text-align: left; color: var(--ctx); transition: transform .12s; min-width: 0; }
+        .pick:active { transform: scale(.98); }
+        .pick .pk-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+        .pick .pk-l { font-size: 12px; font-weight: 700; color: var(--cmut); letter-spacing: .05em; text-transform: uppercase; }
+        .pick .pk-v { font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pick .i { transition: transform .3s cubic-bezier(.2, .9, .3, 1); }
+        .pick.open .i { transform: rotate(180deg); }
+
+        /* Нижняя панель выбора */
+        .sheet { position: fixed; inset: 0; z-index: 500; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; }
+        .sheet.show { pointer-events: auto; }
+        .sh-bd { position: absolute; inset: 0; background: rgba(0, 15, 45, .45); opacity: 0; transition: opacity .3s ease; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+        .sheet.show .sh-bd { opacity: 1; }
+        .sh-pn {
+            --ctx: #fff; --cmut: rgba(255, 255, 255, .85); --ctsh: var(--tsh);
+            position: relative;
+            width: calc(100% - 16px);
+            max-width: 544px;
+            margin: 0 8px calc(8px + env(safe-area-inset-bottom, 0px));
+            max-height: 78vh; max-height: 78dvh;
+            display: flex; flex-direction: column;
+            border-radius: 30px;
+            color: #fff;
+            text-shadow: var(--tsh);
+            background: linear-gradient(rgba(8, 28, 70, .66), rgba(8, 28, 70, .66)), var(--glass);
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+            transform: translateY(112%);
+            transition: transform .4s cubic-bezier(.2, .9, .25, 1.05);
+        }
+        .sheet.show .sh-pn { transform: none; }
+        .sh-pn.drag { transition: none; }
+        .sh-hd { padding: 10px 22px 4px; touch-action: none; }
+        .sh-grab { width: 44px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .55); margin: 0 auto 12px; }
+        .sh-t { font-size: 20px; font-weight: 800; margin: 2px 0 6px; }
+        .sh-l { overflow-y: auto; padding: 4px 10px 12px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        .opt {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; min-height: 60px; padding: 10px 14px; margin: 0 0 6px;
+            border: 1px solid transparent; border-radius: 20px;
+            background: transparent; color: #fff; text-align: left; cursor: pointer;
+            opacity: 0;
+            animation: optIn .4s cubic-bezier(.2, .9, .3, 1) forwards;
+            animation-delay: calc(140ms + var(--k, 0) * 34ms);
+            transition: background .2s, border-color .2s, transform .1s;
+        }
+        .opt:active { transform: scale(.98); }
+        .opt.on { background: rgba(255, 255, 255, .2); border-color: rgba(255, 255, 255, .45); box-shadow: inset 0 1px 1px rgba(255, 255, 255, .5); }
+        .op-i { flex: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(255, 255, 255, .14); }
+        .op-i .dot { width: 10px; height: 10px; margin: 0; }
+        .op-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .op-t b { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+        .op-t small { font-size: 13px; color: rgba(255, 255, 255, .8); font-weight: 500; margin-top: 1px; }
+        .opt em { flex: none; font-style: normal; font-size: 14px; font-weight: 700; color: rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .15); padding: 2px 10px; border-radius: 999px; }
+        .op-c { flex: none; width: 24px; display: flex; justify-content: center; }
+        .op-c .i { width: 22px; height: 22px; stroke-width: 3; color: var(--ok); }
+        @keyframes optIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+        body.sheet-open { overflow: hidden; }
+
+        /* Темы-«чипсы» при добавлении карточки */
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 2px; }
+        .chip { min-height: 40px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 650; cursor: pointer; color: var(--ctx); text-shadow: var(--ctsh); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); transition: transform .12s, background .2s; }
+        .chip:active { transform: scale(.95); }
+        .chip.on { background: linear-gradient(rgba(255, 255, 255, .38), rgba(255, 255, 255, .38)), var(--glass); border-color: rgba(255, 255, 255, .8); }
+
         /* Иконки: единый линейный стиль, цвет берут от текста */
         :root { --icf: drop-shadow(0 1px 2px rgba(0, 20, 60, .5)); }
         .i { width: 1.2em; height: 1.2em; display: inline-block; vertical-align: -.22em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0, 20, 60, .5)); }
@@ -469,7 +537,7 @@
             .card .ans { font-size: 24px; }
             nav button { font-size: 14px; }
         }
-        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .opt { animation: none; opacity: 1; } }
     </style>
 </head>
 <body>
@@ -642,7 +710,9 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             sparkles: '<path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
             alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.01"/>',
             left: '<path d="M15 5l-7 7 7 7"/>',
-            right: '<path d="M9 5l7 7-7 7"/>'
+            right: '<path d="M9 5l7 7-7 7"/>',
+            chevron: '<path d="M6 9l6 6 6-6"/>',
+            tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".6" fill="currentColor"/>'
         };
         const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
 
@@ -845,6 +915,85 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         function restoreDel() { S.del = []; save(); render(); }
 
         /* ---------- Рендер ---------- */
+        const MODES = [
+            ['todo', 'Не знаю + новые', 'Всё, что ещё стоит повторить'],
+            ['new', 'Только новые', 'Карточки, которые вы ещё не отмечали'],
+            ['all', 'Все', 'Вся колода без фильтра'],
+            ['known', 'Знаю', 'Уже выученные — для повторения']
+        ];
+        const MODE_ICON = {
+            todo: '<i class="dot u"></i><i class="dot n"></i>',
+            new: '<i class="dot n"></i>',
+            all: null,
+            known: '<i class="dot k"></i>'
+        };
+
+        /* ---------- Нижняя панель выбора ---------- */
+        let shEl = null, shKind = '';
+        function openPick(kind) {
+            if (shEl) return;
+            shKind = kind;
+            const cur = kind === 'cat' ? cat : mode;
+            const items = kind === 'cat'
+                ? [['', 'Все темы', '', cards().length, ic('cards')]].concat(cats().map(c => [c, c, '', cards().filter(x => x.cat === c).length, ic('tag')]))
+                : MODES.map(m => [m[0], m[1], m[2], null, MODE_ICON[m[0]] || ic('cards')]);
+            const list = items.map((it, k) => `
+                <button class="opt ${it[0] === cur ? 'on' : ''}" style="--k:${k}" data-v="${esc(it[0])}" onclick="choosePick(this.dataset.v)">
+                    <span class="op-i">${it[4]}</span>
+                    <span class="op-t"><b>${esc(it[1])}</b>${it[2] ? `<small>${esc(it[2])}</small>` : ''}</span>
+                    ${it[3] !== null ? `<em>${it[3]}</em>` : ''}
+                    <span class="op-c">${it[0] === cur ? ic('check') : ''}</span>
+                </button>`).join('');
+            shEl = document.createElement('div');
+            shEl.className = 'sheet';
+            shEl.innerHTML = `<div class="sh-bd" onclick="closePick()"></div>
+                <div class="sh-pn" role="dialog" aria-modal="true">
+                    <div class="sh-hd"><div class="sh-grab"></div><div class="sh-t">${kind === 'cat' ? 'Выберите тему' : 'Что показывать'}</div></div>
+                    <div class="sh-l">${list}</div>
+                </div>`;
+            document.body.appendChild(shEl);
+            document.body.classList.add('sheet-open');
+            const btn = document.querySelector(`.pick[data-k="${kind}"]`); if (btn) btn.classList.add('open');
+            shEl.getBoundingClientRect();                 // чтобы анимация выезда сработала
+            requestAnimationFrame(() => shEl && shEl.classList.add('show'));
+
+            // свайп вниз по шапке закрывает панель
+            const pn = shEl.querySelector('.sh-pn'), bd = shEl.querySelector('.sh-bd'), hd = shEl.querySelector('.sh-hd');
+            let y0 = 0, dy = 0;
+            hd.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; pn.classList.add('drag'); }, { passive: true });
+            hd.addEventListener('touchmove', e => {
+                dy = Math.max(0, e.touches[0].clientY - y0);
+                pn.style.transform = `translateY(${dy}px)`;
+                bd.style.opacity = Math.max(0, 1 - dy / 300);
+            }, { passive: true });
+            hd.addEventListener('touchend', () => {
+                pn.classList.remove('drag');
+                if (dy > 90) { closePick(); }
+                else { pn.style.transform = ''; bd.style.opacity = ''; }
+            });
+        }
+        function closePick() {
+            if (!shEl) return;
+            const el = shEl; shEl = null;
+            el.classList.remove('show');
+            el.querySelector('.sh-pn').style.transform = '';
+            el.querySelector('.sh-bd').style.opacity = '';
+            document.body.classList.remove('sheet-open');
+            document.querySelectorAll('.pick.open').forEach(b => b.classList.remove('open'));
+            setTimeout(() => el.remove(), 420);
+        }
+        function choosePick(v) {
+            if (shKind === 'cat') cat = v; else mode = v;
+            closePick();
+            build(); enter = true; render();
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePick(); });
+
+        function pickChip(el) {
+            $('a-cat').value = el.dataset.v;
+            document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === el));
+        }
+
         const CARD_COLORS = [['#ff6b81', 'Розовый'], ['#ffb04d', 'Оранжевый'], ['#4cd9a0', 'Мятный'], ['#5cb8ff', 'Голубой'], ['#a78bfa', 'Сиреневый'], ['#ffffff', 'Белый'], ['#1b2a41', 'Тёмный']];
         const BG_COLORS = [['#1e7fd8', 'Синий'], ['#0f766e', 'Бирюзовый'], ['#15803d', 'Зелёный'], ['#7c3aed', 'Фиолетовый'], ['#be185d', 'Малиновый'], ['#b45309', 'Янтарный'], ['#111827', 'Графит']];
         const swatches = (list, isOn, fn) => list.map(([c, n]) => { const on = isOn(c); return `<div class="swb"><button class="sw ${on ? 'on' : ''}" style="background:${c};${c === '#ffffff' ? 'color:#10243a;text-shadow:none;' : ''}" aria-label="${n}" onclick="${fn}('${c}')">${on ? ic('check') : ''}</button><span>${n}</span></div>`; }).join('');
@@ -859,13 +1008,8 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             if (tab === 'study') {
                 h += `
                 <div class="row">
-                    <select onchange="cat=this.value;build();render()">
-                        <option value="">Все темы</option>
-                        ${cats().map(c => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
-                    </select>
-                    <select onchange="mode=this.value;build();render()">
-                        ${[['todo', 'Не знаю + новые'], ['new', 'Только новые'], ['all', 'Все'], ['known', 'Знаю']].map(m => `<option value="${m[0]}" ${m[0] === mode ? 'selected' : ''}>${m[1]}</option>`).join('')}
-                    </select>
+                    <button class="pick" data-k="cat" onclick="openPick('cat')"><span class="pk-t"><span class="pk-l">Тема</span><span class="pk-v">${esc(cat || 'Все темы')}</span></span>${ic('chevron')}</button>
+                    <button class="pick" data-k="mode" onclick="openPick('mode')"><span class="pk-t"><span class="pk-l">Показывать</span><span class="pk-v">${esc((MODES.find(m => m[0] === mode) || MODES[0])[1])}</span></span>${ic('chevron')}</button>
                     <div style="display:flex; gap:10px; width:100%;">
                         <button class="ib" style="flex:1;" title="Перемешать" aria-label="Перемешать" onclick="shuf()">${ic('shuffle')}</button>
                         <button class="ib" style="flex:1;" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">${ic('swap')}</button>
@@ -914,8 +1058,8 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 <label>Перевод</label>
                 <input id="a-ru" autocomplete="off" enterkeyhint="next">
                 <label>Тема</label>
-                <input id="a-cat" list="cl" value="Мои слова" autocomplete="off" enterkeyhint="next">
-                <datalist id="cl">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+                <input id="a-cat" value="Мои слова" autocomplete="off" enterkeyhint="next">
+                <div class="chips">${cats().map(c => `<button type="button" class="chip" data-v="${esc(c)}" onclick="pickChip(this)">${esc(c)}</button>`).join('')}</div>
                 <label>Пример (необязательно)</label>
                 <input id="a-ex" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')add()">
                 <button class="pri" onclick="add()">Добавить карточку</button>
