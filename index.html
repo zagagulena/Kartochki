@@ -33,6 +33,15 @@
 
         html, body { margin: 0; padding: 0; }
 
+        /* Карточка при вылете уходит за экран — не даём странице ехать вбок вместе с фоном */
+        html, body {
+            overflow-x: hidden;
+            overflow-x: clip;
+            max-width: 100%;
+            overscroll-behavior-x: none;
+        }
+        body { touch-action: pan-y pinch-zoom; }
+
         body {
             color: var(--tx);
             font: 16px/1.4 system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, sans-serif;
