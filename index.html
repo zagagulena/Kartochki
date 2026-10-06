@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Norsk – карточки</title>
     <meta name="theme-color" content="#1e7fd8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             /* Динамические переменные для настроек */
@@ -476,8 +477,19 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         const hid = s => { let h = 5381; for (const ch of s) h = (h * 33 ^ ch.charCodeAt(0)) >>> 0; return 'b' + h.toString(36) };
         const BASE = RAW.trim().split('\n').map((l, i) => { const p = l.split('|'); return { id: hid(p[0] + '|' + p[1]), old: 'b' + i, no: p[0], ru: p[1], cat: p[2], ex: p[3] || '' } });
         
+        /* Инициализация Telegram Web App */
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+        
+        /* Получаем ID пользователя для изоляции сохранений */
+        const userId = tg?.initDataUnsafe?.user?.id || 'guest';
+        const STORAGE_KEY = 'nk_data_' + userId;
+
         let S;
-        try { S = JSON.parse(localStorage.getItem('nk') || 'null') } catch (e) {}
+        try { S = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') } catch (e) {}
         S = S || { st: {}, cu: [], dir: 0, bgUrl: '', bgColor: '', cardColor: '' };
         
         if (!S.v) {
@@ -485,7 +497,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             S.v = 2
         }
 
-        const save = () => { try { localStorage.setItem('nk', JSON.stringify(S)) } catch (e) {} };
+        const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {} };
         const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
         const cards = () => BASE.concat(S.cu);
         const cats = () => [...new Set(cards().map(c => c.cat))];
@@ -588,7 +600,13 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                         applyTheme();
                         render();
                     } catch(err) {
-                        alert('Ошибка сохранения: файл слишком большой. Попробуйте картинку поменьше.');
+                        const errBox = document.createElement('div');
+                        errBox.style.color = 'var(--no)';
+                        errBox.style.marginTop = '10px';
+                        errBox.style.fontWeight = 'bold';
+                        errBox.innerText = '⚠️ Файл слишком большой. Попробуйте картинку поменьше.';
+                        e.target.parentNode.appendChild(errBox);
+                        setTimeout(() => errBox.remove(), 4000);
                     }
                 };
                 img.src = ev.target.result;
