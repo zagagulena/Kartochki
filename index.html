@@ -179,7 +179,35 @@
             -webkit-user-select: none;
             touch-action: pan-y;
         }
+        .card { transform-origin: 50% 100%; will-change: transform; }
         .card:active { transform: scale(.97); }
+        .card.drag { transition: none; }
+        .card.enter { animation: cardIn .28s ease-out; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.95); } to { opacity: 1; transform: none; } }
+        /* Затемнение с цветом стороны, проступает по мере смещения карточки */
+        .card > .shade {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            background: linear-gradient(rgba(0, 20, 50, .3), rgba(0, 20, 50, .3)), var(--sc, transparent);
+        }
+        .card > .stamp {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+            opacity: 0;
+            pointer-events: none;
+            font-size: 30px;
+            font-weight: 800;
+            color: #fff;
+            padding: 8px 18px;
+            border: 3px solid #fff;
+            border-radius: 16px;
+            white-space: nowrap;
+            text-shadow: 0 2px 10px rgba(0, 30, 90, .45);
+        }
         .card::before {
             content: "";
             position: absolute;
@@ -581,7 +609,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         };
 
         /* ---------- Состояние ---------- */
-        let tab = 'study', deck = [], i = 0, flip = false, cat = '', mode = 'todo', q = '', msg = '', bgMsg = '', rst = false;
+        let tab = 'study', deck = [], i = 0, flip = false, cat = '', mode = 'todo', q = '', msg = '', bgMsg = '', rst = false, enter = false;
 
         function build() {
             deck = cards().filter(x => (!cat || x.cat === cat) && (mode === 'all' || (mode === 'new' && !S.st[x.id]) || (mode === 'todo' && S.st[x.id] !== 'k') || (mode === 'known' && S.st[x.id] === 'k')));
@@ -608,7 +636,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             if (i >= deck.length) return;
             S.st[deck[i].id] = v;
             save();
-            i++; flip = false; render();
+            i++; flip = false; enter = true; render();
         }
 
         function cnt() {
@@ -671,17 +699,19 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                     const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
                     h += `
                     <div class="stats"><span>Карточка ${i + 1} / ${deck.length}</span></div>
-                    <div class="card" onclick="tap()">
+                    <div class="card ${enter ? 'enter' : ''}" onclick="tap()">
                         <span class="cat">${esc(c.cat)}</span>
                         <div class="big">${esc(f)}</div>
                         ${flip ? `
                             <div class="ans">${esc(b)}</div>
                             ${c.ex ? `<div class="ex">${esc(c.ex)}</div>` : ''}
                         ` : `<div class="hint">нажмите, чтобы перевернуть</div>`}
+                        <div class="shade"></div>
+                        <div class="stamp"></div>
                     </div>
                     <div class="act">
-                        <button class="bn" onclick="mark('u')">Не знаю</button>
-                        <button class="bk" onclick="mark('k')">Знаю</button>
+                        <button class="bn" onclick="fly('u')">Не знаю</button>
+                        <button class="bk" onclick="fly('k')">Знаю</button>
                     </div>
                     <div class="swipe-tip">← свайп: не знаю · знаю: свайп →</div>`;
                 }
@@ -748,10 +778,11 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 <button class="pri ghost" onclick="resetAll()">Сбросить оформление</button>`;
             }
 
+            enter = false;
             $('v').innerHTML = h;
         }
 
-        function tap() { if (swiped) return; flip = !flip; render(); }
+        function tap() { if (swiped || busy) return; flip = !flip; render(); }
 
         function add() {
             const no = $('a-no').value.trim(), ru = $('a-ru').value.trim();
@@ -763,23 +794,66 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             $('a-no').focus();
         }
 
-        /* Свайп по карточке: вправо — «знаю», влево — «не знаю» */
-        let tx = 0, ty = 0, tcard = false, swiped = false;
+        /* Свайп: карточка едет за пальцем, темнеет и подсвечивается; вправо — «знаю», влево — «не знаю» */
+        let tx = 0, ty = 0, tcard = null, drag = false, swiped = false, busy = false;
+        const TH = () => Math.min(120, window.innerWidth * 0.28);
+
+        function paint(card, dx) {
+            const sh = card.querySelector('.shade'), st = card.querySelector('.stamp');
+            card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg) scale(1.02)`;
+            sh.style.setProperty('--sc', dx > 0 ? 'rgba(76,217,160,.8)' : 'rgba(255,176,77,.8)');
+            sh.style.opacity = Math.min(Math.abs(dx) / (TH() * 1.4), 1) * .9;
+            st.textContent = dx > 0 ? 'Знаю ✓' : 'Не знаю ✗';
+            st.style.opacity = Math.max(0, Math.min((Math.abs(dx) - 20) / TH(), 1));
+        }
+        function unpaint(card) {
+            card.style.transform = '';
+            card.querySelector('.shade').style.opacity = 0;
+            card.querySelector('.stamp').style.opacity = 0;
+        }
+        function fling(card, v) {
+            busy = true;
+            const dir = v === 'k' ? 1 : -1;
+            card.classList.remove('drag');
+            card.style.transition = 'transform .28s ease-in, opacity .28s ease-in';
+            card.style.transform = `translateX(${dir * (window.innerWidth + 200)}px) rotate(${dir * 24}deg)`;
+            card.style.opacity = 0;
+            setTimeout(() => { busy = false; mark(v); }, 260);
+        }
+        // Кнопки «Знаю / Не знаю» — та же анимация
+        function fly(v) {
+            const c = document.querySelector('.card');
+            if (!c || busy) { mark(v); return; }
+            paint(c, v === 'k' ? 50 : -50);
+            fling(c, v);
+        }
+
         $('v').addEventListener('touchstart', e => {
-            const t = e.touches[0];
-            tx = t.clientX; ty = t.clientY;
-            tcard = !!e.target.closest('.card');
+            if (busy) return;
+            const c = e.target.closest('.card');
+            tcard = tab === 'study' ? c : null;
+            drag = false;
+            if (tcard) { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }
         }, { passive: true });
-        $('v').addEventListener('touchend', e => {
-            if (!tcard || tab !== 'study') return;
-            tcard = false;
-            const t = e.changedTouches[0], dx = t.clientX - tx, dy = t.clientY - ty;
-            if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-                swiped = true;
-                setTimeout(() => swiped = false, 400);
-                mark(dx > 0 ? 'k' : 'u');
-            }
-        });
+        $('v').addEventListener('touchmove', e => {
+            if (!tcard || busy) return;
+            const dx = e.touches[0].clientX - tx, dy = e.touches[0].clientY - ty;
+            if (!drag && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) { drag = true; tcard.classList.add('drag'); }
+            if (drag) paint(tcard, dx);
+        }, { passive: true });
+        const endTouch = e => {
+            const c = tcard;
+            tcard = null;
+            if (!c || !drag) return;
+            drag = false;
+            swiped = true;
+            setTimeout(() => swiped = false, 400);
+            const dx = e.changedTouches[0].clientX - tx;
+            if (e.type === 'touchend' && Math.abs(dx) >= TH()) fling(c, dx > 0 ? 'k' : 'u');
+            else { c.classList.remove('drag'); unpaint(c); }
+        };
+        $('v').addEventListener('touchend', endTouch);
+        $('v').addEventListener('touchcancel', endTouch);
 
         /* Прячем нижнее меню, пока открыта клавиатура */
         const isText = el => el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && !/^(color|file)$/.test(el.type);
