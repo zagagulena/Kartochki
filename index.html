@@ -16,15 +16,18 @@
             --tint: 0;                          /* насколько цвет фона проступает поверх фото */
 
             --tx: #fff;
-            --mut: rgba(255, 255, 255, .72);
+            --mut: rgba(255, 255, 255, .92);
             --ctx: #fff;                        /* цвет текста на карточках */
-            --cmut: rgba(255, 255, 255, .72);
+            --scrim: rgba(8, 28, 70, .40);      /* тёмная подложка под «стеклом» — текст читается на любом фоне */
+            --tsh: 0 1px 2px rgba(0, 20, 60, .65), 0 2px 12px rgba(0, 20, 60, .4);
+            --ctsh: var(--tsh);
+            --cmut: rgba(255, 255, 255, .9);
             --ac: #ff6b81;
             --ok: #4cd9a0;
             --no: #ffb04d;
 
             --bd: rgba(var(--c-r), var(--c-g), var(--c-b), .35);
-            --glass: linear-gradient(135deg, rgba(var(--c-r), var(--c-g), var(--c-b), var(--a1)), rgba(var(--c-r), var(--c-g), var(--c-b), var(--a2)) 55%, rgba(var(--c-r), var(--c-g), var(--c-b), var(--a3)));
+            --glass: linear-gradient(var(--scrim), var(--scrim)), linear-gradient(135deg, rgba(var(--c-r), var(--c-g), var(--c-b), var(--a1)), rgba(var(--c-r), var(--c-g), var(--c-b), var(--a2)) 55%, rgba(var(--c-r), var(--c-g), var(--c-b), var(--a3)));
             --blur: blur(22px) saturate(180%);
             --edge: inset 0 1px 1px rgba(255, 255, 255, .6), inset 0 -1px 1px rgba(255, 255, 255, .12), inset 0 0 18px rgba(var(--c-r), var(--c-g), var(--c-b), .1), 0 10px 30px rgba(0, 30, 90, .28);
         }
@@ -62,11 +65,14 @@
 
         body {
             color: var(--tx);
-            font: 16px/1.4 system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, sans-serif;
+            font: 500 17px/1.45 system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, sans-serif;
             min-height: 100vh;
             min-height: 100dvh;
             background: var(--bg-color);
-            text-shadow: 0 1px 8px rgba(0, 30, 90, .35);
+            text-shadow: var(--tsh);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
             -webkit-text-size-adjust: 100%;
         }
 
@@ -142,13 +148,14 @@
         body.typing.nav-peek nav { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
 
         button, select, input { font: inherit; color: var(--ctx); text-shadow: inherit; margin: 0; }
+        .card, .item, .panel, nav, select, input, textarea, .ib, .sm { text-shadow: var(--ctsh); }
 
         nav button {
             flex: 1;
             min-height: 48px;
             padding: 0 6px;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 700;
             border: 0;
             background: transparent;
             border-radius: 999px;
@@ -198,8 +205,8 @@
             justify-content: center;
         }
 
-        .stats { display: flex; gap: 6px 12px; font-size: 14px; color: var(--mut); margin: 2px 2px 8px; flex-wrap: wrap; justify-content: center; text-align: center; }
-        .stats b { color: var(--tx); }
+        .stats { display: flex; gap: 6px 12px; font-size: 15px; font-weight: 600; color: var(--mut); margin: 2px 2px 8px; flex-wrap: wrap; justify-content: center; text-align: center; }
+        .stats b { color: var(--tx); font-weight: 800; }
 
         .card {
             position: relative;
@@ -262,11 +269,11 @@
             pointer-events: none;
         }
         .card > * { position: relative; }
-        .card .cat { position: absolute; top: 18px; left: 22px; font-size: 13px; color: var(--cmut); font-weight: 500; }
-        .card .big { font-size: 32px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.2; }
-        .card .ans { font-size: 24px; margin-top: 12px; color: var(--ctx); opacity: .92; overflow-wrap: anywhere; }
-        .card .ex { margin-top: 18px; color: var(--cmut); font-style: italic; font-size: 18px; }
-        .card .hint { position: absolute; bottom: 16px; font-size: 14px; color: var(--cmut); opacity: .85; }
+        .card .cat { position: absolute; top: 18px; left: 22px; font-size: 14px; color: var(--cmut); font-weight: 700; letter-spacing: .02em; }
+        .card .big { font-size: 36px; font-weight: 800; overflow-wrap: anywhere; line-height: 1.2; }
+        .card .ans { font-size: 28px; font-weight: 650; margin-top: 14px; color: var(--ctx); opacity: 1; line-height: 1.25; overflow-wrap: anywhere; }
+        .card .ex { margin-top: 18px; color: var(--cmut); font-style: normal; font-weight: 500; font-size: 19px; line-height: 1.4; }
+        .card .hint { position: absolute; bottom: 16px; font-size: 15px; font-weight: 600; color: var(--cmut); opacity: .85; }
 
         .act { display: flex; gap: 12px; margin-top: 4px; }
         .act button {
@@ -275,8 +282,8 @@
             padding: 0 12px;
             border-radius: 24px;
             color: #fff;
-            font-size: 17px;
-            font-weight: 650;
+            font-size: 18px;
+            font-weight: 700;
             cursor: pointer;
             border: 1px solid var(--bd);
             backdrop-filter: var(--blur);
@@ -287,7 +294,7 @@
         .act button:active { transform: scale(.95); }
         .bn { background: linear-gradient(135deg, rgba(255, 176, 77, .65), rgba(255, 176, 77, .25)); }
         .bk { background: linear-gradient(135deg, rgba(76, 217, 160, .65), rgba(76, 217, 160, .25)); }
-        .swipe-tip { text-align: center; font-size: 13px; color: var(--mut); margin-top: 2px; }
+        .swipe-tip { text-align: center; font-size: 14px; font-weight: 600; color: var(--mut); margin-top: 2px; }
 
         .empty { text-align: center; color: var(--mut); padding: 48px 20px; font-size: 18px; line-height: 1.5; }
 
@@ -305,8 +312,8 @@
             -webkit-backdrop-filter: var(--blur);
             box-shadow: var(--edge);
         }
-        .item .t { flex: 1; min-width: 0; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
-        .item .t small { display: block; color: var(--cmut); font-size: 14px; margin-top: 2px; font-weight: 400; }
+        .item .t { flex: 1; min-width: 0; font-size: 18px; font-weight: 650; overflow-wrap: anywhere; }
+        .item .t small { display: block; color: var(--cmut); font-size: 15px; margin-top: 2px; font-weight: 500; }
 
         .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, .35); flex: none; margin-right: 4px; }
         .dot.k { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
@@ -330,7 +337,7 @@
         .del-cur { margin-top: 6px; min-height: 44px; font-size: 15px; font-weight: 500; }
         .del-cur.armed { background: linear-gradient(135deg, rgba(255, 90, 90, .7), rgba(255, 90, 90, .3)); box-shadow: var(--edge); }
 
-        label { display: block; font-size: 14px; color: var(--mut); margin: 14px 4px 6px; font-weight: 500; }
+        label { display: block; font-size: 15px; color: var(--mut); margin: 14px 4px 6px; font-weight: 650; }
 
         .pri {
             margin-top: 20px;
@@ -340,8 +347,8 @@
             border-radius: 24px;
             background: linear-gradient(135deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, .12));
             color: #fff;
-            font-size: 17px;
-            font-weight: 650;
+            font-size: 18px;
+            font-weight: 700;
             cursor: pointer;
             border: 1px solid var(--bd);
             backdrop-filter: var(--blur);
@@ -369,7 +376,28 @@
         }
         .panel label { color: var(--cmut); margin-left: 0; }
 
-        .swatches { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .swatches { display: flex; flex-wrap: wrap; gap: 12px 4px; align-items: flex-start; }
+        .swb { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; }
+        .swb > span { font-size: 12px; font-weight: 650; line-height: 1.15; text-align: center; color: var(--cmut); }
+        .cur { font-size: 15px; color: var(--cmut); margin: -4px 0 12px; }
+        .cur b { color: var(--ctx); font-weight: 800; }
+        .hint2 { font-size: 14px; color: var(--cmut); margin: 0 0 12px; line-height: 1.35; }
+
+        /* Предпросмотр: как будет выглядеть карточка на выбранном фоне */
+        .pv { position: relative; isolation: isolate; overflow: hidden; border-radius: 24px; padding: 14px 16px 18px; margin-bottom: 12px; background: var(--bg-color); border: 1px solid var(--bd); }
+        .pv::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--bg-img) center / cover no-repeat; }
+        .pv::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--bg-color); opacity: var(--tint); }
+        .pv-cap { font-size: 13px; font-weight: 700; color: var(--tx); text-align: center; margin-bottom: 10px; }
+        .pv-card { border-radius: 22px; padding: 16px 16px 22px; text-align: center; background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); color: var(--ctx); text-shadow: var(--ctsh); }
+        .pv-card small { display: block; text-align: left; font-size: 13px; font-weight: 700; color: var(--cmut); }
+        .pv-card b { display: block; font-size: 30px; font-weight: 800; margin-top: 6px; }
+        .pv-card span { display: block; font-size: 22px; font-weight: 650; margin-top: 4px; }
+
+        /* Переключатель «Сплошной цвет / Фото» */
+        .seg { display: flex; gap: 4px; padding: 4px; margin: 10px 0 14px; border-radius: 18px; background: rgba(0, 20, 60, .28); }
+        .seg button { flex: 1; min-height: 46px; padding: 0 8px; border: 0; border-radius: 14px; background: transparent; color: var(--ctx); font-size: 15px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: .2s; }
+        .seg button.on { background: rgba(255, 255, 255, .38); box-shadow: inset 0 1px 1px rgba(255, 255, 255, .7), 0 2px 8px rgba(0, 30, 90, .25); }
+
         .sw {
             width: 44px;
             height: 44px;
@@ -381,7 +409,9 @@
             background-clip: padding-box;
             flex: none;
         }
+        .sw { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 800; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); }
         .sw.on { outline: 3px solid #fff; outline-offset: 2px; }
+        .sw-custom.on { outline: 3px solid #fff; outline-offset: 2px; }
         .sw.none { background: linear-gradient(135deg, #fff 46%, #f33 46%, #f33 54%, #fff 54%); }
 
         /* Круглый выбор своего цвета (раньше appearance:none делал его невидимым на телефонах) */
@@ -419,7 +449,8 @@
         }
 
         @media (max-width: 380px) {
-            .card .big { font-size: 28px; }
+            .card .big { font-size: 30px; }
+            .card .ans { font-size: 24px; }
             nav button { font-size: 14px; }
         }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -601,8 +632,9 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         /* ---------- Тема ---------- */
         function applyTheme() {
             const root = document.documentElement.style;
-            root.setProperty('--bg-img', BG ? `url("${BG}")` : `url('bg.jpg')`);
-            root.setProperty('--tint', BG ? '.35' : '0');
+            const solid = S.bgMode === 'color';   // «Сплошной цвет» — без фото вообще
+            root.setProperty('--bg-img', solid ? 'none' : (BG ? `url("${BG}")` : `url('bg.jpg')`));
+            root.setProperty('--tint', solid ? '0' : (BG ? '.35' : '0'));
             const bgc = S.bgColor || '#1e7fd8';
             root.setProperty('--bg-color', bgc);
             const tc = document.querySelector('meta[name="theme-color"]');
@@ -618,16 +650,22 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                 if (lum > 0.62) {
                     root.setProperty('--ctx', '#10243a');
-                    root.setProperty('--cmut', 'rgba(16,36,58,.68)');
+                    root.setProperty('--cmut', 'rgba(16,36,58,.85)');
+                    root.setProperty('--scrim', 'rgba(255,255,255,0)');
+                    root.setProperty('--ctsh', 'none');
                 } else {
                     root.setProperty('--ctx', '#fff');
-                    root.setProperty('--cmut', 'rgba(255,255,255,.75)');
+                    root.setProperty('--cmut', 'rgba(255,255,255,.9)');
+                    root.setProperty('--scrim', 'rgba(8,28,70,.22)');
+                    root.setProperty('--ctsh', 'var(--tsh)');
                 }
             } else {
                 root.setProperty('--c-r', 255); root.setProperty('--c-g', 255); root.setProperty('--c-b', 255);
                 root.setProperty('--a1', '.26'); root.setProperty('--a2', '.07'); root.setProperty('--a3', '.14');
                 root.setProperty('--ctx', '#fff');
-                root.setProperty('--cmut', 'rgba(255,255,255,.72)');
+                root.setProperty('--cmut', 'rgba(255,255,255,.9)');
+                root.setProperty('--scrim', 'rgba(8,28,70,.40)');
+                root.setProperty('--ctsh', 'var(--tsh)');
             }
         }
         applyTheme();
@@ -640,7 +678,8 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             bgMsg = '';
             applyTheme(); render();
         }
-        function resetAll() { S.cardColor = ''; S.bgColor = ''; save(); rmBg(); }
+        const setBgMode = m => { S.bgMode = m; bgMsg = ''; save(); applyTheme(); render(); };
+        function resetAll() { S.cardColor = ''; S.bgColor = ''; S.bgMode = ''; save(); rmBg(); }
 
         /* Загрузка фото с устройства */
         window.uploadBg = function (e) {
@@ -767,9 +806,11 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         function restoreDel() { S.del = []; save(); render(); }
 
         /* ---------- Рендер ---------- */
-        const swatches = (list, isOn, fn) => list.map(c => `<button class="sw ${isOn(c) ? 'on' : ''}" style="background:${c}" aria-label="${c}" onclick="${fn}('${c}')"></button>`).join('');
-        const CARD_COLORS = ['#ff6b81', '#ffb04d', '#4cd9a0', '#5cb8ff', '#a78bfa', '#ffffff', '#1b2a41'];
-        const BG_COLORS = ['#1e7fd8', '#0f766e', '#7c3aed', '#be185d', '#b45309', '#111827'];
+        const CARD_COLORS = [['#ff6b81', 'Розовый'], ['#ffb04d', 'Оранжевый'], ['#4cd9a0', 'Мятный'], ['#5cb8ff', 'Голубой'], ['#a78bfa', 'Сиреневый'], ['#ffffff', 'Белый'], ['#1b2a41', 'Тёмный']];
+        const BG_COLORS = [['#1e7fd8', 'Синий'], ['#0f766e', 'Бирюзовый'], ['#15803d', 'Зелёный'], ['#7c3aed', 'Фиолетовый'], ['#be185d', 'Малиновый'], ['#b45309', 'Янтарный'], ['#111827', 'Графит']];
+        const swatches = (list, isOn, fn) => list.map(([c, n]) => { const on = isOn(c); return `<div class="swb"><button class="sw ${on ? 'on' : ''}" style="background:${c};${c === '#ffffff' ? 'color:#10243a;text-shadow:none;' : ''}" aria-label="${n}" onclick="${fn}('${c}')">${on ? '✓' : ''}</button><span>${n}</span></div>`; }).join('');
+        const picker = (key, val, on) => `<div class="swb"><div class="sw-custom ${on ? 'on' : ''}" style="${on ? 'background:' + val : ''}"><input type="color" value="${val}" aria-label="Свой цвет" oninput="S.${key}=this.value;applyTheme()" onchange="save();render()"></div><span>${on ? 'Свой ✓' : 'Свой'}</span></div>`;
+        const colorName = (list, c, auto) => { const f = list.find(x => x[0] === c); return f ? f[1] : (c ? 'Свой цвет ' + c : auto); };
 
         function render() {
             ['study', 'list', 'add', 'settings'].forEach(t => { const el = $('t-' + t); if (el) el.className = t === tab ? 'on' : ''; });
@@ -842,40 +883,52 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 <div class="msg">${msg}</div>`;
             } else if (tab === 'settings') {
                 const cc = (S.cardColor || '').toLowerCase(), bc = (S.bgColor || '#1e7fd8').toLowerCase();
+                const solid = S.bgMode === 'color';
+                const cardCustom = !!cc && !CARD_COLORS.some(x => x[0] === cc);
+                const bgCustom = !BG_COLORS.some(x => x[0] === bc);
                 h += `
                 <div class="stats" style="font-size:16px;"><span><b>Внешний вид</b></span></div>
 
+                <div class="pv">
+                    <div class="pv-cap">Так выглядит ваша карточка</div>
+                    <div class="pv-card"><small>Глаголы</small><b>stå opp</b><span>вставать</span></div>
+                </div>
+
                 <div class="panel">
-                    <label>🎨 Цвет карточек</label>
+                    <label>🃏 Цвет карточек</label>
+                    <div class="cur">Выбрано: <b>${colorName(CARD_COLORS, cc, 'Авто (прозрачное стекло)')}</b></div>
                     <div class="swatches">
-                        <button class="sw ${!cc ? 'on' : ''}" style="background:rgba(255,255,255,.35)" aria-label="Стандартный" onclick="setCard('')"></button>
+                        <div class="swb"><button class="sw ${!cc ? 'on' : ''}" style="background:rgba(255,255,255,.35)" aria-label="Авто" onclick="setCard('')">${!cc ? '✓' : ''}</button><span>Авто</span></div>
                         ${swatches(CARD_COLORS, c => c === cc, 'setCard')}
-                        <div class="sw-custom" title="Свой цвет">
-                            <input type="color" value="${S.cardColor || '#ffffff'}" aria-label="Свой цвет карточек"
-                                oninput="S.cardColor=this.value;applyTheme()" onchange="save();render()">
-                        </div>
+                        ${picker('cardColor', S.cardColor || '#ffffff', cardCustom)}
                     </div>
                 </div>
 
                 <div class="panel">
-                    <label>🖌 Цвет фона</label>
-                    <div class="swatches">
-                        ${swatches(BG_COLORS, c => c === bc, 'setBgColor')}
-                        <div class="sw-custom" title="Свой цвет">
-                            <input type="color" value="${S.bgColor || '#1e7fd8'}" aria-label="Свой цвет фона"
-                                oninput="S.bgColor=this.value;applyTheme()" onchange="save();render()">
+                    <label>🌄 Фон приложения</label>
+                    <div class="seg">
+                        <button class="${solid ? 'on' : ''}" onclick="setBgMode('color')">🎨 Сплошной цвет</button>
+                        <button class="${!solid ? 'on' : ''}" onclick="setBgMode('photo')">🖼 Фото</button>
+                    </div>
+                    ${solid ? `
+                        <div class="cur">Выбрано: <b>${colorName(BG_COLORS, bc, 'Синий')}</b></div>
+                        <div class="swatches">
+                            ${swatches(BG_COLORS, c => c === bc, 'setBgColor')}
+                            ${picker('bgColor', S.bgColor || '#1e7fd8', bgCustom)}
                         </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <label>🖼 Фото на фон</label>
-                    ${BG ? `<div class="bg-preview" style="background-image:url('${BG}')"></div>` : ''}
-                    <div class="file-btn" style="margin-top:12px;">
-                        <div class="pri" style="display:flex;align-items:center;justify-content:center;">📸 ${BG ? 'Выбрать другое фото' : 'Выбрать фото'}</div>
-                        <input type="file" accept="image/*" onchange="uploadBg(event)" aria-label="Выбрать фото для фона">
-                    </div>
-                    ${BG ? `<button class="pri sec" onclick="rmBg()">Убрать фото</button>` : ''}
+                    ` : `
+                        ${BG ? `<div class="bg-preview" style="background-image:url('${BG}');margin-top:0"></div>` : `<div class="hint2">Сейчас стандартное фото. Можно выбрать своё.</div>`}
+                        <div class="file-btn" style="margin-top:12px;">
+                            <div class="pri" style="display:flex;align-items:center;justify-content:center;">📸 ${BG ? 'Выбрать другое фото' : 'Выбрать своё фото'}</div>
+                            <input type="file" accept="image/*" onchange="uploadBg(event)" aria-label="Выбрать фото для фона">
+                        </div>
+                        ${BG ? `<button class="pri sec" onclick="rmBg()">Убрать фото</button>
+                        <label style="margin-top:18px;">Оттенок поверх фото</label>
+                        <div class="swatches">
+                            ${swatches(BG_COLORS, c => c === bc, 'setBgColor')}
+                            ${picker('bgColor', S.bgColor || '#1e7fd8', bgCustom)}
+                        </div>` : ''}
+                    `}
                     <div class="msg">${bgMsg}</div>
                 </div>
 
