@@ -1,141 +1,379 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Norsk – карточки</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-:root {
-  box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  --tx: #fff;
-  --mut: rgba(255,255,255,.72);
-  --ok: #4cd9a0;
-  --no: #ffb04d;
-  
-  /* Базовый цвет для стеклянного эффекта (по умолчанию белый) */
-  --card-rgb: 255, 255, 255;
-  
-  --glass: linear-gradient(135deg, rgba(var(--card-rgb), .35), rgba(var(--card-rgb), .1) 55%, rgba(var(--card-rgb), .2));
-  --bd: rgba(var(--card-rgb), .3);
-  --blur: blur(22px) saturate(180%);
-  --edge: inset 0 1px 1px rgba(255,255,255,.5), inset 0 -1px 1px rgba(255,255,255,.1), 0 10px 30px rgba(0,0,0,.25);
-}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Norsk – карточки</title>
+    <meta name="theme-color" content="#1e7fd8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            /* Динамические переменные для настроек */
+            --c-r: 255;
+            --c-g: 255;
+            --c-b: 255;
+            --bg-img: url('bg.jpg');
+            --bg-color: #1e7fd8;
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; min-height: 100vh; }
-body {
-  color: var(--tx);
-  font: 16px/1.4 system-ui, -apple-system, sans-serif;
-  background-color: #1e7fd8;
-  background-image: url('bg.jpg');
-  background-position: center;
-  background-size: cover;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  text-shadow: 0 1px 4px rgba(0,0,0,.4);
-  transition: background 0.3s;
-}
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            --tx: #fff;
+            --mut: rgba(255, 255, 255, .72);
+            --ac: #ff6b81;
+            --ok: #4cd9a0;
+            --no: #ffb04d;
+            
+            /* Цвета вычисляются из выбранного пользователем цвета для сохранения Glassmorphism */
+            --bd: rgba(var(--c-r), var(--c-g), var(--c-b), .28);
+            --glass: linear-gradient(135deg, rgba(var(--c-r), var(--c-g), var(--c-b), .26), rgba(var(--c-r), var(--c-g), var(--c-b), .07) 55%, rgba(var(--c-r), var(--c-g), var(--c-b), .14));
+            --blur: blur(22px) saturate(180%);
+            --edge: inset 0 1px 1px rgba(255, 255, 255, .6), inset 0 -1px 1px rgba(255, 255, 255, .12), inset 0 0 18px rgba(var(--c-r), var(--c-g), var(--c-b), .1), 0 10px 30px rgba(0, 30, 90, .28);
+        }
+        
+        * {
+            box-sizing: inherit;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-main { max-width: 500px; margin: 0 auto; padding: 16px; padding-bottom: 40px; }
-h1 { font-size: 22px; margin: 0 0 16px; font-weight: 700; text-align: center; }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
 
-nav {
-  display: flex; gap: 6px; margin-bottom: 16px; padding: 6px; 
-  border-radius: 20px; background: var(--glass); 
-  border: 1px solid var(--bd); backdrop-filter: var(--blur); 
-  -webkit-backdrop-filter: var(--blur); box-shadow: var(--edge);
-  overflow-x: auto;
-}
-nav button {
-  flex: 1; padding: 12px 8px; border: 0; background: transparent; 
-  border-radius: 14px; cursor: pointer; color: var(--tx); 
-  font-weight: 600; text-shadow: inherit; font-size: 14px;
-  white-space: nowrap; transition: 0.2s;
-}
-nav button.on { background: rgba(var(--card-rgb), .4); box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+        body {
+            color: var(--tx);
+            font: 16px/1.4 system-ui, -apple-system, "SF Pro Display", Segoe UI, Roboto, sans-serif;
+            min-height: 100vh;
+            /* Фон применяет заданные цвет и изображение */
+            background: var(--bg-color) var(--bg-img) center/cover fixed no-repeat;
+            text-shadow: 0 1px 8px rgba(0, 30, 90, .35);
+            transition: background 0.3s ease;
+        }
 
-.row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-select, input, .ib, .sm {
-  background: var(--glass); border: 1px solid var(--bd); 
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); 
-  box-shadow: var(--edge); color: var(--tx); font: inherit; text-shadow: inherit;
-}
-select, input { padding: 12px 16px; border-radius: 16px; width: 100%; outline: 0; }
-select option { color: #123; }
-input::placeholder { color: var(--mut); }
-input[type="color"] { padding: 4px; height: 44px; cursor: pointer; }
+        main {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-.ib { padding: 12px 16px; border-radius: 16px; cursor: pointer; flex: 1; text-align: center; }
-.stats { display: flex; gap: 12px; font-size: 13px; color: var(--mut); margin: 4px 2px 12px; flex-wrap: wrap; justify-content: center;}
-.stats b { color: var(--tx); }
+        h1 {
+            font-size: 24px;
+            margin: 4px 2px 0px;
+            font-weight: 700;
+        }
 
-.card {
-  position: relative; overflow: hidden; background: var(--glass); 
-  border: 1px solid var(--bd); border-radius: 32px; min-height: 280px; 
-  padding: 30px 20px; display: flex; flex-direction: column; 
-  justify-content: center; align-items: center; text-align: center; 
-  cursor: pointer; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); 
-  box-shadow: var(--edge); transition: transform 0.15s; margin-bottom: 16px;
-}
-.card:active { transform: scale(0.97); }
-.card .cat { position: absolute; top: 16px; left: 20px; font-size: 12px; color: var(--mut); }
-.card .big { font-size: 32px; font-weight: 700; overflow-wrap: anywhere; }
-.card .ans { font-size: 24px; margin-top: 12px; color: #e6f4ff; }
-.card .ex { margin-top: 16px; color: var(--mut); font-style: italic; font-size: 15px; }
-.card .hint { position: absolute; bottom: 16px; font-size: 13px; color: var(--mut); }
+        h1 span {
+            color: #cfe9ff;
+        }
 
-.act { display: flex; gap: 12px; }
-.act button {
-  flex: 1; padding: 18px; border-radius: 24px; color: #fff; font-size: 16px;
-  font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,.3); 
-  backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); box-shadow: var(--edge);
-}
-.bn { background: linear-gradient(135deg, rgba(255,176,77,.7), rgba(255,176,77,.3)); }
-.bk { background: linear-gradient(135deg, rgba(76,217,160,.7), rgba(76,217,160,.3)); }
+        nav {
+            display: flex;
+            gap: 6px;
+            padding: 6px;
+            border-radius: 999px;
+            background: var(--glass);
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+        }
 
-.empty { text-align: center; color: var(--mut); padding: 50px 20px; }
-.item {
-  display: flex; align-items: center; gap: 10px; padding: 12px 16px; 
-  margin-bottom: 10px; border-radius: 20px; background: var(--glass); 
-  border: 1px solid var(--bd); backdrop-filter: var(--blur); 
-  -webkit-backdrop-filter: var(--blur); box-shadow: var(--edge);
-}
-.item .t { flex: 1; min-width: 0; font-size: 15px; }
-.item .t small { display: block; color: var(--mut); font-size: 13px; margin-top: 2px;}
-.dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.3); flex: none; }
-.dot.k { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
-.dot.u { background: var(--no); box-shadow: 0 0 10px var(--no); }
-.sm { border-radius: 12px; padding: 8px 14px; cursor: pointer; border: 0; color: #fff;}
+        button, select, input {
+            font: inherit;
+            color: var(--tx);
+            text-shadow: inherit;
+            margin: 0;
+        }
 
-label { display: block; font-size: 14px; font-weight: 600; color: var(--mut); margin: 16px 4px 6px; text-shadow: none; }
-.pri { width: 100%; padding: 16px; border-radius: 20px; background: rgba(255,255,255,.25); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; border: 1px solid var(--bd); backdrop-filter: var(--blur); box-shadow: var(--edge); margin-top: 10px; }
-.msg { color: #4cd9a0; margin-top: 12px; text-align: center; font-weight: 600; }
-</style>
+        nav button {
+            flex: 1;
+            padding: 12px 6px; 
+            font-size: 15px;
+            font-weight: 600;
+            border: 0;
+            background: transparent;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: .2s ease;
+            white-space: nowrap;
+        }
+        
+        nav button#t-settings {
+            flex: 0 0 auto;
+            padding: 12px 14px;
+        }
+
+        nav button.on {
+            background: rgba(255, 255, 255, .3);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, .7), 0 2px 10px rgba(0, 30, 90, .25);
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        select, input, textarea, .ib, .sm {
+            background: var(--glass);
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+        }
+
+        select, input, textarea {
+            padding: 14px 16px; 
+            border-radius: 16px;
+            font-size: 16px;
+            width: 100%;
+            min-width: 0;
+            outline: 0;
+            appearance: none; 
+        }
+        
+        /* Специфичные стили для инпутов настроек */
+        input[type="color"] {
+            padding: 4px;
+            height: 48px;
+            cursor: pointer;
+        }
+        
+        input[type="file"] {
+            padding: 10px 14px;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        
+        .row select {
+            flex: 1 1 100%; 
+        }
+        
+        @media (min-width: 400px) {
+            .row select { flex: 1; }
+        }
+
+        select option { color: #123; }
+        input::placeholder { color: var(--mut); }
+        input:focus, select:focus { border-color: rgba(255, 255, 255, .7); }
+
+        .ib {
+            width: auto;
+            padding: 14px 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stats {
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--mut);
+            margin: 4px 2px 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .stats b { color: var(--tx); }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            background: var(--glass);
+            border: 1px solid var(--bd);
+            border-radius: 32px;
+            min-height: 320px; 
+            padding: 32px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+            transition: transform .2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+        }
+
+        .card:active { transform: scale(.96); }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(120% 60% at 15% 0, rgba(255, 255, 255, .35), transparent 55%);
+            pointer-events: none;
+        }
+
+        .card > * { position: relative; }
+
+        .card .cat {
+            position: absolute;
+            top: 18px;
+            left: 22px;
+            font-size: 13px;
+            color: var(--mut);
+            font-weight: 500;
+        }
+
+        .card .big {
+            font-size: 34px; 
+            font-weight: 700;
+            overflow-wrap: anywhere;
+            line-height: 1.2;
+        }
+
+        .card .ans {
+            font-size: 24px;
+            margin-top: 12px;
+            color: #e0f2ff;
+        }
+
+        .card .ex {
+            margin-top: 18px;
+            color: var(--mut);
+            font-style: italic;
+            font-size: 18px;
+        }
+
+        .card .hint {
+            position: absolute;
+            bottom: 16px;
+            font-size: 14px;
+            color: var(--mut);
+            opacity: 0.8;
+        }
+
+        .act { display: flex; gap: 12px; margin-top: 8px; }
+
+        .act button {
+            flex: 1;
+            padding: 18px 12px; 
+            border-radius: 24px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 650;
+            cursor: pointer;
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+            transition: transform 0.1s;
+        }
+        
+        .act button:active { transform: scale(0.95); }
+        .bn { background: linear-gradient(135deg, rgba(255, 176, 77, .65), rgba(255, 176, 77, .25)); }
+        .bk { background: linear-gradient(135deg, rgba(76, 217, 160, .65), rgba(76, 217, 160, .25)); }
+
+        .empty {
+            text-align: center;
+            color: var(--mut);
+            padding: 60px 20px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px; 
+            margin-bottom: 10px;
+            border-radius: 20px;
+            background: var(--glass);
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+        }
+
+        .item .t { flex: 1; min-width: 0; font-size: 17px; font-weight: 500; }
+        .item .t small { display: block; color: var(--mut); font-size: 14px; margin-top: 2px; font-weight: 400; }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .35);
+            flex: none;
+        }
+
+        .dot.k { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+        .dot.u { background: var(--no); box-shadow: 0 0 10px var(--no); }
+
+        .sm {
+            border-radius: 12px;
+            padding: 10px 14px; 
+            cursor: pointer;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, .5);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--mut);
+            margin: 16px 4px 6px;
+            font-weight: 500;
+        }
+
+        .pri {
+            margin-top: 24px;
+            width: 100%;
+            padding: 18px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, .12));
+            color: #fff;
+            font-size: 17px;
+            font-weight: 650;
+            cursor: pointer;
+            border: 1px solid var(--bd);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            box-shadow: var(--edge);
+            transition: transform 0.1s;
+        }
+        
+        .pri:active { transform: scale(0.97); }
+
+        .msg {
+            color: #d6ffee;
+            margin-top: 14px;
+            min-height: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-<main>
-<h1>Norsk <span>Kort</span></h1>
-<nav>
-  <button id="t-study" onclick="go('study')">Учить</button>
-  <button id="t-list" onclick="go('list')">Список</button>
-  <button id="t-add" onclick="go('add')">Добавить</button>
-  <button id="t-set" onclick="go('set')">⚙️</button>
-</nav>
-<div id="v"></div>
-</main>
+    <main>
+        <h1>Norsk <span>kort</span> · Kapittel 4</h1>
+        <nav>
+            <button id="t-study" onclick="go('study')">Учить</button>
+            <button id="t-list" onclick="go('list')">Список</button>
+            <button id="t-add" onclick="go('add')">Добавить</button>
+            <button id="t-settings" onclick="go('settings')" title="Настройки">⚙️</button>
+        </nav>
+        <div id="v"></div>
+    </main>
 
-<script>
-// --- Инициализация Telegram Mini App ---
-let tg = window.Telegram ? window.Telegram.WebApp : null;
-if (tg) { tg.expand(); }
-const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : 'guest';
-const LS_KEY = 'nk_data_' + userId;
-
-// --- Полная база карточек ---
-const RAW=`stå opp|вставать|Глаголы|Jeg står opp klokka sju.
+    <script>
+        const RAW = `stå opp|вставать|Глаголы|Jeg står opp klokka sju.
 kle på seg|одеваться|Глаголы|Han kler på seg klokka halv sju.
 begynne|начинать|Глаголы|Han begynner på jobb klokka åtte.
 legge seg|ложиться (спать)|Глаголы|Han legger seg klokka halv elleve.
@@ -236,178 +474,280 @@ og / men|«и» соединяет, «но» — контраст|Граммат
 Существительные на -er (en lærer)|мн.ч.: lærere, определённая: læreren / lærerne|Грамматика|en samboer – samboeren – samboere – samboerne
 Произношение: æi|ei и eg часто читаются как «æi»|Грамматика|hei, nei, jeg, seg, meg, pleier`;
 
-const hid = s => { let h=5381; for(const ch of s) h=(h*33^ch.charCodeAt(0))>>>0; return 'b'+h.toString(36); };
-const BASE = RAW.trim().split('\n').map((l,i) => { 
-  const p=l.split('|'); 
-  return {id:hid(p[0]+'|'+p[1]), no:p[0], ru:p[1], cat:p[2], ex:p[3]||''} 
-});
+        const hid = s => { let h = 5381; for (const ch of s) h = (h * 33 ^ ch.charCodeAt(0)) >>> 0; return 'b' + h.toString(36) };
+        const BASE = RAW.trim().split('\n').map((l, i) => { const p = l.split('|'); return { id: hid(p[0] + '|' + p[1]), old: 'b' + i, no: p[0], ru: p[1], cat: p[2], ex: p[3] || '' } });
+        
+        /* Инициализация Telegram Web App */
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+        
+        /* Получаем ID пользователя для изоляции сохранений */
+        const userId = tg?.initDataUnsafe?.user?.id || 'guest';
+        const STORAGE_KEY = 'nk_data_' + userId;
 
-// --- Загрузка данных пользователя ---
-let S;
-try { S = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch(e) {}
-S = S || { st:{}, cu:[], dir:0, theme: { cardColor: '#ffffff', bgColor: '#1e7fd8', bgImg: 'bg.jpg' } };
-if (!S.theme) S.theme = { cardColor: '#ffffff', bgColor: '#1e7fd8', bgImg: 'bg.jpg' };
+        let S;
+        try { S = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') } catch (e) {}
+        S = S || { st: {}, cu: [], dir: 0, bgUrl: '', bgColor: '', cardColor: '' };
+        
+        if (!S.v) {
+            BASE.forEach(c => { if (S.st[c.old]) { S.st[c.id] = S.st[c.old]; delete S.st[c.old] } });
+            S.v = 2
+        }
 
-const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e) { console.error('Storage full'); } };
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cards = () => BASE.concat(S.cu);
-const cats = () => [...new Set(cards().map(c=>c.cat))];
+        const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {} };
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const cards = () => BASE.concat(S.cu);
+        const cats = () => [...new Set(cards().map(c => c.cat))];
+        
+        function applyTheme() {
+            const root = document.documentElement;
+            
+            // Задний фон (картинка)
+            if (S.bgUrl) root.style.setProperty('--bg-img', `url('${S.bgUrl}')`);
+            else root.style.setProperty('--bg-img', `url('bg.jpg')`);
+            
+            // Цвет фона
+            if (S.bgColor) root.style.setProperty('--bg-color', S.bgColor);
+            else root.style.setProperty('--bg-color', '#1e7fd8');
+            
+            // Цвет карточек (RGB для glassmorphism)
+            if (S.cardColor) {
+                const hex = S.cardColor.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16) || 255;
+                const g = parseInt(hex.substring(2, 4), 16) || 255;
+                const b = parseInt(hex.substring(4, 6), 16) || 255;
+                root.style.setProperty('--c-r', r);
+                root.style.setProperty('--c-g', g);
+                root.style.setProperty('--c-b', b);
+            } else {
+                root.style.setProperty('--c-r', '255');
+                root.style.setProperty('--c-g', '255');
+                root.style.setProperty('--c-b', '255');
+            }
+        }
+        applyTheme();
 
-// --- Применение темы и фикс цвета ---
-function hexToRgb(hex) {
-  let r = 255, g = 255, b = 255;
-  if(hex) {
-    hex = hex.replace(/^#/, '');
-    if(hex.length === 3) {
-      r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16);
-    } else if(hex.length === 6) {
-      r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16);
-    }
-  }
-  return `${r}, ${g}, ${b}`;
-}
+        let tab = 'study', deck = [], i = 0, flip = false, cat = '', mode = 'todo', q = '', msg = '', rst = false;
 
-function applyTheme() {
-  const root = document.documentElement;
-  root.style.setProperty('--card-rgb', hexToRgb(S.theme.cardColor));
-  
-  if (S.theme.bgColor) document.body.style.backgroundColor = S.theme.bgColor;
-  if (S.theme.bgImg) document.body.style.backgroundImage = `url('${S.theme.bgImg}')`;
-  else document.body.style.backgroundImage = 'none';
-}
-applyTheme();
+        function build() {
+            deck = cards().filter(x => (!cat || x.cat === cat) && (mode === 'all' || (mode === 'new' && !S.st[x.id]) || (mode === 'todo' && S.st[x.id] !== 'k') || (mode === 'known' && S.st[x.id] === 'k')));
+            i = 0;
+            flip = false;
+        }
 
-let tab='study', deck=[], i=0, flip=false, cat='', mode='todo', q='', msg='', rst=false;
-const $ = id => document.getElementById(id);
+        function go(t) {
+            tab = t;
+            msg = '';
+            if (t === 'study') build();
+            render();
+        }
 
-function build() {
-  deck = cards().filter(x => (!cat || x.cat===cat) && 
-    (mode==='all' || (mode==='todo'&&S.st[x.id]!=='k') || (mode==='known'&&S.st[x.id]==='k'))
-  );
-  i=0; flip=false;
-}
+        function shuf() {
+            for (let k = deck.length - 1; k > 0; k--) {
+                const j = Math.random() * (k + 1) | 0;
+                [deck[k], deck[j]] = [deck[j], deck[k]];
+            }
+            i = 0;
+            flip = false;
+            render();
+        }
 
-function go(t) { tab=t; msg=''; if(t==='study') build(); render(); }
-function shuf() { for(let k=deck.length-1; k>0; k--){ const j=Math.random()*(k+1)|0; [deck[k],deck[j]]=[deck[j],deck[k]]; } i=0; flip=false; render(); }
-function mark(v) { if(i>=deck.length) return; S.st[deck[i].id]=v; save(); i++; flip=false; render(); }
-function cnt() { let k=0, u=0; const a=cards(); a.forEach(c=>{ if(S.st[c.id]==='k') k++; else if(S.st[c.id]==='u') u++; }); return {k, u, n:a.length-k-u, t:a.length}; }
+        function mark(v) {
+            if (i >= deck.length) return;
+            S.st[deck[i].id] = v;
+            save();
+            i++;
+            flip = false;
+            render();
+        }
 
-// --- Сжатие картинок ---
-function handleImageUpload(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX_WIDTH = 1080; const MAX_HEIGHT = 1920;
-      let width = img.width; let height = img.height;
-      if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
-      else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-      canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
-      S.theme.bgImg = dataUrl;
-      save(); applyTheme(); render();
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(file);
-}
+        function cnt() {
+            const a = cards();
+            let k = 0, u = 0;
+            a.forEach(c => {
+                if (S.st[c.id] === 'k') k++;
+                else if (S.st[c.id] === 'u') u++;
+            });
+            return { k, u, n: a.length - k - u, t: a.length };
+        }
 
-function render() {
-  ['study','list','add','set'].forEach(t => $('t-'+t).className = t===tab ? 'on' : '');
-  const n = cnt();
-  const st = `<div class="stats"><span>✅ знаю <b>${n.k}</b></span><span>🟠 учу <b>${n.u}</b></span><span>⚪ новые <b>${n.n}</b></span></div>`;
-  let h = '';
+        const $ = id => document.getElementById(id);
 
-  if (tab === 'study') {
-    h += `<div class="row">
-      <select onchange="cat=this.value;build();render()">
-        <option value="">Все темы</option>
-        ${cats().map(c=>`<option ${c===cat?'selected':''}>${esc(c)}</option>`).join('')}
-      </select>
-      <select onchange="mode=this.value;build();render()">
-        <option value="todo" ${mode==='todo'?'selected':''}>К изучению</option>
-        <option value="all" ${mode==='all'?'selected':''}>Все карточки</option>
-        <option value="known" ${mode==='known'?'selected':''}>Уже знаю</option>
-      </select>
-    </div>
-    <div class="row">
-      <button class="ib" onclick="shuf()">🔀 Перемешать</button>
-      <button class="ib" onclick="S.dir^=1;save();render()">⇄ ${S.dir ? 'РУС → НОР' : 'НОР → РУС'}</button>
-    </div>${st}`;
+        window.uploadBg = function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => {
+                    // Уменьшаем размер фото, чтобы не переполнить localStorage (макс. ширина/высота 1600px)
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX = 1600;
+                    let w = img.width, h = img.height;
+                    if (w > MAX || h > MAX) {
+                        if (w > h) { h *= MAX / w; w = MAX; }
+                        else { w *= MAX / h; h = MAX; }
+                    }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    try {
+                        S.bgUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        save();
+                        applyTheme();
+                        render();
+                    } catch(err) {
+                        const errBox = document.createElement('div');
+                        errBox.style.color = 'var(--no)';
+                        errBox.style.marginTop = '10px';
+                        errBox.style.fontWeight = 'bold';
+                        errBox.innerText = '⚠️ Файл слишком большой. Попробуйте картинку поменьше.';
+                        e.target.parentNode.appendChild(errBox);
+                        setTimeout(() => errBox.remove(), 4000);
+                    }
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
 
-    if (!deck.length) {
-      h += `<div class="empty">В этой подборке нет карточек 🎉<br>Смените фильтр или добавьте новые.</div>`;
-    } else if (i >= deck.length) {
-      h += `<div class="empty">Колода пройдена! 🎉<br><br><button class="pri" onclick="build();render()">Начать заново</button></div>`;
-    } else {
-      const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
-      h += `<div class="stats"><span>Карточка ${i+1} из ${deck.length}</span></div>
-      <div class="card" onclick="flip=!flip;render()">
-        <span class="cat">${esc(c.cat)}</span>
-        <div class="big">${esc(f)}</div>
-        ${flip ? `<div class="ans">${esc(b)}</div>${c.ex ? `<div class="ex">${esc(c.ex)}</div>`:''}` : `<div class="hint">нажмите, чтобы перевернуть</div>`}
-      </div>
-      <div class="act">
-        <button class="bn" onclick="mark('u')">Не знаю</button>
-        <button class="bk" onclick="mark('k')">Знаю</button>
-      </div>`;
-    }
-  } 
-  else if (tab === 'list') {
-    const all = cards().filter(c => !q || (c.no+c.ru).toLowerCase().includes(q.toLowerCase()));
-    h += `<div class="row"><input id="q" placeholder="Поиск карточек..." value="${esc(q)}" oninput="q=this.value;render();$('q').focus();"></div>`;
-    h += all.map(c => `<div class="item">
-      <span class="dot ${S.st[c.id]||''}"></span>
-      <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small></div>
-      <button class="sm" style="background:var(--ok)" onclick="S.st['${c.id}']='k';save();render()">✓</button>
-      <button class="sm" style="background:var(--no)" onclick="S.st['${c.id}']='u';save();render()">✗</button>
-      ${c.id[0]==='c' ? `<button class="sm" style="background:#ff4d4d" onclick="S.cu=S.cu.filter(x=>x.id!=='${c.id}');delete S.st['${c.id}'];save();render()">🗑</button>` : ''}
-    </div>`).join('') || '<div class="empty">Ничего не найдено</div>';
-  } 
-  else if (tab === 'add') {
-    h += `<label>Слово по-норвежски</label><input id="a-no" autocomplete="off">
-    <label>Перевод на русский</label><input id="a-ru" autocomplete="off">
-    <label>Категория (тема)</label><input id="a-cat" list="cl" value="Мои слова">
-    <datalist id="cl">${cats().map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
-    <label>Пример использования (необязательно)</label><input id="a-ex" autocomplete="off">
-    <button class="pri" onclick="add()">Добавить в колоду</button><div class="msg">${msg}</div>`;
-  }
-  else if (tab === 'set') {
-    h += `<div class="empty" style="padding:10px">Настройки внешнего вида</div>
-    
-    <label>🎨 Цвет карточек (эффект стекла сохранится)</label>
-    <input type="color" value="${S.theme.cardColor}" onchange="S.theme.cardColor=this.value; save(); applyTheme();">
-    
-    <label>🖌 Цвет фона (смешивается с картинкой)</label>
-    <input type="color" value="${S.theme.bgColor}" onchange="S.theme.bgColor=this.value; save(); applyTheme();">
-    
-    <label>📸 Фоновое изображение</label>
-    <input type="file" accept="image/*" id="bg-upload" style="display:none">
-    <label for="bg-upload" class="pri" style="text-align:center; display:block; background:rgba(255,255,255,.15); font-weight:600; margin-top:8px;">Выбрать фото с устройства</label>
-    
-    <button class="pri" style="margin-top:24px; background:rgba(255,100,100,.3)" onclick="S.theme={cardColor:'#ffffff', bgColor:'#1e7fd8', bgImg:'bg.jpg'}; save(); applyTheme(); render();">Сбросить всё по умолчанию</button>`;
-  }
+        function render() {
+            ['study', 'list', 'add', 'settings'].forEach(t => {
+                const el = $('t-' + t);
+                if (el) el.className = t === tab ? 'on' : '';
+            });
+            const n = cnt();
+            const st = `<div class="stats"><span>✅ знаю <b>${n.k}</b></span><span>🟠 не знаю <b>${n.u}</b></span><span>⚪ новые <b>${n.n}</b></span><span>всего <b>${n.t}</b></span></div>`;
+            
+            let h = '';
+            
+            if (tab === 'study') {
+                h += `
+                <div class="row">
+                    <select onchange="cat=this.value;build();render()">
+                        <option value="">Все темы</option>
+                        ${cats().map(c => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                    </select>
+                    <select onchange="mode=this.value;build();render()">
+                        ${[['todo', 'Не знаю + новые'], ['new', 'Только новые'], ['all', 'Все'], ['known', 'Знаю']].map(m => `<option value="${m[0]}" ${m[0] === mode ? 'selected' : ''}>${m[1]}</option>`).join('')}
+                    </select>
+                    <div style="display:flex; gap:10px; width:100%;">
+                        <button class="ib" style="flex:1;" title="Перемешать" onclick="shuf()">🔀</button>
+                        <button class="ib" style="flex:1;" title="Сменить направление" onclick="S.dir^=1;save();render()">⇄</button>
+                    </div>
+                </div>${st}`;
+                
+                if (!deck.length) {
+                    h += `<div class="empty">В этой подборке нет карточек 🎉<br>Смените фильтр или добавьте новые.</div>`;
+                } else if (i >= deck.length) {
+                    h += `<div class="empty">Колода пройдена! 🎉<br><br><button class="pri" onclick="build();render()">Ещё раз (по текущему фильтру)</button></div>`;
+                } else {
+                    const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
+                    h += `
+                    <div class="stats"><span>Карточка ${i + 1} / ${deck.length}</span></div>
+                    <div class="card" onclick="flip=!flip;render()">
+                        <span class="cat">${esc(c.cat)}</span>
+                        <div class="big">${esc(f)}</div>
+                        ${flip ? `
+                            <div class="ans">${esc(b)}</div>
+                            ${c.ex ? `<div class="ex">${esc(c.ex)}</div>` : ''}
+                        ` : `<div class="hint">нажмите, чтобы перевернуть</div>`}
+                    </div>
+                    <div class="act">
+                        <button class="bn" onclick="mark('u')">Не знаю</button>
+                        <button class="bk" onclick="mark('k')">Знаю</button>
+                    </div>`;
+                }
+            } else if (tab === 'list') {
+                const all = cards().filter(c => !q || (c.no + c.ru).toLowerCase().includes(q.toLowerCase()));
+                h += `
+                ${st}
+                <div class="row" style="flex-wrap:nowrap;">
+                    <input id="q" placeholder="Поиск…" value="${esc(q)}" oninput="q=this.value;render();$('q').focus();$('q').setSelectionRange(q.length,q.length)">
+                    <button class="ib" onclick="if(rst){S.st={};save();rst=false}else rst=true;render()">${rst ? 'Точно?' : 'Сброс'}</button>
+                </div>`;
+                
+                h += all.map(c => `
+                <div class="item">
+                    <span class="dot ${S.st[c.id] || ''}"></span>
+                    <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small></div>
+                    <button class="sm" onclick="S.st['${c.id}']='k';save();render()">✓</button>
+                    <button class="sm" onclick="S.st['${c.id}']='u';save();render()">✗</button>
+                    ${c.id[0] === 'c' ? `<button class="sm" onclick="S.cu=S.cu.filter(x=>x.id!=='${c.id}');delete S.st['${c.id}'];save();render()">🗑</button>` : ''}
+                </div>`).join('') || '<div class="empty">Ничего не найдено</div>';
+            } else if (tab === 'add') {
+                h += `
+                <label>По-норвежски</label>
+                <input id="a-no" autocomplete="off">
+                <label>Перевод</label>
+                <input id="a-ru" autocomplete="off">
+                <label>Тема</label>
+                <input id="a-cat" list="cl" value="Мои слова">
+                <datalist id="cl">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+                <label>Пример (необязательно)</label>
+                <input id="a-ex" autocomplete="off">
+                <button class="pri" onclick="add()">Добавить карточку</button>
+                <div class="msg">${msg}</div>`;
+            } else if (tab === 'settings') {
+                h += `
+                <div class="stats" style="font-size:16px;"><span><b>Настройки внешнего вида</b></span></div>
+                
+                <label>🎨 Цвет карточек (эффект стекла сохранится)</label>
+                <div class="row">
+                    <input type="color" id="set-card-color" value="${S.cardColor || '#ffffff'}" onchange="S.cardColor=this.value;save();applyTheme()">
+                </div>
+                
+                <label>🖌 Цвет фона (смешивается с картинкой)</label>
+                <div class="row">
+                    <input type="color" id="set-bg-color" value="${S.bgColor || '#1e7fd8'}" onchange="S.bgColor=this.value;save();applyTheme()">
+                </div>
+                
+                <label>🔗 URL картинки для фона (ссылка)</label>
+                <div class="row">
+                    <input type="text" id="set-bg-url" placeholder="https://..." value="${(S.bgUrl && !S.bgUrl.startsWith('data:')) ? esc(S.bgUrl) : ''}" onchange="S.bgUrl=this.value;save();applyTheme()">
+                </div>
+                
+                <label>📸 Или загрузите фото с устройства</label>
+                <div class="row">
+                    <input type="file" id="set-bg-file" accept="image/*" onchange="uploadBg(event)">
+                </div>
+                
+                <button class="pri" onclick="S.bgUrl='';S.bgColor='';S.cardColor='';save();applyTheme();render()">Сбросить всё по умолчанию</button>
+                `;
+            }
+            
+            $('v').innerHTML = h;
+        }
 
-  $('v').innerHTML = h;
-  if(tab === 'set') {
-    const up = $('bg-upload');
-    if(up) up.addEventListener('change', handleImageUpload);
-  }
-}
+        function add() {
+            const no = $('a-no').value.trim(), ru = $('a-ru').value.trim();
+            if (!no || !ru) {
+                msg = 'Заполните оба поля';
+                render();
+                return;
+            }
+            S.cu.push({ id: 'c' + Date.now(), no, ru, cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim() });
+            save();
+            msg = '✓ Добавлено! Всего карточек: ' + cards().length;
+            render();
+            $('a-no').focus();
+        }
 
-function add() {
-  const no=$('a-no').value.trim(), ru=$('a-ru').value.trim();
-  if(!no || !ru){ msg='Заполните оба обязательных поля!'; render(); return; }
-  S.cu.push({id:'c'+Date.now(), no, ru, cat:$('a-cat').value.trim()\vert{}\vert{}'Мои слова', ex:$('a-ex').value.trim()});
-  save(); msg='✓ Карточка успешно добавлена!'; render(); $('a-no').focus();
-}
+        document.addEventListener('keydown', e => {
+            if (tab !== 'study' || /INPUT|SELECT/.test(e.target.tagName)) return;
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flip = !flip;
+                render();
+            } else if (e.key === 'ArrowLeft') mark('u');
+            else if (e.key === 'ArrowRight') mark('k');
+        });
 
-build(); render();
-</script>
+        build();
+        render();
+    </script>
 </body>
 </html>
