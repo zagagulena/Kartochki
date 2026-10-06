@@ -409,6 +409,22 @@
             background-clip: padding-box;
             flex: none;
         }
+        /* Иконки: единый линейный стиль, цвет берут от текста */
+        :root { --icf: drop-shadow(0 1px 2px rgba(0, 20, 60, .5)); }
+        .i { width: 1.2em; height: 1.2em; display: inline-block; vertical-align: -.22em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0, 20, 60, .5)); }
+        .card .i, .item .i, .panel .i, nav .i, .ib .i, .sm .i, .seg .i, .pv .i { filter: var(--icf); }
+        nav button .i { width: 22px; height: 22px; }
+        .ib .i { width: 24px; height: 24px; }
+        .sm .i { width: 20px; height: 20px; stroke-width: 2.6; }
+        .sm.ok { color: var(--ok); }
+        .sm.no { color: var(--no); }
+        .pri .i, .seg button .i, .panel label .i { margin-right: 7px; }
+        .panel label .i { vertical-align: -.28em; }
+        .empty .i { width: 46px; height: 46px; margin-bottom: 12px; stroke-width: 1.6; }
+        .swipe-tip .i { width: 1em; height: 1em; vertical-align: -.15em; }
+        .stats .dot { display: inline-block; width: 11px; height: 11px; margin: 0 6px 0 0; vertical-align: -1px; }
+        .dot.n { background: rgba(255, 255, 255, .8); }
+        .sw .i { width: 22px; height: 22px; stroke-width: 3; }
         .sw { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 800; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); }
         .sw.on { outline: 3px solid #fff; outline-offset: 2px; }
         .sw-custom.on { outline: 3px solid #fff; outline-offset: 2px; }
@@ -485,7 +501,7 @@
         <button id="t-study" onclick="go('study')">Учить</button>
         <button id="t-list" onclick="go('list')">Список</button>
         <button id="t-add" onclick="go('add')">Добавить</button>
-        <button id="t-settings" onclick="go('settings')" title="Настройки" aria-label="Настройки">⚙️</button>
+        <button id="t-settings" onclick="go('settings')" title="Настройки" aria-label="Настройки"></button>
     </nav>
 
     <script>
@@ -610,6 +626,26 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
         const $ = id => document.getElementById(id);
 
+        /* Набор иконок в одном стиле (контурные, скруглённые) */
+        const ICONS = {
+            gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+            shuffle: '<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>',
+            swap: '<path d="M17 4l4 4-4 4"/><path d="M3 8h18"/><path d="M7 20l-4-4 4-4"/><path d="M21 16H3"/>',
+            check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+            x: '<path d="M6 6l12 12M18 6L6 18"/>',
+            trash: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+            undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+            cards: '<rect x="3" y="7" width="12" height="14" rx="3"/><path d="M8 3.5h9a4 4 0 0 1 4 4V16"/>',
+            image: '<rect x="3" y="4" width="18" height="16" rx="4"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+            drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+            camera: '<path d="M4 9a2 2 0 0 1 2-2h1.5L9 5h6l1.5 2H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>',
+            sparkles: '<path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+            alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.01"/>',
+            left: '<path d="M15 5l-7 7 7 7"/>',
+            right: '<path d="M9 5l7 7-7 7"/>'
+        };
+        const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+
         if (!S.v) {
             BASE.forEach(c => { if (S.st[c.old]) { S.st[c.id] = S.st[c.old]; delete S.st[c.old] } });
             S.v = 2;
@@ -653,11 +689,13 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                     root.setProperty('--cmut', 'rgba(16,36,58,.85)');
                     root.setProperty('--scrim', 'rgba(255,255,255,0)');
                     root.setProperty('--ctsh', 'none');
+                    root.setProperty('--icf', 'none');
                 } else {
                     root.setProperty('--ctx', '#fff');
                     root.setProperty('--cmut', 'rgba(255,255,255,.9)');
                     root.setProperty('--scrim', 'rgba(8,28,70,.22)');
                     root.setProperty('--ctsh', 'var(--tsh)');
+                    root.setProperty('--icf', 'drop-shadow(0 1px 2px rgba(0,20,60,.5))');
                 }
             } else {
                 root.setProperty('--c-r', 255); root.setProperty('--c-g', 255); root.setProperty('--c-b', 255);
@@ -666,6 +704,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 root.setProperty('--cmut', 'rgba(255,255,255,.9)');
                 root.setProperty('--scrim', 'rgba(8,28,70,.40)');
                 root.setProperty('--ctsh', 'var(--tsh)');
+                root.setProperty('--icf', 'drop-shadow(0 1px 2px rgba(0,20,60,.5))');
             }
         }
         applyTheme();
@@ -686,7 +725,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             const file = e.target.files[0];
             e.target.value = '';
             if (!file) return;
-            const fail = () => { bgMsg = '⚠️ Не получилось загрузить это фото. Попробуйте другое.'; render(); };
+            const fail = () => { bgMsg = ic('alert') + ' Не получилось загрузить это фото. Попробуйте другое.'; render(); };
             const reader = new FileReader();
             reader.onerror = fail;
             reader.onload = ev => {
@@ -706,7 +745,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                         const data = canvas.toDataURL('image/jpeg', 0.75);
                         localStorage.setItem(BG_KEY, data);
                         BG = data;
-                        bgMsg = '✓ Фон обновлён';
+                        bgMsg = ic('check') + ' Фон обновлён';
                         applyTheme();
                         render();
                     } catch (err) {
@@ -756,7 +795,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             return { k, u, n: a.length - k - u, t: a.length };
         }
 
-        const statsHtml = () => { const n = cnt(); return `<span>✅ знаю <b>${n.k}</b></span><span>🟠 не знаю <b>${n.u}</b></span><span>⚪ новые <b>${n.n}</b></span><span>всего <b>${n.t}</b></span>`; };
+        const statsHtml = () => { const n = cnt(); return `<span><i class="dot k"></i>знаю <b>${n.k}</b></span><span><i class="dot u"></i>не знаю <b>${n.u}</b></span><span><i class="dot n"></i>новые <b>${n.n}</b></span><span>всего <b>${n.t}</b></span>`; };
 
         /* Список обновляем точечно, чтобы не сбрасывать клавиатуру и прокрутку */
         function listHtml() {
@@ -765,9 +804,9 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 <div class="item">
                     <span class="dot ${S.st[c.id] || ''}"></span>
                     <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small></div>
-                    <button class="sm" aria-label="Знаю" onclick="setSt('${c.id}','k')">✓</button>
-                    <button class="sm" aria-label="Не знаю" onclick="setSt('${c.id}','u')">✗</button>
-                    <button class="sm ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : '🗑'}</button>
+                    <button class="sm ok" aria-label="Знаю" onclick="setSt('${c.id}','k')">${ic('check')}</button>
+                    <button class="sm no" aria-label="Не знаю" onclick="setSt('${c.id}','u')">${ic('x')}</button>
+                    <button class="sm ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : ic('trash')}</button>
                 </div>`).join('') || '<div class="empty">Ничего не найдено</div>';
         }
         function refreshList() { $('lst').innerHTML = listHtml(); $('stl').innerHTML = statsHtml(); }
@@ -808,8 +847,8 @@ og / men|«и» соединяет, «но» — контраст|Граммат
         /* ---------- Рендер ---------- */
         const CARD_COLORS = [['#ff6b81', 'Розовый'], ['#ffb04d', 'Оранжевый'], ['#4cd9a0', 'Мятный'], ['#5cb8ff', 'Голубой'], ['#a78bfa', 'Сиреневый'], ['#ffffff', 'Белый'], ['#1b2a41', 'Тёмный']];
         const BG_COLORS = [['#1e7fd8', 'Синий'], ['#0f766e', 'Бирюзовый'], ['#15803d', 'Зелёный'], ['#7c3aed', 'Фиолетовый'], ['#be185d', 'Малиновый'], ['#b45309', 'Янтарный'], ['#111827', 'Графит']];
-        const swatches = (list, isOn, fn) => list.map(([c, n]) => { const on = isOn(c); return `<div class="swb"><button class="sw ${on ? 'on' : ''}" style="background:${c};${c === '#ffffff' ? 'color:#10243a;text-shadow:none;' : ''}" aria-label="${n}" onclick="${fn}('${c}')">${on ? '✓' : ''}</button><span>${n}</span></div>`; }).join('');
-        const picker = (key, val, on) => `<div class="swb"><div class="sw-custom ${on ? 'on' : ''}" style="${on ? 'background:' + val : ''}"><input type="color" value="${val}" aria-label="Свой цвет" oninput="S.${key}=this.value;applyTheme()" onchange="save();render()"></div><span>${on ? 'Свой ✓' : 'Свой'}</span></div>`;
+        const swatches = (list, isOn, fn) => list.map(([c, n]) => { const on = isOn(c); return `<div class="swb"><button class="sw ${on ? 'on' : ''}" style="background:${c};${c === '#ffffff' ? 'color:#10243a;text-shadow:none;' : ''}" aria-label="${n}" onclick="${fn}('${c}')">${on ? ic('check') : ''}</button><span>${n}</span></div>`; }).join('');
+        const picker = (key, val, on) => `<div class="swb"><div class="sw-custom ${on ? 'on' : ''}" style="${on ? 'background:' + val : ''}"><input type="color" value="${val}" aria-label="Свой цвет" oninput="S.${key}=this.value;applyTheme()" onchange="save();render()"></div><span>Свой</span></div>`;
         const colorName = (list, c, auto) => { const f = list.find(x => x[0] === c); return f ? f[1] : (c ? 'Свой цвет ' + c : auto); };
 
         function render() {
@@ -828,16 +867,16 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                         ${[['todo', 'Не знаю + новые'], ['new', 'Только новые'], ['all', 'Все'], ['known', 'Знаю']].map(m => `<option value="${m[0]}" ${m[0] === mode ? 'selected' : ''}>${m[1]}</option>`).join('')}
                     </select>
                     <div style="display:flex; gap:10px; width:100%;">
-                        <button class="ib" style="flex:1;" title="Перемешать" aria-label="Перемешать" onclick="shuf()">🔀</button>
-                        <button class="ib" style="flex:1;" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">⇄</button>
+                        <button class="ib" style="flex:1;" title="Перемешать" aria-label="Перемешать" onclick="shuf()">${ic('shuffle')}</button>
+                        <button class="ib" style="flex:1;" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">${ic('swap')}</button>
                     </div>
                 </div>
                 <div class="stats">${statsHtml()}</div>`;
 
                 if (!deck.length) {
-                    h += `<div class="empty">В этой подборке нет карточек 🎉<br>Смените фильтр или добавьте новые.</div>`;
+                    h += `<div class="empty">${ic('sparkles')}<br>В этой подборке нет карточек<br>Смените фильтр или добавьте новые.</div>`;
                 } else if (i >= deck.length) {
-                    h += `<div class="empty">Колода пройдена! 🎉<br><br><button class="pri" onclick="build();render()">Ещё раз (по текущему фильтру)</button></div>`;
+                    h += `<div class="empty">${ic('sparkles')}<br>Колода пройдена!<br><br><button class="pri" onclick="build();render()">Ещё раз (по текущему фильтру)</button></div>`;
                 } else {
                     const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
                     h += `
@@ -856,8 +895,8 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                         <button class="bn" onclick="fly('u')">Не знаю</button>
                         <button class="bk" onclick="fly('k')">Знаю</button>
                     </div>
-                    <div class="swipe-tip">← свайп: не знаю · знаю: свайп →</div>
-                    <button class="pri ghost del-cur ${armed === c.id ? 'armed' : ''}" onclick="delCur()">${armed === c.id ? 'Нажмите ещё раз, чтобы удалить' : '🗑 Удалить карточку'}</button>`;
+                    <div class="swipe-tip">${ic('left')} свайп: не знаю · знаю: свайп ${ic('right')}</div>
+                    <button class="pri ghost del-cur ${armed === c.id ? 'armed' : ''}" onclick="delCur()">${armed === c.id ? 'Нажмите ещё раз, чтобы удалить' : ic('trash') + ' Удалить карточку'}</button>`;
                 }
             } else if (tab === 'list') {
                 h += `
@@ -866,7 +905,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                     <input id="q" placeholder="Поиск…" value="${esc(q)}" enterkeyhint="search" oninput="q=this.value;refreshList()">
                     <button class="ib" onclick="if(rst){S.st={};save();rst=false}else rst=true;render()">${rst ? 'Точно?' : 'Сброс'}</button>
                 </div>
-                ${S.del.length ? `<button class="pri sec" style="margin:0 0 12px;min-height:48px;font-size:15px;" onclick="restoreDel()">↩ Вернуть удалённые (${S.del.length})</button>` : ''}
+                ${S.del.length ? `<button class="pri sec" style="margin:0 0 12px;min-height:48px;font-size:15px;" onclick="restoreDel()">${ic('undo')} Вернуть удалённые (${S.del.length})</button>` : ''}
                 <div id="lst">${listHtml()}</div>`;
             } else if (tab === 'add') {
                 h += `
@@ -895,20 +934,20 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                 </div>
 
                 <div class="panel">
-                    <label>🃏 Цвет карточек</label>
+                    <label>${ic('cards')}Цвет карточек</label>
                     <div class="cur">Выбрано: <b>${colorName(CARD_COLORS, cc, 'Авто (прозрачное стекло)')}</b></div>
                     <div class="swatches">
-                        <div class="swb"><button class="sw ${!cc ? 'on' : ''}" style="background:rgba(255,255,255,.35)" aria-label="Авто" onclick="setCard('')">${!cc ? '✓' : ''}</button><span>Авто</span></div>
+                        <div class="swb"><button class="sw ${!cc ? 'on' : ''}" style="background:rgba(255,255,255,.35)" aria-label="Авто" onclick="setCard('')">${!cc ? ic('check') : ''}</button><span>Авто</span></div>
                         ${swatches(CARD_COLORS, c => c === cc, 'setCard')}
                         ${picker('cardColor', S.cardColor || '#ffffff', cardCustom)}
                     </div>
                 </div>
 
                 <div class="panel">
-                    <label>🌄 Фон приложения</label>
+                    <label>${ic('image')}Фон приложения</label>
                     <div class="seg">
-                        <button class="${solid ? 'on' : ''}" onclick="setBgMode('color')">🎨 Сплошной цвет</button>
-                        <button class="${!solid ? 'on' : ''}" onclick="setBgMode('photo')">🖼 Фото</button>
+                        <button class="${solid ? 'on' : ''}" onclick="setBgMode('color')">${ic('drop')}Сплошной цвет</button>
+                        <button class="${!solid ? 'on' : ''}" onclick="setBgMode('photo')">${ic('image')}Фото</button>
                     </div>
                     ${solid ? `
                         <div class="cur">Выбрано: <b>${colorName(BG_COLORS, bc, 'Синий')}</b></div>
@@ -919,7 +958,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
                     ` : `
                         ${BG ? `<div class="bg-preview" style="background-image:url('${BG}');margin-top:0"></div>` : `<div class="hint2">Сейчас стандартное фото. Можно выбрать своё.</div>`}
                         <div class="file-btn" style="margin-top:12px;">
-                            <div class="pri" style="display:flex;align-items:center;justify-content:center;">📸 ${BG ? 'Выбрать другое фото' : 'Выбрать своё фото'}</div>
+                            <div class="pri" style="display:flex;align-items:center;justify-content:center;">${ic('camera')} ${BG ? 'Выбрать другое фото' : 'Выбрать своё фото'}</div>
                             <input type="file" accept="image/*" onchange="uploadBg(event)" aria-label="Выбрать фото для фона">
                         </div>
                         ${BG ? `<button class="pri sec" onclick="rmBg()">Убрать фото</button>
@@ -946,7 +985,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             if (!no || !ru) { msg = 'Заполните оба поля'; render(); return; }
             S.cu.push({ id: 'c' + Date.now(), no, ru, cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim() });
             save();
-            msg = '✓ Добавлено! Всего карточек: ' + cards().length;
+            msg = ic('check') + ' Добавлено! Всего карточек: ' + cards().length;
             render();
             $('a-no').focus();
         }
@@ -960,7 +999,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg) scale(1.02)`;
             sh.style.setProperty('--sc', dx > 0 ? 'rgba(76,217,160,.8)' : 'rgba(255,176,77,.8)');
             sh.style.opacity = Math.min(Math.abs(dx) / (TH() * 1.4), 1) * .9;
-            st.textContent = dx > 0 ? 'Знаю ✓' : 'Не знаю ✗';
+            st.textContent = dx > 0 ? 'Знаю' : 'Не знаю';
             st.style.opacity = Math.max(0, Math.min((Math.abs(dx) - 20) / TH(), 1));
         }
         function unpaint(card) {
@@ -1035,6 +1074,7 @@ og / men|«и» соединяет, «но» — контраст|Граммат
             else if (e.key === 'ArrowRight') mark('k');
         });
 
+        $('t-settings').innerHTML = ic('gear');
         build();
         render();
     </script>
