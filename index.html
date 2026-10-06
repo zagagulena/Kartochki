@@ -360,6 +360,12 @@
         .pri.ghost { background: transparent; box-shadow: none; margin-top: 10px; }
         .pri.sec { margin-top: 10px; background: linear-gradient(135deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); }
 
+        .item .t small.loc { font-size: 12px; opacity: .85; letter-spacing: .02em; }
+        .dup { margin: 10px 0 4px; padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); font-size: 15px; }
+        .dup-h { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+        .dup-h .i { width: 18px; height: 18px; flex: none; }
+        .dup.ok .dup-h { color: var(--ok); } .dup.warn .dup-h { color: var(--no); } .dup.bad .dup-h { color: var(--ac); }
+        .dup-r { margin-top: 6px; } .dup-r small { display: block; font-size: 12px; opacity: .85; }
         .msg { color: #d6ffee; margin-top: 14px; min-height: 20px; text-align: center; font-weight: 500; }
 
         /* ---------- Настройки ---------- */
@@ -1075,7 +1081,152 @@ en herreklipp|мужская стрижка|Работа||8
 Hvordan vil du ha håret?|Какую причёску вы хотите?|Работа||8
 å føle seg|чувствовать себя|Работа||8
 å bære|нести|Работа||8
-å kaste|выбрасывать|Работа||8`;
+å kaste|выбрасывать|Работа||8
+God kveld!|Добрый вечер!|Общение|God kveld, Marek!|1
+God dag!|Добрый день!|Общение|God dag! Hyggelig å møte deg.|1
+ja|да|Общение|Ja, jeg forstår.|1
+nei|нет|Общение|Nei, jeg kommer fra Syria.|1
+Beklager|простите, сожалею|Общение|Beklager, jeg forstår ikke.|1
+Hvordan sier man ...?|Как сказать ...?|Общение|Hvordan sier man takk på norsk?|1
+Jeg snakker litt norsk.|Я немного говорю по-норвежски.|Общение||1
+Hvor bor du?|Где ты живёшь?|Общение|Hvor bor du? – Jeg bor i Bergen.|1
+Hvem er det?|Кто это?|Общение|Hvem er det? – Det er Viola.|1
+Hva er dette?|Что это?|Общение|Hva er dette? – Det er en bok.|1
+et navn|имя|Существительные|Hva er navnet ditt?|1
+en bok|книга|Существительные|Jeg leser en norsk bok.|1
+en klasse|класс, группа|Существительные|Vi er tolv i klassen.|1
+å hete|называться|Глаголы|Jeg heter Viola.|1
+Sverige|Швеция|Страны|Han kommer fra Sverige.|1
+Danmark|Дания|Страны|Hun bor i Danmark.|1
+Russland|Россия|Страны|Jeg kommer fra Russland.|1
+Ukraina|Украина|Страны|Familien min er fra Ukraina.|1
+Tyrkia|Турция|Страны|Vi reiser til Tyrkia.|1
+Afghanistan|Афганистан|Страны|Hawa kommer fra Afghanistan.|1
+elleve, tolv, tretten, fjorten, femten|11, 12, 13, 14, 15|Числа|Vi er tolv i klassen.|1
+seksten, sytten, atten, nitten, tjue|16, 17, 18, 19, 20|Числа|Hun er sytten år.|1
+mandag, tirsdag, onsdag|понедельник, вторник, среда|Время|På mandag har jeg norskkurs.|2
+torsdag, fredag|четверг, пятница|Время|På fredag har jeg fri.|2
+søndag|воскресенье|Время|På søndag besøker vi mormor.|2
+en uke|неделя|Время|Jeg har norskkurs hver uke.|2
+et år|год|Время|Jeg har bodd her i to år.|2
+en time|час, урок|Время|Timen begynner klokka ni.|2
+et minutt|минута|Время|Vent et minutt!|2
+i fjor|в прошлом году|Время|I fjor bodde jeg i Polen.|2
+en mann|мужчина, муж|Существительные|Mannen min jobber på sykehus.|2
+en kvinne|женщина|Существительные|Det er en kvinne på kontoret.|2
+en gutt|мальчик|Существительные|Gutten leker i parken.|2
+ei jente|девочка|Существительные|Jenta går på skolen.|2
+en adresse|адрес|Существительные|Hva er adressen din?|2
+glad|радостный|Прилагательные|Jeg er glad i dag.|2
+å studere|учиться (в вузе)|Глаголы|Jeg studerer økonomi.|2
+å treffe|встречать|Глаголы|Jeg treffer vennene mine i morgen.|2
+å bli|становиться, оставаться|Глаголы|Jeg blir hjemme i dag.|2
+en kjæreste|партнёр, парень/девушка|Семья|Kjæresten min heter Ola.|3
+en ektefelle|супруг(а)|Семья|Ektefellen min jobber i Oslo.|3
+en nevø|племянник|Семья|Nevøen min er fem år.|3
+ei niese|племянница|Семья|Niesen min bor i Bergen.|3
+en fetter|двоюродный брат|Семья|Fetteren min bor i Tyskland.|3
+ei kusine|двоюродная сестра|Семья|Kusina mi er lærer.|3
+å kunne (kan)|мочь, уметь|Модальные глаголы|Jeg kan snakke norsk.|3
+å måtte (må)|должен|Модальные глаголы|Jeg må jobbe i morgen.|3
+å ville (vil)|хотеть|Модальные глаголы|Jeg vil lære norsk.|3
+å skulle (skal)|собираться, по плану|Модальные глаголы|Vi skal på kino i kveld.|3
+å burde (bør)|следует|Модальные глаголы|Du bør sove mer.|3
+en hobby|хобби|Свободное время|Hobbyen min er fotball.|3
+å gå tur|гулять|Свободное время|Vi går tur i parken.|3
+å høre på musikk|слушать музыку|Свободное время|Jeg hører på musikk hver dag.|3
+å spille gitar|играть на гитаре|Свободное время|Han spiller gitar.|3
+å fiske|ловить рыбу|Свободное время|Pappa liker å fiske.|3
+å reise|путешествовать|Свободное время|Vi liker å reise.|3
+noen ganger|иногда|Время|Noen ganger går jeg på kino.|3
+sjelden|редко|Время|Jeg spiser sjelden fisk.|3
+aldri|никогда|Время|Jeg drikker aldri kaffe.|3
+alltid|всегда|Время|Han er alltid glad.|3
+en morgen|утро|Время|Jeg drikker kaffe om morgenen.|4
+en ettermiddag|вторая половина дня|Время|Om ettermiddagen henter jeg barna.|4
+en kveld|вечер|Время|Om kvelden ser jeg på tv.|4
+en natt|ночь|Время|Jeg sover om natten.|4
+å våkne|просыпаться|Глаголы|Jeg våkner klokka seks.|4
+å komme hjem|приходить домой|Глаголы|Jeg kommer hjem klokka fire.|4
+å ta bussen|ехать на автобусе|Глаголы|Jeg tar bussen til jobb.|4
+å vaske klær|стирать одежду|Глаголы|Jeg vasker klær i helga.|4
+en vekkerklokke|будильник|Дом и быт|Vekkerklokka ringer klokka seks.|4
+en sky|облако|Погода|Det er mange skyer i dag.|5
+tåke|туман|Погода|Det er tåke om morgenen.|5
+en storm|буря|Погода|Det er storm i natt.|5
+is|лёд|Погода|Det er is på veien.|5
+solrikt|солнечно|Погода|Det er solrikt og varmt.|5
+kaldt|холодно|Погода|Det er kaldt ute.|5
+en paraply|зонт|Погода|Ta med paraply, det regner!|5
+en regnbue|радуга|Погода|Se, en regnbue!|5
+en temperatur|температура|Погода|Temperaturen er ti grader.|5
+en værmelding|прогноз погоды|Погода|Jeg leser værmeldingen hver morgen.|5
+rosa|розовый|Цвета|Hun har en rosa jakke.|5
+lilla|фиолетовый|Цвета|Den lilla genseren er fin.|5
+første, andre, tredje|первый, второй, третий|Время|Det er den første mai.|5
+den syttende mai|17 мая (День Конституции)|Время|Vi feirer den syttende mai.|5
+å feire|праздновать|Время|Vi feirer bursdagen min.|5
+en gave|подарок|Существительные|Jeg gir en gave til søsteren min.|5
+en kake|торт|Существительные|Vi spiser kake på bursdagen.|5
+å lese – leste|читать – читал|Глаголы (прош. время)|I går leste jeg en bok.|6
+å skrive – skrev|писать – писал|Глаголы (прош. время)|Jeg skrev en e-post.|6
+å ta – tok|брать – взял|Глаголы (прош. время)|Jeg tok bussen til jobb.|6
+å gi – ga|давать – дал|Глаголы (прош. время)|Hun ga meg en gave.|6
+å si – sa|говорить – сказал|Глаголы (прош. время)|Han sa at han var syk.|6
+å kjøpe – kjøpte|покупать – купил|Глаголы (прош. время)|Jeg kjøpte brød i går.|6
+å spise – spiste|есть – ел|Глаголы (прош. время)|Vi spiste middag klokka seks.|6
+å drikke – drakk|пить – пил|Глаголы (прош. время)|Jeg drakk te.|6
+å sove – sov|спать – спал|Глаголы (прош. время)|Jeg sov i åtte timer.|6
+å treffe – traff|встречать – встретил|Глаголы (прош. время)|Jeg traff en venn i byen.|6
+å vite – visste|знать – знал|Глаголы (прош. время)|Jeg visste ikke det.|6
+å bli – ble|становиться – стал|Глаголы (прош. время)|Det ble kaldt.|6
+i går|вчера|Время|I går var jeg på jobb.|6
+i helga|в выходные|Время|Hva gjorde du i helga?|6
+i går kveld|вчера вечером|Время|I går kveld så jeg en film.|6
+forrige måned|в прошлом месяце|Время|Forrige måned flyttet vi.|6
+tidligere|раньше|Время|Tidligere bodde jeg i Oslo.|6
+en film|фильм|Существительные|Vi så en film i går.|6
+en flyplass|аэропорт|Транспорт|Flyplassen ligger langt fra byen.|7
+et fly|самолёт|Транспорт|Flyet går klokka åtte.|7
+en båt|лодка, катер|Транспорт|Vi reiser med båt.|7
+en avgang|отправление|Транспорт|Avgangen er klokka ti.|7
+et spor|платформа, путь|Транспорт|Toget går fra spor tre.|7
+forsinket|задержанный|Транспорт|Toget er forsinket.|7
+å bytte|пересаживаться, менять|Транспорт|Jeg må bytte buss i sentrum.|7
+et kart|карта|Дорога|Har du et kart?|7
+en vei|дорога, путь|Дорога|Kan du vise meg veien?|7
+et kryss|перекрёсток|Дорога|Ta til høyre i krysset.|7
+et sentrum|центр|Дорога|Jeg bor i sentrum.|7
+langt|далеко|Дорога|Det er langt til sentrum.|7
+nær|близко|Дорога|Butikken er nær.|7
+ved siden av|рядом с|Дорога|Banken ligger ved siden av kafeen.|7
+foran|перед|Дорога|Bussen stopper foran skolen.|7
+bak|за, позади|Дорога|Sykkelen står bak huset.|7
+rett overfor|прямо напротив|Дорога|Posten ligger rett overfor skolen.|7
+mellom|между|Дорога|Parken ligger mellom skolen og biblioteket.|7
+en tomat|помидор|Еда и кафе|Jeg kjøper tomater.|8
+en agurk|огурец|Еда и кафе|Jeg liker agurk på brødet.|8
+en gulrot|морковь|Еда и кафе|Barna spiser gulrøtter.|8
+et eple|яблоко|Еда и кафе|Jeg spiser et eple hver dag.|8
+en banan|банан|Еда и кафе|Kan jeg få en banan?|8
+en ost|сыр|Еда и кафе|Jeg liker ost på brødet.|8
+en fisk|рыба|Еда и кафе|Vi spiser fisk til middag.|8
+ris|рис|Еда и кафе|Vi spiser kylling og ris.|8
+smør|масло|Еда и кафе|Kan du kjøpe smør?|8
+sukker|сахар|Еда и кафе|Jeg tar ikke sukker i kaffen.|8
+salt|соль|Еда и кафе|Det er for mye salt i suppen.|8
+en kåpe|пальто|Одежда|Jeg har på meg en varm kåpe.|8
+en skjerf|шарф|Одежда|Det er kaldt, ta på skjerf.|8
+en dress|костюм|Одежда|Han har på seg en dress.|8
+et par sko|пара обуви|Одежда|Jeg trenger et par nye sko.|8
+å prøve|примерять, пробовать|Покупки|Kan jeg prøve denne jakka?|8
+å passe|подходить|Покупки|Skoene passer ikke.|8
+et tilbud|предложение, акция|Покупки|Det er tilbud på brød i dag.|8
+en rabatt|скидка|Покупки|Får jeg rabatt?|8
+en pris|цена|Покупки|Hva er prisen?|8
+kontant|наличными|Покупки|Jeg betaler kontant.|8
+Kan jeg betale med kort?|Можно оплатить картой?|Покупки|Kan jeg betale med kort her?|8
+liten|маленький|Прилагательные|Har du den i liten størrelse?|8`;
 
         const hid = s => { let h = 5381; for (const ch of s) h = (h * 33 ^ ch.charCodeAt(0)) >>> 0; return 'b' + h.toString(36) };
         const BASE = RAW.trim().split('\n').map((l, i) => { const p = l.split('|'); return { id: hid(p[0] + '|' + p[1]), old: 'b' + i, no: p[0], ru: p[1], cat: p[2], ex: p[3] || '', ch: p[4] ? +p[4] : 4 } });
@@ -1141,6 +1292,31 @@ Hvordan vil du ha håret?|Какую причёску вы хотите?|Раб�
         /* Главы учебника «God i norsk 1» (A1/A2). Новая глава = строки в RAW с 5-м полем: норв|рус|тема|пример|номер_главы */
         const CHAPTERS = { 0: 'Мои слова', 1: 'Vi blir kjent', 2: 'Hvordan går det?', 3: 'Familie og fritid', 4: 'En vanlig dag', 5: 'Hvordan er været?', 6: 'Hva gjorde du i går?', 7: 'God tur!', 8: 'På handletur' };
         const chOf = c => c.ch || 0;
+        const loc = c => (chOf(c) ? 'Гл. ' + chOf(c) + ' · ' : '') + c.cat;
+        const norm = t => String(t).toLowerCase().replace(/^(å|ei\/en|en|et|ei)\s+/, '').replace(/[.!?,]/g, '').trim();
+        function findDup(no, ru) {
+            const n = norm(no), r = ru.trim().toLowerCase();
+            const exact = [], like = [];
+            cards().forEach(c => {
+                const cn = norm(c.no);
+                if (n && cn === n) exact.push(c);
+                else if (n.length >= 3 && (cn.includes(n) || n.includes(cn)) && cn.length >= 3) like.push(c);
+                else if (r.length >= 3 && c.ru.toLowerCase() === r) like.push(c);
+            });
+            return { exact, like: like.slice(0, 3) };
+        }
+        let dupArm = '';
+        function dupHtml(d) {
+            const row = c => `<div class="dup-r"><b>${esc(c.no)}</b> — ${esc(c.ru)}<small>${esc(loc(c))}</small></div>`;
+            if (d.exact.length) return `<div class="dup bad"><div class="dup-h">${ic('alert')} Такое слово уже есть</div>${d.exact.map(row).join('')}</div>`;
+            if (d.like.length) return `<div class="dup warn"><div class="dup-h">${ic('alert')} Есть похожие</div>${d.like.map(row).join('')}</div>`;
+            return `<div class="dup ok"><div class="dup-h">${ic('check')} Такого слова ещё нет</div></div>`;
+        }
+        function chkDup() {
+            const no = $('a-no').value, ru = $('a-ru').value, el = $('dup');
+            dupArm = '';
+            el.innerHTML = (no.trim().length < 2 && ru.trim().length < 3) ? '' : dupHtml(findDup(no, ru));
+        }
         const cards = () => BASE.concat(S.cu).filter(c => !S.del.includes(c.id));
         const cats = () => [...new Set(cards().map(c => c.cat))];
 
@@ -1329,11 +1505,11 @@ Hvordan vil du ha håret?|Какую причёску вы хотите?|Раб�
 
         /* Список обновляем точечно, чтобы не сбрасывать клавиатуру и прокрутку */
         function listHtml() {
-            const all = cards().filter(c => (chap === '' || String(chOf(c)) === chap) && (!q || (c.no + c.ru).toLowerCase().includes(q.toLowerCase())));
+            const all = cards().filter(c => (chap === '' || String(chOf(c)) === chap) && (!q || (c.no + c.ru + loc(c) + (CHAPTERS[chOf(c)] || '')).toLowerCase().includes(q.toLowerCase())));
             return all.map(c => `
                 <div class="item">
                     <span class="dot ${S.st[c.id] || ''}"></span>
-                    <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small></div>
+                    <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small><small class="loc">${esc(loc(c))}</small></div>
                     <button class="sm ok" aria-label="Знаю" onclick="setSt('${c.id}','k')">${ic('check')}</button>
                     <button class="sm no" aria-label="Не знаю" onclick="setSt('${c.id}','u')">${ic('x')}</button>
                     <button class="sm ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : ic('trash')}</button>
@@ -1517,9 +1693,10 @@ Hvordan vil du ha håret?|Какую причёску вы хотите?|Раб�
             } else if (tab === 'add') {
                 h += `
                 <label>По-норвежски</label>
-                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next">
+                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup()">
                 <label>Перевод</label>
-                <input id="a-ru" autocomplete="off" enterkeyhint="next">
+                <input id="a-ru" autocomplete="off" enterkeyhint="next" oninput="chkDup()">
+                <div id="dup"></div>
                 <label>Тема</label>
                 <input id="a-cat" value="Мои слова" autocomplete="off" enterkeyhint="next">
                 <div class="chips">${cats().map(c => `<button type="button" class="chip" data-v="${esc(c)}" onclick="pickChip(this)">${esc(c)}</button>`).join('')}</div>
@@ -1590,6 +1767,13 @@ Hvordan vil du ha håret?|Какую причёску вы хотите?|Раб�
         function add() {
             const no = $('a-no').value.trim(), ru = $('a-ru').value.trim();
             if (!no || !ru) { msg = 'Заполните оба поля'; render(); return; }
+            const d = findDup(no, ru), key = norm(no) + '|' + ru.toLowerCase();
+            if (d.exact.length && dupArm !== key) {
+                dupArm = key;
+                msg = 'Это слово уже есть (' + loc(d.exact[0]) + '). Нажмите ещё раз, если всё равно хотите добавить.';
+                render(); $('a-no').value = no; $('a-ru').value = ru; chkDup(); dupArm = key; return;
+            }
+            dupArm = '';
             S.cu.push({ id: 'c' + Date.now(), no, ru, cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim(), ch: +chap || 0 });
             save();
             msg = ic('check') + ' Добавлено! Всего карточек: ' + cards().length;
