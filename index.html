@@ -67,6 +67,7 @@ select, input { padding: 12px 16px; border-radius: 16px; width: 100%; outline: 0
 select option { color: #123; }
 input::placeholder { color: var(--mut); }
 input[type="color"] { padding: 4px; height: 44px; cursor: pointer; }
+input[type="file"] { padding: 10px; font-size: 14px; }
 
 .ib { padding: 12px 16px; border-radius: 16px; cursor: pointer; flex: 1; text-align: center; }
 .stats { display: flex; gap: 12px; font-size: 13px; color: var(--mut); margin: 4px 2px 12px; flex-wrap: wrap; justify-content: center;}
@@ -134,7 +135,7 @@ if (tg) { tg.expand(); }
 const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : 'guest';
 const LS_KEY = 'nk_data_' + userId;
 
-// --- Полная база карточек ---
+// --- База карточек (из изначального кода) ---
 const RAW=`stå opp|вставать|Глаголы|Jeg står opp klokka sju.
 kle på seg|одеваться|Глаголы|Han kler på seg klokka halv sju.
 begynne|начинать|Глаголы|Han begynner på jobb klokka åtte.
@@ -156,85 +157,7 @@ servere|подавать (еду)|Глаголы|Jeg liker å servere god mat.
 trene|тренироваться|Глаголы|Jeg pleier å trene.
 sykle|ездить на велосипеде|Глаголы|Jeg sykler ofte.
 jogge|бегать трусцой|Глаголы|Jeg pleier å jogge i skogen.
-le|смеяться|Глаголы|Håvard og Bjørnar ler.
-kvart over|четверть после (6:15)|Время|Bjørnar står opp kvart over seks.
-kvart på|без четверти (7:45)|Время|Kvart på åtte leverer jeg barna.
-halv sju|6:30 (половина седьмого)|Время|Han kler på seg klokka halv sju.
-halv fem|4:30|Время|Bjørnar lager middag klokka halv fem.
-halv elleve|10:30|Время|Han legger seg klokka halv elleve.
-klokka åtte|в восемь часов|Время|Han begynner på jobb klokka åtte.
-om morgenen|утром (06–09)|Время|Jeg står opp tidlig om morgenen.
-om formiddagen|до полудня (09–12)|Время|Jeg går på norskkurs om formiddagen.
-om ettermiddagen|после полудня (12–18)|Время|
-om kvelden|вечером (18–24)|Время|Jeg jobber om kvelden.
-om natta|ночью (00–06)|Время|
-et døgn|сутки (24 часа)|Время|Et døgn = 24 timer.
-først – så – etterpå – til slutt|сначала – потом – после – в конце|Время|Først dusjer jeg. Så kler jeg på meg.
-tidlig|рано|Время|Jeg står opp tidlig.
-etterpå|потом, после этого|Время|Etterpå spiser vi frokost.
-til slutt|в конце, наконец|Время|Til slutt pusser han tennene.
-en frokost|завтрак|Еда и кафе|Klokka sju spiser han frokost.
-en lunsj|обед (около 12:00)|Еда и кафе|Klokka tolv spiser han lunsj.
-en middag|ужин, основной приём пищи|Еда и кафе|Jeg spiser middag klokka fem.
-en kveldsmat|поздний ужин|Еда и кафе|Klokka ni spiser han kveldsmat.
-ei/en matpakke|завтрак с собой|Еда и кафе|
-ei/en fiskesuppe|рыбный суп|Еда и кафе|Vi har ei nydelig fiskesuppe.
-ei/en tomatsuppe|томатный суп|Еда и кафе|Jeg har lyst på tomatsuppe.
-ei/en mugge|кувшин|Еда и кафе|Jeg kan hente ei mugge med vann.
-en kopp kaffe|чашка кофе|Еда и кафе|Jeg vil ha en kopp kaffe.
-en kopp te|чашка чая|Еда и кафе|Jeg tar en kopp te.
-en vaffel|вафля|Еда и кафе|
-en cola|кола|Еда и кафе|Et glass cola.
-ei/en sjokoladekake|шоколадный торт|Еда и кафе|
-en hamburger|гамбургер|Еда и кафе|Jeg tar en hamburger.
-en meny|меню|Еда и кафе|De leser menyen.
-en servitør|официант (= en kelner)|Еда и кафе|Servitøren kommer.
-en kokk|повар|Еда и кафе|En kokk lager maten.
-en gjest|гость, клиент|Еда и кафе|Gjestene bestiller mat.
-en restaurant|ресторан|Еда и кафе|Jeg jobber på en restaurant.
-et kjøkken|кухня|Еда и кафе|Jeg leverer bestillingen til kjøkkenet.
-god mat|вкусная еда|Еда и кафе|
-sulten|голодный|Еда и кафе|Jeg er veldig sulten.
-tørst|жаждущий|Еда и кафе|Jeg er så tørst.
-nydelig|прекрасный, очень вкусный|Еда и кафе|
-ha lyst på|хотеть (что-то конкретное)|Еда и кафе|Hva har du lyst på?
-være glad i|любить|Еда и кафе|Jeg er ikke så glad i fisk.
-uten|без|Еда и кафе|Kaffe uten melk.
-ledig|свободный|Еда и кафе|Har du et ledig bord?
-Takk, det går bra. Og med deg?|Спасибо, хорошо. А у тебя?|Общение|
-Lenge siden sist!|Давно не виделись!|Общение|
-Så hyggelig å høre.|Приятно слышать.|Общение|
-Jeg må skynde meg.|Мне надо спешить.|Общение|
-Vi snakkes.|Ещё поговорим / Созвонимся.|Общение|Vi snakkes til helga.
-Jeg gleder meg.|Я жду этого с нетерпением.|Общение|
-Ha det bra! / Ha det!|Всего доброго! / Пока!|Общение|
-Det er travelt.|Много дел, суматоха.|Общение|
-ha mye å gjøre|иметь много дел|Общение|Jeg har mye å gjøre.
-ha dårlig tid|мало времени|Общение|Jeg har dårlig tid.
-ha god tid|иметь достаточно времени|Общение|Jeg liker å ha god tid om morgenen.
-ta en kaffe|выпить кофе (вместе)|Общение|Skal vi ta en kaffe til helga?
-ei/en helg|выходные|Общение|
-i helga / til helga|в выходные / к выходным|Общение|
-av og til|иногда (= noen ganger)|Общение|Av og til spiser jeg frokost på kafé.
-ofte|часто|Общение|
-slitsomt|утомительно, хлопотно|Общение|Det er slitsomt å være lærer.
-aktiv|активный|Общение|Så aktiv du er!
-trøtt|уставший, хочется спать|Общение|Jeg er trøtt om kvelden.
-annenhver uke|каждую вторую неделю|Общение|Jeg har barna annenhver uke.
-hos|у (в гостях, дома у)|Общение|Hjemme hos Bjørnar.
-folk|люди|Общение|Det er mye folk.
-en nyhet / se på nyheter|новость / смотреть новости|Общение|Han ser på nyheter.
-en fjelltur / gå på fjelltur|поход в горы / идти в поход|Общение|Noen ganger går jeg på fjelltur.
-en skog|лес|Общение|Jeg jogger i skogen.
-en mage|живот|Общение|
-pleier å + inf.|обычно (делаю), имею привычку|Грамматика|Når pleier du å stå opp? – Jeg pleier å stå opp klokka sju.
-liker å, elsker å, ønsker å, begynner å, slutter å, prøver å|инфинитив С «å» после этих глаголов|Грамматика|Jeg liker å lese.
-skal, må, vil, kan, bør|модальные глаголы: инфинитив БЕЗ «å»|Грамматика|Jeg må gjøre lekser.
-Рефлексив: jeg–meg, du–deg, han/hun–seg, vi–oss, dere–dere, de–seg|возвратные местоимения|Грамматика|Han koser seg. De koser seg.
-Han vasker seg. / Han vasker ham.|умывает себя / умывает его (другого)|Грамматика|«seg» — если подлежащее и дополнение один человек.
-og / men|«и» соединяет, «но» — контраст|Грамматика|Jeg jobber ikke nå, men jeg ønsker å finne en jobb.
-Существительные на -er (en lærer)|мн.ч.: lærere, определённая: læreren / lærerne|Грамматика|en samboer – samboeren – samboere – samboerne
-Произношение: æi|ei и eg часто читаются как «æi»|Грамматика|hei, nei, jeg, seg, meg, pleier`;
+le|смеяться|Глаголы|Håvard og Bjørnar ler.`;
 
 const hid = s => { let h=5381; for(const ch of s) h=(h*33^ch.charCodeAt(0))>>>0; return 'b'+h.toString(36); };
 const BASE = RAW.trim().split('\n').map((l,i) => { 
@@ -269,6 +192,7 @@ function hexToRgb(hex) {
 
 function applyTheme() {
   const root = document.documentElement;
+  // Конвертируем HEX в RGB для стеклянного эффекта
   root.style.setProperty('--card-rgb', hexToRgb(S.theme.cardColor));
   
   if (S.theme.bgColor) document.body.style.backgroundColor = S.theme.bgColor;
@@ -308,7 +232,7 @@ function handleImageUpload(e) {
       canvas.width = width; canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Сжимаем JPEG до 60% качества
       S.theme.bgImg = dataUrl;
       save(); applyTheme(); render();
     };
@@ -378,19 +302,21 @@ function render() {
     <button class="pri" onclick="add()">Добавить в колоду</button><div class="msg">${msg}</div>`;
   }
   else if (tab === 'set') {
-    h += `<div class="empty" style="padding:10px">Настройки внешнего вида</div>
+    h += `<div class="empty" style="padding:10px">Настройки оформления (сохраняются для профиля Telegram)</div>
     
-    <label>🎨 Цвет карточек (эффект стекла сохранится)</label>
+    <label>🎨 Цвет элементов и карточек</label>
     <input type="color" value="${S.theme.cardColor}" onchange="S.theme.cardColor=this.value; save(); applyTheme();">
     
-    <label>🖌 Цвет фона (смешивается с картинкой)</label>
+    <label>🎨 Сплошной цвет фона (если нет картинки)</label>
     <input type="color" value="${S.theme.bgColor}" onchange="S.theme.bgColor=this.value; save(); applyTheme();">
     
-    <label>📸 Фоновое изображение</label>
-    <input type="file" accept="image/*" id="bg-upload" style="display:none">
-    <label for="bg-upload" class="pri" style="text-align:center; display:block; background:rgba(255,255,255,.15); font-weight:600; margin-top:8px;">Выбрать фото с устройства</label>
+    <label>🖼 Фоновое изображение (URL)</label>
+    <input type="text" placeholder="https://..." value="${S.theme.bgImg.length < 200 ? esc(S.theme.bgImg) : ''}" onchange="S.theme.bgImg=this.value; save(); applyTheme();">
     
-    <button class="pri" style="margin-top:24px; background:rgba(255,100,100,.3)" onclick="S.theme={cardColor:'#ffffff', bgColor:'#1e7fd8', bgImg:'bg.jpg'}; save(); applyTheme(); render();">Сбросить всё по умолчанию</button>`;
+    <label>📂 Или загрузить фото со смартфона</label>
+    <input type="file" accept="image/*" id="bg-upload">
+    
+    <button class="pri" style="margin-top:24px; background:rgba(255,100,100,.3)" onclick="S.theme={cardColor:'#ffffff', bgColor:'#1e7fd8', bgImg:'bg.jpg'}; save(); applyTheme(); render();">Сбросить оформление</button>`;
   }
 
   $('v').innerHTML = h;
