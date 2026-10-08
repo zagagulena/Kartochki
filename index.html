@@ -606,7 +606,11 @@
         .gm-q.bad { background: linear-gradient(135deg, rgba(255, 107, 129, .7), rgba(255, 107, 129, .3)); animation: gmShake .4s; }
         .gm-l { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--cmut); }
         .gm-w { font-size: 31px; font-weight: 800; line-height: 1.2; margin-top: 8px; overflow-wrap: anywhere; }
-        .gm-w.sm { font-size: 25px; margin-top: 4px; }
+        .gm-w.alt { font-size: 25px; margin-top: 4px; }
+        .gm-w.l1 { font-size: 24px; }
+        .gm-w.l2 { font-size: 19px; line-height: 1.25; }
+        .gm-w.alt.l1 { font-size: 20px; }
+        .gm-w.alt.l2 { font-size: 16px; }
         .gm-eq { font-size: 22px; font-weight: 800; color: var(--cmut); margin-top: 6px; }
         .gm-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--mut); margin: 0 0 10px; }
         .gm-opts { display: grid; gap: 10px; }
@@ -2183,6 +2187,7 @@ liten|маленький|Прилагательные|Har du den i liten større
         const G_NEED = { quiz: 4, pairs: 6, build: 5, blitz: 4 };
         const G_BEST = { quiz: v => v + ' из 10', pairs: v => 'ошибок: ' + v, build: v => v + ' из 8', blitz: v => v + ' верных' };
 
+        const gmCls = t => t.length > 60 ? ' l2' : t.length > 28 ? ' l1' : '';   // длинный текст — мельче, чтобы кнопки не уезжали вниз
         const rnd = n => Math.random() * n | 0;
         const shuffled = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = rnd(k + 1);[a[k], a[j]] = [a[j], a[k]]; } return a; };
         const gPool = () => cards().filter(c => c.no && c.ru && (!cat || c.cat === cat) && (chap === '' || String(chOf(c)) === chap));
@@ -2306,7 +2311,7 @@ liten|маленький|Прилагательные|Har du den i liten større
             }).join('');
             const body = `
                 <div class="gm-q"><div class="gm-l">Вопрос ${g.n + 1} из ${g.total} · ${q.dir ? 'Как по-норвежски?' : 'Что это значит?'}</div>
-                    <div class="gm-w">${esc(q.dir ? c.ru : c.no)}</div></div>
+                    <div class="gm-w${gmCls(q.dir ? c.ru : c.no)}">${esc(q.dir ? c.ru : c.no)}</div></div>
                 <div class="gm-opts">${opts}</div>
                 ${done && !q.opts[q.pick].ok ? `<button class="pri" onclick="quizNext()">Дальше</button>` : ''}`;
             return gShell(body, (g.n + (done ? 1 : 0)) / g.total * 100, g.score);
@@ -2375,7 +2380,7 @@ liten|маленький|Прилагательные|Har du den i liten større
                 : q.res === 'skip' ? `<button class="pri" onclick="bNext()">Дальше</button>` : '';
             const body = `
                 <div class="gm-q"><div class="gm-l">Слово ${g.n + 1} из ${g.total} · Собери по-норвежски</div>
-                    <div class="gm-w">${esc(c.ru)}</div></div>
+                    <div class="gm-w${gmCls(c.ru)}">${esc(c.ru)}</div></div>
                 <div class="gm-slots">${slots}</div>
                 <div class="gm-tiles">${tiles}</div>
                 ${tools}`;
@@ -2467,9 +2472,9 @@ liten|маленький|Прилагательные|Har du den i liten større
             const body = `
                 <div class="gm-lives">${lives}<span class="gm-time" id="gm-time">${Math.ceil(rem / 1000)} c</span></div>
                 <div class="gm-q ${q.res === true ? 'ok' : q.res === false ? 'bad' : ''}">
-                    <div class="gm-w">${esc(c.no)}</div>
+                    <div class="gm-w${gmCls(c.no)}">${esc(c.no)}</div>
                     <div class="gm-eq">=</div>
-                    <div class="gm-w sm">${esc(q.ru)}</div>
+                    <div class="gm-w alt${gmCls(q.ru)}">${esc(q.ru)}</div>
                 </div>
                 <div class="gm-tf">
                     <button class="gm-no" ${dis} onclick="blitzAns(false)">${ic('x')} Неверно</button>
