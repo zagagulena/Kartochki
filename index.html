@@ -5547,21 +5547,29 @@ færre|меньше (о числе)`;
             return out.sort((a, b) => exScore(a.t) - exScore(b.t)).slice(0, 4);
         }
         /* Простые грамматически верные предложения — запасной вариант, если ничего больше не нашлось */
-        function tmplEx(base, ru) {
-            const b = base.trim();
-            if (!b) return '';
-            if (/^å /i.test(b)) return b.length > 3 ? 'Jeg vil ' + b.slice(2).trim() + '.' : '';
-            const m = b.match(/^(en|ei|et)(?:\/(?:en|ei|et))? (.+)$/i);
-            if (m) {
-                const art = m[1].toLowerCase(), form = art + ' ' + m[2];
-                return art === 'et' ? 'Jeg ser ' + form + '.' : art === 'ei' ? 'Her er ' + form + '.' : 'Det er ' + form + '.';
+        function tmplList(base, ru) {
+            const b = base.trim(), out = [];
+            if (!b) return out;
+            if (/^å /i.test(b)) {
+                const v = b.slice(2).trim();
+                if (v.length > 1) out.push('Jeg vil ' + v + '.', 'Kan du ' + v + '?', 'Vi skal ' + v + ' i morgen.', 'Hun pleier å ' + v + '.');
+                return out;
             }
+            const m = b.match(/^(en|ei|et)(?:\/(?:en|ei|et))? (.+)$/i);
+            const noun = (art, w) => art === 'et'
+                ? ['Jeg ser et ' + w + '.', 'Jeg har et ' + w + '.', 'Har du et ' + w + '?', 'Jeg trenger et ' + w + '.']
+                : ['Det er en ' + w + '.', 'Jeg har en ' + w + '.', 'Har du en ' + w + '?', 'Jeg trenger en ' + w + '.'];
+            if (m) return noun(m[1].toLowerCase(), m[2]);
             const r1 = String(ru || '').split(/[,;(]/)[0].trim().toLowerCase();
-            if (!/\s/.test(b) && /(ый|ий|ой|ая|ое|яя|ее)$/.test(r1) && !/^[A-ZÆØÅ]/.test(b)) return 'Han er ' + b + '.';   // прилагательное
-            if (/^[A-ZÆØÅ]/.test(b)) return 'Jeg vil gjerne se ' + b + '.';
-            if (!/\s/.test(b)) { const g = nounGender(b); if (g) return g === 'et' ? 'Jeg ser et ' + b + '.' : 'Det er en ' + b + '.'; }                                              // название места
-            return 'Hva betyr «' + b + '»?';
+            if (/^[A-ZÆØÅ]/.test(b)) return ['Jeg vil gjerne se ' + b + '.', 'Jeg har aldri vært i ' + b + '.', 'Hva vet du om ' + b + '?'];
+            if (!/\s/.test(b)) {
+                if (/(ый|ий|ой|ая|ое|яя|ее)$/.test(r1)) return ['Han er ' + b + '.', 'Hun er ' + b + '.', 'Jeg er ' + b + '.'];   // прилагательное
+                const g = nounGender(b);
+                if (g) return noun(g, b);
+            }
+            return ['Hva betyr «' + b + '»?', 'Jeg kan ikke ordet «' + b + '».', 'Kan du forklare ordet «' + b + '»?'];
         }
+
         /* Род существительного для шаблона: берём у известного слова, которым оканчивается составное слово (takstein → stein),
            либо по надёжным окончаниям (-sjon, -ning, -het …) */
         let NGEN = null;
@@ -5586,7 +5594,7 @@ færre|меньше (о числе)`;
             if (NETC.has(key)) return NETC.get(key);
             let j = null;
             try {
-                const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 6000);
+                const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4500);
                 const r = await fetch(url, { signal: ctl.signal });
                 clearTimeout(t);
                 j = await r.json();
@@ -5609,7 +5617,7 @@ færre|меньше (о числе)`;
             const e = AE && AE.list[i], ex = $('a-ex');
             if (!e || !ex) return;
             AE.i = i; ex.value = e.t; ex.dataset.m = '';
-            aeBox(`<div class="lk-ok">${ic('sparkles')} Автопример · ${AE_SRC[e.src]}${e.ru ? '<br><i>' + esc(e.ru) + '</i>' : ''}</div><div class="chips"><button type="button" class="chip" onclick="exNext()">${ic('shuffle')} Другой пример</button></div>`);
+            aeBox(`<div class="lk-ok">${ic('sparkles')} Пример ${i + 1} из ${AE.list.length} · ${AE_SRC[e.src]}${e.ru ? '<br><i>' + esc(e.ru) + '</i>' : ''}</div><div class="chips"><button type="button" class="chip" onclick="exNext()">${ic('shuffle')} Другой пример</button></div>`);
         }
         const aePick = (arr, src) => arr.filter(x => x.t.length >= 10 && x.t.length <= 90 && !AE.list.some(y => y.t === x.t) && exHas(x.t, AE.words, AE.forms))
             .sort((a, b) => (!b.ru - !a.ru) || exScore(a.t) - exScore(b.t)).slice(0, 4).map(x => ({ t: x.t, ru: x.ru, src }));
@@ -5618,12 +5626,12 @@ færre|меньше (о числе)`;
             AE.onl = true;
             const key = AE.key;
             if (navigator.onLine !== false) {
-                AE.list.push(...aePick(await tatoeba(AE.q), 'web'));
+                const [a, b] = await Promise.all([tatoeba(AE.q), memEx(AE.q)]);
                 if (!AE || AE.key !== key) return;
-                if (AE.list.length < 2) { AE.list.push(...aePick(await memEx(AE.q), 'web2')); if (!AE || AE.key !== key) return; }
+                AE.list.push(...aePick(a, 'web'));
+                if (AE.list.length < 3) AE.list.push(...aePick(b, 'web2'));
             }
-            const tm = tmplEx(AE.base, AE.ru);
-            if (tm && !AE.list.some(y => y.t === tm)) AE.list.push({ t: tm, src: 'tmpl' });
+            tmplList(AE.base, AE.ru).forEach(t => { if (!AE.list.some(y => y.t === t)) AE.list.push({ t, src: 'tmpl' }); });
         }
         async function autoEx() {
             const ex = $('a-ex'), no = $('a-no');
@@ -5647,8 +5655,13 @@ færre|меньше (о числе)`;
         }
         async function exNext() {
             if (!AE) return;
-            if (AE.i + 1 >= AE.list.length && !AE.onl) { aeBox('<div class="lk-st">Ищу ещё…</div>'); const key = AE.key; await aeMore(); if (!AE || AE.key !== key) return; }
-            if (!AE.list.length) { aeBox('<div class="lk-st">Больше примеров нет — можно написать свой.</div>'); return; }
+            if (!AE.onl) {
+                aeBox('<div class="lk-st">Ищу ещё примеры…</div>');
+                const key = AE.key; await aeMore();
+                if (!AE || AE.key !== key) return;
+                if (AE.i + 1 < AE.list.length) { aeApply(AE.i + 1); return; }
+            }
+            if (AE.list.length < 2) { aeApply(0); aeBox($('aex').innerHTML + '<div class="lk-st">Других вариантов для этого слова нет — можно написать свой.</div>'); return; }
             aeApply((AE.i + 1) % AE.list.length);
         }
 
