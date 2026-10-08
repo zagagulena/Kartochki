@@ -598,6 +598,107 @@
             nav button { font-size: 14px; }
         }
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .opt { animation: none; opacity: 1; } .drop { display: none; } .rw-i, .streak.pop { animation: none; } }
+
+        /* ===== Транскрипция, список и поиск ===== */
+        .card .tr { margin-top: 8px; font-size: 21px; font-weight: 600; color: var(--cmut); letter-spacing: .01em; }
+        .item { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 14px 12px 16px; }
+        .it-main { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+        .it-main .dot { margin: 9px 0 0; }
+        .it-main .t { flex: 1; min-width: 0; font-weight: 400; }
+        .w-no { font-size: 21px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+        .w-tr { font-size: 15px; font-weight: 600; color: var(--cmut); margin-top: 3px; overflow-wrap: anywhere; }
+        .w-ru { font-size: 17px; font-weight: 600; line-height: 1.3; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bd); overflow-wrap: anywhere; }
+        .it-act { display: flex; align-items: center; gap: 8px; }
+        .it-act .loc { flex: 1; min-width: 0; font-size: 12px; font-weight: 600; color: var(--cmut); opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        mark.hl { background: rgba(255, 214, 102, .6); color: inherit; border-radius: 5px; padding: 0 2px; text-shadow: none; }
+        .found { text-align: center; font-size: 14px; font-weight: 600; color: var(--mut); margin: 2px 0 12px; }
+        .row .pick + .pick { margin-top: 0; }
+
+        /* ===== Игры ===== */
+        nav button { padding: 0 3px; }
+        nav button#t-settings { flex: 0 0 52px; }
+        @media (max-width: 420px) { nav button { font-size: 13.5px; } }
+        .gm-mas { display: flex; align-items: center; gap: 12px; margin: 4px 0 12px; }
+        .gm-m { width: 92px; flex: none; }
+        .gm-m svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .gm-m.big { width: 170px; margin: 0 auto; }
+        .gm-m.hop { animation: gmHop .6s cubic-bezier(.2, 1.2, .4, 1); }
+        .gm-m.wob { animation: gmWob .5s ease; }
+        @keyframes gmHop { 0% { transform: none; } 35% { transform: translateY(-18px) scale(1.05); } 70% { transform: translateY(0) scale(.97); } 100% { transform: none; } }
+        @keyframes gmWob { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-7deg); } 75% { transform: rotate(7deg); } }
+        .gm-say { flex: 1; min-width: 0; padding: 12px 16px; border-radius: 20px; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); line-height: 1.3; }
+        .gm-say b { display: block; font-size: 18px; font-weight: 800; }
+        .gm-say small { display: block; font-size: 14px; font-weight: 500; color: var(--cmut); margin-top: 3px; overflow-wrap: anywhere; }
+        .gm-grid { display: grid; gap: 12px; margin-top: 6px; }
+        .gm-tile { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 78px; padding: 14px 16px; border-radius: 24px; text-align: left; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); transition: transform .12s; }
+        .gm-tile:active { transform: scale(.98); }
+        .gm-ti { flex: none; width: 50px; height: 50px; border-radius: 17px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, .24); }
+        .gm-ti .i { width: 27px; height: 27px; }
+        .gm-tt { flex: 1; min-width: 0; }
+        .gm-tt b { display: block; font-size: 18px; font-weight: 800; }
+        .gm-tt small { display: block; font-size: 14px; font-weight: 500; color: var(--cmut); margin-top: 2px; line-height: 1.3; }
+        .gm-tt em { display: block; font-style: normal; font-size: 13px; font-weight: 700; color: var(--cmut); margin-top: 4px; }
+        .gm-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .gm-x { flex: none; width: 46px; min-height: 46px; padding: 0; border-radius: 15px; }
+        .gm-bar { flex: 1; height: 12px; border-radius: 99px; background: rgba(255, 255, 255, .22); border: 1px solid var(--bd); overflow: hidden; }
+        .gm-bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--ok), #9af0c9); transition: width .35s ease; }
+        .gm-bar.warn i { background: linear-gradient(90deg, var(--no), #ffd49a); }
+        .gm-sc { flex: none; min-width: 46px; text-align: center; font-size: 18px; font-weight: 800; }
+        .gm-q { text-align: center; padding: 20px 16px; margin: 6px 0 14px; border-radius: 26px; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); }
+        .gm-q.ok { background: linear-gradient(135deg, rgba(76, 217, 160, .7), rgba(76, 217, 160, .3)); }
+        .gm-q.bad { background: linear-gradient(135deg, rgba(255, 107, 129, .7), rgba(255, 107, 129, .3)); animation: gmShake .4s; }
+        .gm-l { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--cmut); }
+        .gm-w { font-size: 31px; font-weight: 800; line-height: 1.2; margin-top: 8px; overflow-wrap: anywhere; }
+        .gm-w.sm { font-size: 25px; margin-top: 4px; }
+        .gm-t { font-size: 19px; font-weight: 600; color: var(--cmut); margin-top: 6px; overflow-wrap: anywhere; }
+        .gm-eq { font-size: 22px; font-weight: 800; color: var(--cmut); margin-top: 6px; }
+        .gm-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--mut); margin: 0 0 10px; }
+        .gm-opts { display: grid; gap: 10px; }
+        .gm-opt:disabled, .gm-p:disabled { color: var(--ctx); }
+        .gm-opt { min-height: 62px; padding: 10px 16px; border-radius: 20px; font-size: 18px; font-weight: 650; line-height: 1.25; text-align: center; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); transition: transform .1s, opacity .2s; overflow-wrap: anywhere; }
+        .gm-opt small { display: block; font-size: 13px; font-weight: 500; color: var(--cmut); margin-top: 2px; }
+        .gm-opt:active { transform: scale(.98); }
+        .gm-opt.ok, .gm-p.ok, .gm-slot.ok { background: linear-gradient(135deg, rgba(76, 217, 160, .8), rgba(76, 217, 160, .4)); border-color: rgba(76, 217, 160, .95); color: #fff; }
+        .gm-opt.bad, .gm-p.bad, .gm-slot.bad { background: linear-gradient(135deg, rgba(255, 107, 129, .8), rgba(255, 107, 129, .4)); border-color: rgba(255, 107, 129, .95); color: #fff; animation: gmShake .4s; }
+        .gm-opt.ok small, .gm-opt.bad small { color: rgba(255, 255, 255, .85); }
+        .gm-opt.dim { opacity: .5; }
+        @keyframes gmShake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+        .gm-pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .gm-col { display: grid; gap: 10px; align-content: start; }
+        .gm-p { min-height: 66px; padding: 8px 10px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 16px; font-weight: 700; line-height: 1.2; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); overflow-wrap: anywhere; transition: transform .1s, opacity .25s; }
+        .gm-p small { font-size: 12px; font-weight: 500; color: var(--cmut); margin-top: 3px; }
+        .gm-p:active { transform: scale(.97); }
+        .gm-p.sel { outline: 3px solid #fff; outline-offset: -2px; background: rgba(255, 255, 255, .32); }
+        .gm-p.ok { opacity: .55; pointer-events: none; }
+        .gm-slots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 18px; }
+        .gm-slot { flex: 0 0 auto; width: clamp(28px, 9vw, 42px); height: 50px; padding: 0; border-radius: 12px; font-size: 24px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ctx); background: rgba(255, 255, 255, .1); border: 2px dashed var(--bd); }
+        .gm-slot.f { border-style: solid; background: var(--glass); }
+        .gm-slot.lk { box-shadow: 0 0 0 3px rgba(255, 176, 77, .75); }
+        .gm-slot.rv { background: linear-gradient(135deg, rgba(255, 176, 77, .8), rgba(255, 176, 77, .4)); border-style: solid; color: #fff; }
+        .gm-slot.sp { width: 16px; border: 0; background: none; pointer-events: none; }
+        .gm-tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .gm-lt { width: 52px; height: 58px; padding: 0; border-radius: 15px; font-size: 26px; font-weight: 800; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); transition: transform .1s, opacity .2s; }
+        .gm-lt:active { transform: scale(.93); }
+        .gm-lt.used { opacity: .22; pointer-events: none; }
+        .gm-tools { display: flex; gap: 10px; margin-top: 16px; }
+        .gm-tools .pri { margin-top: 0; min-height: 52px; font-size: 15px; }
+        .gm-lives { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px; }
+        .gm-lives svg.lost { opacity: .25; filter: grayscale(1); }
+        .gm-time { margin-left: 10px; font-size: 18px; font-weight: 800; }
+        .gm-tf { display: flex; gap: 12px; }
+        .gm-tf button { flex: 1; min-height: 66px; border-radius: 22px; font-size: 18px; font-weight: 800; color: #fff; cursor: pointer; border: 1px solid var(--bd); box-shadow: var(--edge); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); transition: transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .gm-tf button:active { transform: scale(.96); }
+        .gm-tf button:disabled { opacity: .5; }
+        .gm-tf .i { width: 24px; height: 24px; stroke-width: 2.8; }
+        .gm-yes { background: linear-gradient(135deg, rgba(76, 217, 160, .8), rgba(76, 217, 160, .35)); }
+        .gm-no { background: linear-gradient(135deg, rgba(255, 176, 77, .8), rgba(255, 176, 77, .35)); }
+        .gm-end { text-align: center; padding: 6px 0; }
+        .gm-end h2 { margin: 8px 0 4px; font-size: 26px; }
+        .gm-end p { margin: 0 0 8px; font-size: 17px; font-weight: 600; color: var(--mut); }
+        .gm-stars { display: flex; justify-content: center; gap: 6px; margin-top: 6px; }
+        .gm-stars .i { width: 46px; height: 46px; fill: none; stroke: rgba(255, 255, 255, .55); stroke-width: 1.6; }
+        .gm-stars .on .i { fill: #ffd36b; stroke: #fff; }
+        @media (prefers-reduced-motion: reduce) { .gm-m.hop, .gm-m.wob, .gm-opt.bad, .gm-p.bad, .gm-q.bad { animation: none; } }
     </style>
 </head>
 <body>
@@ -633,6 +734,7 @@
         <button id="t-study" onclick="go('study')">Учить</button>
         <button id="t-list" onclick="go('list')">Список</button>
         <button id="t-add" onclick="go('add')">Добавить</button>
+        <button id="t-games" onclick="go('games')">Игры</button>
         <button id="t-settings" onclick="go('settings')" title="Настройки" aria-label="Настройки"></button>
     </nav>
 
@@ -1358,6 +1460,96 @@ liten|маленький|Прилагательные|Har du den i liten større
         const cards = () => BASE.concat(S.cu).filter(c => !S.del.includes(c.id));
         const cats = () => [...new Set(cards().map(c => c.cat))];
 
+        /* ---------- Транскрипция русскими буквами (приблизительная, по правилам чтения) ---------- */
+        const TR_EXC = {
+            jeg: 'яй', meg: 'мэй', deg: 'дэй', seg: 'сэй', eg: 'эй', og: 'о', 'å': 'о', 'på': 'по', er: 'эр',
+            det: 'дэ', de: 'ди', dem: 'дэм', den: 'дэн', du: 'дю', han: 'хан', hun: 'хюн', vi: 'ви', dere: "дэ'рэ",
+            ja: 'я', til: 'тил', for: 'фор', fra: 'фра', som: 'сом', at: 'ат', av: 'ав', ved: 'вэ', med: 'мэ', om: 'ом', men: 'мэн', ut: 'ют',
+            en: 'эн', ei: 'эй', et: 'эт', ett: 'этт', to: 'ту', tre: 'трэ', fire: "фи'рэ", fem: 'фэм', seks: 'сэкс', sju: 'шю',
+            'åtte': "о'ттэ", ni: 'ни', ti: 'ти', elleve: "э'лльвэ", tolv: 'толь', tjue: "щю'э", tretti: "тре'тти", hundre: "хю'ндрэ", tusen: "тю'сэн",
+            god: 'гу', godt: 'гот', bra: 'бра', hva: 'ва', hvor: 'вур', hvem: 'вэм', hvordan: "во'рдан", hvorfor: "во'рфур", hvilken: "ви'лькэн", 'når': 'нор',
+            'også': "о'ссо", mye: "мӱ'э", noe: "ну'э", hjem: 'йэм', hjemme: "йэ'ммэ", hjelp: 'йэльп', hjelpe: "йэ'льпэ", gi: 'йи',
+            gitar: "гита'р", 'kafé': "кафэ'", mange: "ма'нгэ", ingen: "и'нгэн", 'være': "вэ'рэ", 'været': "вэ'рэ", 'vær': 'вэр',
+            'ønske': "ӧ'нскэ", 'norsk': 'ношк', norge: "но'ргэ", 'først': 'фӧшт', 'tirsdag': "ти'шдаг", 'torsdag': "ту'шдаг", 'onsdag': "у'нсдаг"
+        };
+        const TR_PRE = ['begynn', 'bestill', 'besøk', 'betal', 'bety', 'beskriv', 'behold', 'behøv', 'beveg', 'bestem', 'beundr', 'belønn', 'bekymr', 'benytt', 'bestå',
+            'forstå', 'forstår', 'forklar', 'fortell', 'forlat', 'forand', 'forsøk', 'forsvinn', 'forelsk', 'forbered', 'forsikr', 'forstyrr', 'forlen', 'fornøy', 'forsink', 'forsikt', 'forferd', 'forbi'];
+        const TR_V = 'aeiouyæøåé';
+        const TR_C = { b: 'б', c: 'к', d: 'д', f: 'ф', g: 'г', h: 'х', j: 'й', k: 'к', l: 'л', m: 'м', n: 'н', p: 'п', q: 'к', r: 'р', s: 'с', t: 'т', v: 'в', w: 'в', x: 'кс', z: 'с' };
+        const TR_VW = { a: 'а', e: 'э', i: 'и', u: 'ю', y: 'ӱ', 'æ': 'э', 'ø': 'ӧ', 'å': 'о', 'é': 'э' };
+        const TR_ACC = '\u0301';
+
+        function trWord(w0) {
+            let w = w0.toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(TR_EXC, w)) return TR_EXC[w].replace(/'/g, TR_ACC);
+            const orig = w;
+            let tail = '';
+            if (w.length > 3 && w.endsWith('ig')) { w = w.slice(0, -2); tail = 'и'; }
+            else if (w.length > 3 && /[nl]d$/.test(w)) w = w.slice(0, -1);
+            const U = [];
+            const prevV = () => U.length > 0 && U[U.length - 1].v;
+            let p = 0;
+            while (p < w.length) {
+                const r = w.slice(p);
+                let m;
+                if (/^(tion|sjon)/.test(r)) { U.push({ s: 'шун', v: 1 }); p += 4; continue; }
+                if ((m = /^(skj|stj|sch|sj|sh|ch)/.exec(r))) { U.push({ s: 'ш' }); p += m[1].length; continue; }
+                if (/^sk(?=ei|ey|øy|[iyø])/.test(r)) { U.push({ s: 'ш' }); p += 2; continue; }
+                if (/^(kj|tj)/.test(r)) { U.push({ s: 'щ' }); p += 2; continue; }
+                if (/^k(?=[iy])/.test(r)) { U.push({ s: 'щ' }); p++; continue; }
+                if (/^(hj|gj|lj|dj)/.test(r)) { U.push({ s: 'й' }); p += 2; continue; }
+                if (p === 0 && /^hv/.test(r)) { U.push({ s: 'в' }); p += 2; continue; }
+                if (/^ck/.test(r)) { U.push({ s: 'кк' }); p += 2; continue; }
+                if (prevV() && (m = /^r([tdlns])/.exec(r))) { U.push({ s: { t: 'т', d: 'д', l: 'л', n: 'н', s: 'ш' }[m[1]] }); p += 2; continue; }
+                if ((m = /^([bdfgklmnprstvz])\1/.exec(r))) { const c = TR_C[m[1]]; U.push({ s: c + c }); p += 2; continue; }
+                if (/^g(?=ei|ey|øy|[iyø])/.test(r)) { U.push({ s: 'й' }); p++; continue; }
+                if (/^(ei|ey)/.test(r)) { U.push({ s: 'эй', v: 1 }); p += 2; continue; }
+                if (/^øy/.test(r)) { U.push({ s: 'ӧй', v: 1 }); p += 2; continue; }
+                if (/^au/.test(r)) { U.push({ s: 'эю', v: 1 }); p += 2; continue; }
+                const ch = r[0];
+                if (ch === 'o') {
+                    const k = /^o([^aeiouyæøåé]*)/.exec(r)[1].length;   // долгое [uː] перед одной согласной, краткое [ɔ] перед группой
+                    U.push({ s: k <= 1 ? 'у' : 'о', v: 1, o: 1 }); p++; continue;
+                }
+                if (TR_V.includes(ch)) { U.push({ s: TR_VW[ch], v: 1 }); p++; continue; }
+                if (ch === 'c') { U.push({ s: /^c[eiy]/.test(r) ? 'с' : 'к' }); p++; continue; }
+                if (TR_C[ch]) { U.push({ s: TR_C[ch] }); p++; continue; }
+                U.push({ s: ch }); p++;
+            }
+            if (tail) U.push({ s: tail, v: 1 });
+
+            const nuc = [];
+            U.forEach((u, k) => { if (u.v) nuc.push(k); });
+            let si = 0;
+            if (nuc.length > 1) {
+                if (/(sjon|tion)$/.test(orig)) si = nuc.length - 2;
+                else if (/ere$/.test(orig) && nuc.length > 2) si = nuc.length - 2;
+                else if (TR_PRE.some(x => orig.startsWith(x))) si = 1;
+            }
+            nuc.forEach((k, n) => {
+                const u = U[k];
+                if (n !== si && u.o) u.s = 'о';                                 // безударное «о» — просто «о»
+                if (n === si && nuc.length > 1 && u.s !== 'шун') u.s = u.s[0] + TR_ACC + u.s.slice(1);
+            });
+            return U.map(u => u.s).join('').replace(/йа/g, 'я').replace(/([бфмпвднсл])й(?=[аэиоуюӱӧ])/g, '$1ь');
+        }
+
+        const TRC = new Map();
+        function autoTr(s) {
+            s = String(s || '').trim();
+            if (!s) return '';
+            if (TRC.has(s)) return TRC.get(s);
+            const out = s.replace(/[a-zæøåéA-ZÆØÅÉ]+/g, w => trWord(w));
+            TRC.set(s, out);
+            return out;
+        }
+        const trOf = c => c.tr || autoTr(c.no);
+        function trFill() {
+            const t = $('a-tr'), n = $('a-no');
+            if (!t || !n || t.dataset.m === '1') return;
+            t.value = autoTr(n.value);
+        }
+
         /* ---------- Тема ---------- */
         function applyTheme() {
             const root = document.documentElement.style;
@@ -1462,7 +1654,7 @@ liten|маленький|Прилагательные|Har du den i liten større
         }
 
         function go(t) {
-            tab = t; msg = ''; bgMsg = ''; rst = false; disarm();
+            tab = t; msg = ''; bgMsg = ''; rst = false; disarm(); stopGame(); gmMsg = '';
             if (t === 'study') build();
             render();
             window.scrollTo(0, 0);
@@ -1618,18 +1810,87 @@ liten|маленький|Прилагательные|Har du den i liten større
         const statsHtml = () => { const n = cnt(); return `<span><i class="dot k"></i>знаю <b>${n.k}</b></span><span><i class="dot u"></i>не знаю <b>${n.u}</b></span><span><i class="dot n"></i>новые <b>${n.n}</b></span><span>всего <b>${n.t}</b></span>`; };
 
         /* Список обновляем точечно, чтобы не сбрасывать клавиатуру и прокрутку */
-        function listHtml() {
-            const all = cards().filter(c => (chap === '' || String(chOf(c)) === chap) && (!q || (c.no + c.ru + loc(c) + (CHAPTERS[chOf(c)] || '')).toLowerCase().includes(q.toLowerCase())));
-            return all.map(c => `
-                <div class="item">
-                    <span class="dot ${S.st[c.id] || ''}"></span>
-                    <div class="t">${esc(c.no)}<small>${esc(c.ru)}</small><small class="loc">${esc(loc(c))}</small></div>
-                    <button class="sm ok" aria-label="Знаю" onclick="setSt('${c.id}','k')">${ic('check')}</button>
-                    <button class="sm no" aria-label="Не знаю" onclick="setSt('${c.id}','u')">${ic('x')}</button>
-                    <button class="sm ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : ic('trash')}</button>
-                </div>`).join('') || '<div class="empty">Ничего не найдено</div>';
+        /* ---------- Поиск: без учёта регистра, å/ø/æ можно писать как a/o/ae, ё = е ---------- */
+        const FOLD = { 'ё': 'е', 'å': 'a', 'ø': 'o', 'æ': 'ae', 'é': 'e', 'è': 'e', 'ê': 'e', 'ó': 'o', 'ò': 'o', 'ü': 'u', 'ö': 'o', 'ä': 'a', 'ӧ': 'о', 'ӱ': 'у' };
+        function foldMap(s) {
+            let f = '', map = [];
+            const low = String(s).toLowerCase();
+            for (let k = 0; k < low.length; k++) {
+                if (low[k] === '\u0301') continue;
+                const r = FOLD[low[k]] || low[k];
+                for (let m = 0; m < r.length; m++) { f += r[m]; map.push(k); }
+            }
+            return { f, map };
         }
-        function refreshList() { $('lst').innerHTML = listHtml(); $('stl').innerHTML = statsHtml(); }
+        const fold = s => foldMap(s).f;
+        const FC = new Map();
+        const foldOf = c => { let x = FC.get(c.id); if (!x) { x = { no: fold(c.no), nos: fold(c.no).replace(/^(a|ei\/en|en|et|ei) /, ''), ru: fold(c.ru), tr: fold(trOf(c)), ex: fold(c.ex || '') }; FC.set(c.id, x); } return x; };
+
+        function hl(text, toks) {
+            text = String(text);
+            if (!toks.length) return esc(text);
+            const { f, map } = foldMap(text), on = new Array(text.length).fill(false);
+            toks.forEach(t => { let k = f.indexOf(t); while (k >= 0) { for (let m = k; m < k + t.length; m++) on[map[m]] = true; k = f.indexOf(t, k + t.length); } });
+            for (let k = 1; k < text.length; k++) if (text[k] === '\u0301') on[k] = on[k - 1];
+            let out = '', cur = false, buf = '';
+            const flush = () => { if (buf) out += cur ? '<mark class="hl">' + esc(buf) + '</mark>' : esc(buf); buf = ''; };
+            for (let k = 0; k < text.length; k++) { if (on[k] !== cur) { flush(); cur = on[k]; } buf += text[k]; }
+            flush();
+            return out;
+        }
+
+        let lstInfo = '';
+        function searchList() {
+            const toks = fold(q).split(/\s+/).filter(Boolean);
+            const base = cards();
+            if (!toks.length) return { toks, rows: base.filter(c => chap === '' || String(chOf(c)) === chap), exOnly: false };
+            const sc = (f, t, b) => { const k = f.indexOf(t); return k < 0 ? null : k === 0 ? (f === t ? b - .5 : b) : f[k - 1] === ' ' ? b + 1 : b + 2; };
+            const run = useEx => {
+                const out = [];
+                base.forEach((c, idx) => {
+                    const F = foldOf(c);
+                    let total = 0;
+                    for (const t of toks) {
+                        const s = useEx ? sc(F.ex, t, 0) : [sc(F.nos, t, 0), sc(F.no, t, .3), sc(F.ru, t, 3), sc(F.tr, t, 6)].filter(x => x !== null).sort((a, b) => a - b)[0];
+                        if (s == null) return;
+                        total += s;
+                    }
+                    out.push({ c, total, idx });
+                });
+                return out.sort((a, b) => a.total - b.total || a.idx - b.idx).map(x => x.c);
+            };
+            let rows = run(false), exOnly = false;
+            if (!rows.length) { rows = run(true); exOnly = rows.length > 0; }
+            return { toks, rows, exOnly };
+        }
+
+        function listHtml() {
+            const { toks, rows, exOnly } = searchList();
+            const LIM = 100, shown = toks.length ? rows.slice(0, LIM) : rows;
+            lstInfo = toks.length
+                ? `Найдено: ${rows.length}${chap !== '' ? ' · поиск по всем главам' : ''}${exOnly ? ' · совпадения в примерах' : ''}${rows.length > LIM ? ` · показаны первые ${LIM}` : ''}`
+                : `Слов в списке: ${rows.length}${chap !== '' ? ' · выбрана одна глава' : ''}`;
+            if (!shown.length) return `<div class="empty">${ic('sparkles')}<br>Ничего не найдено<br><div class="fin-note">Попробуйте часть слова, перевод или транскрипцию.</div></div>`;
+            return shown.map(c => `
+                <div class="item">
+                    <div class="it-main">
+                        <span class="dot ${S.st[c.id] || ''}"></span>
+                        <div class="t">
+                            <div class="w-no">${exOnly ? esc(c.no) : hl(c.no, toks)}</div>
+                            <div class="w-tr">[${exOnly ? esc(trOf(c)) : hl(trOf(c), toks)}]</div>
+                            <div class="w-ru">${exOnly ? esc(c.ru) : hl(c.ru, toks)}</div>
+                            ${exOnly && c.ex ? `<div class="w-tr" style="margin-top:6px">${hl(c.ex, toks)}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="it-act">
+                        <span class="loc">${esc(loc(c))}</span>
+                        <button class="sm ok" aria-label="Знаю" onclick="setSt('${c.id}','k')">${ic('check')}</button>
+                        <button class="sm no" aria-label="Не знаю" onclick="setSt('${c.id}','u')">${ic('x')}</button>
+                        <button class="sm ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : ic('trash')}</button>
+                    </div>
+                </div>`).join('');
+        }
+        function refreshList() { const h = listHtml(); $('lst').innerHTML = h; $('fnd').textContent = lstInfo; $('stl').innerHTML = statsHtml(); }
         function setSt(id, v) { S.st[id] = v; save(); refreshList(); }
         /* Удаление: первое нажатие — «Удалить?», второе (в течение 3 сек) — удаляет */
         let armed = '', armT = 0;
@@ -1753,7 +2014,7 @@ liten|маленький|Прилагательные|Har du den i liten større
         const colorName = (list, c, auto) => { const f = list.find(x => x[0] === c); return f ? f[1] : (c ? 'Свой цвет ' + c : auto); };
 
         function render() {
-            ['study', 'list', 'add', 'settings'].forEach(t => { const el = $('t-' + t); if (el) el.className = t === tab ? 'on' : ''; });
+            ['study', 'list', 'add', 'games', 'settings'].forEach(t => { const el = $('t-' + t); if (el) el.className = t === tab ? 'on' : ''; });
 
             let h = '';
 
@@ -1768,7 +2029,7 @@ liten|маленький|Прилагательные|Har du den i liten større
                         <button class="ib" style="flex:1;" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">${ic('swap')}</button>
                     </div>
                 </div>
-                <div class="stats">${statsHtml()}</div>`;
+                `;
 
                 if (!deck.length) {
                     h += `<div class="empty">${ic('sparkles')}<br>В этой подборке нет карточек<br>Смените фильтр или добавьте новые.</div>`;
@@ -1781,8 +2042,10 @@ liten|маленький|Прилагательные|Har du den i liten større
                     <div class="card ${enter ? 'enter' : ''}" onclick="tap()">
                         <span class="cat">${esc(c.cat)}</span>
                         <div class="big">${esc(f)}</div>
+                        ${S.dir ? '' : `<div class="tr">[${esc(trOf(c))}]</div>`}
                         ${flip ? `
                             <div class="ans">${esc(b)}</div>
+                            ${S.dir ? `<div class="tr">[${esc(trOf(c))}]</div>` : ''}
                             ${c.ex ? `<div class="ex">${esc(c.ex)}</div>` : ''}
                         ` : `<div class="hint">нажмите, чтобы перевернуть</div>`}
                         <div class="shade"></div>
@@ -1796,21 +2059,29 @@ liten|маленький|Прилагательные|Har du den i liten større
                     <button class="pri ghost del-cur ${armed === c.id ? 'armed' : ''}" onclick="delCur()">${armed === c.id ? 'Нажмите ещё раз, чтобы удалить' : ic('trash') + ' Удалить карточку'}</button>`;
                 }
             } else if (tab === 'list') {
+                const lh = listHtml();
                 h += `
                 <div class="stats" id="stl">${statsHtml()}</div>
+                <div class="row" style="margin-bottom:10px;">
+                    <button class="pick" data-k="ch" onclick="openPick('ch')"><span class="pk-t"><span class="pk-l">Глава</span><span class="pk-v">${esc(chap === '' ? 'Все главы' : (+chap ? chap + ' · ' : '') + CHAPTERS[chap])}</span></span>${ic('chevron')}</button>
+                </div>
                 <div class="row" style="flex-wrap:nowrap;">
-                    <input id="q" placeholder="Поиск…" value="${esc(q)}" enterkeyhint="search" oninput="q=this.value;refreshList()">
+                    <input id="q" placeholder="Слово, перевод или транскрипция…" value="${esc(q)}" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" oninput="q=this.value;refreshList()">
                     <button class="ib" onclick="if(rst){S.st={};S.done={};save();rst=false}else rst=true;render()">${rst ? 'Точно?' : 'Сброс'}</button>
                 </div>
                 ${S.del.length ? `<button class="pri sec" style="margin:0 0 12px;min-height:48px;font-size:15px;" onclick="restoreDel()">${ic('undo')} Вернуть удалённые (${S.del.length})</button>` : ''}
-                <div id="lst">${listHtml()}</div>`;
+                <div class="found" id="fnd">${esc(lstInfo)}</div>
+                <div id="lst">${lh}</div>`;
             } else if (tab === 'add') {
                 h += `
                 <label>По-норвежски</label>
-                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup()">
+                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup();trFill()">
                 <label>Перевод</label>
                 <input id="a-ru" autocomplete="off" enterkeyhint="next" oninput="chkDup()">
                 <div id="dup"></div>
+                <label>Транскрипция (подставляется сама, можно исправить)</label>
+                <input id="a-tr" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" oninput="this.dataset.m = this.value ? '1' : ''">
+                <div class="hint2">Читается приблизительно. Знак ´ показывает ударный слог.</div>
                 <label>Тема</label>
                 <input id="a-cat" value="Мои слова" autocomplete="off" enterkeyhint="next">
                 <div class="chips">${cats().map(c => `<button type="button" class="chip" data-v="${esc(c)}" onclick="pickChip(this)">${esc(c)}</button>`).join('')}</div>
@@ -1818,6 +2089,8 @@ liten|маленький|Прилагательные|Har du den i liten større
                 <input id="a-ex" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')add()">
                 <button class="pri" onclick="add()">Добавить карточку</button>
                 <div class="msg">${msg}</div>`;
+            } else if (tab === 'games') {
+                h += G ? (G.done ? gEnd() : gameHtml()) : gamesMenuHtml();
             } else if (tab === 'settings') {
                 const cc = (S.cardColor || '').toLowerCase(), bc = (S.bgColor || '#1e7fd8').toLowerCase();
                 const solid = S.bgMode === 'color';
@@ -1895,14 +2168,342 @@ liten|маленький|Прилагательные|Har du den i liten større
             if (d.exact.length && dupArm !== key) {
                 dupArm = key;
                 msg = 'Это слово уже есть (' + loc(d.exact[0]) + '). Нажмите ещё раз, если всё равно хотите добавить.';
-                render(); $('a-no').value = no; $('a-ru').value = ru; chkDup(); dupArm = key; return;
+                render(); $('a-no').value = no; $('a-ru').value = ru; chkDup(); trFill(); dupArm = key; return;
             }
             dupArm = '';
-            S.cu.push({ id: 'c' + Date.now(), no, ru, cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim(), ch: +chap || 0 });
+            S.cu.push({ id: 'c' + Date.now(), no, ru, tr: $('a-tr').value.trim() || autoTr(no), cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim(), ch: +chap || 0 });
             save();
             msg = ic('check') + ' Добавлено! Всего карточек: ' + cards().length;
             render();
             $('a-no').focus();
+        }
+
+        /* ---------- Мини-игры с персонажем ---------- */
+        let G = null, gmMsg = '', gTimer = 0;
+        const GAMES = [
+            ['quiz', 'Выбери перевод', 'Угадай значение слова из четырёх вариантов', 'cards'],
+            ['pairs', 'Найди пару', 'Соедини норвежские слова с их переводами', 'shuffle'],
+            ['build', 'Собери слово', 'Составь слово из букв по русскому переводу', 'tag'],
+            ['blitz', 'Блиц: верно или нет', '40 секунд и три жизни — отвечай быстро', 'flame']
+        ];
+        const G_OK = [['Så flott!', 'Здорово!'], ['Bra jobba!', 'Отлично!'], ['Riktig!', 'Верно!'], ['Supert!', 'Супер!'], ['Perfekt!', 'Идеально!'], ['Du er flink!', 'Ты молодец!']];
+        const G_BAD = [['Nesten!', 'Почти!'], ['Prøv igjen!', 'Попробуй ещё!'], ['Ikke så farlig!', 'Не страшно!'], ['Neste gang!', 'В следующий раз!']];
+        const G_NEED = { quiz: 4, pairs: 6, build: 5, blitz: 4 };
+        const G_BEST = { quiz: v => v + ' из 10', pairs: v => 'ошибок: ' + v, build: v => v + ' из 8', blitz: v => v + ' верных' };
+
+        const rnd = n => Math.random() * n | 0;
+        const shuffled = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = rnd(k + 1);[a[k], a[j]] = [a[j], a[k]]; } return a; };
+        const gPool = () => cards().filter(c => c.no && c.ru && (!cat || c.cat === cat) && (chap === '' || String(chOf(c)) === chap));
+        const hap = ok => { try { if (ok) tg?.HapticFeedback?.impactOccurred('light'); else tg?.HapticFeedback?.notificationOccurred('error'); } catch (e) {} };
+        const gmSvg = (pose, extra = '') => `<svg viewBox="30 0 140 165" aria-hidden="true">${mascot(pose)}${extra}</svg>`;
+        const buildOk = c => { const t = c.no.trim().toLowerCase(), n = t.replace(/ /g, '').length; return /^[a-zæøå ]+$/.test(t) && t.split(' ').length <= 3 && n >= 3 && n <= 12; };
+
+        function stopGame() { clearInterval(gTimer); if (G) clearTimeout(G.adv); G = null; }
+        function gSay(ok, extra) {
+            const p = (ok ? G_OK : G_BAD)[rnd((ok ? G_OK : G_BAD).length)];
+            G.say = { pose: ok ? 'up' : 'down', b: p[0], s: extra || p[1] };
+            G.anim = ok ? 'hop' : 'wob';
+            hap(ok);
+        }
+        const gWrong = c => { S.st[c.id] = 'u'; save(); };   // ошибка в игре → слово попадает в «не знаю»
+
+        function gShell(body, prog, scoreTxt, warn) {
+            const s = G.say || { pose: 'wave', b: 'Hei! Lykke til!', s: 'Удачи!' };
+            const an = G.anim || ''; G.anim = '';
+            return `
+            <div class="gm-top">
+                <button class="ib gm-x" aria-label="Выйти из игры" onclick="stopGame();render()">${ic('x')}</button>
+                <div class="gm-bar ${warn ? 'warn' : ''}"><i id="gm-bi" style="width:${Math.max(0, Math.min(100, prog))}%"></i></div>
+                <div class="gm-sc" id="gm-sc">${scoreTxt}</div>
+            </div>
+            <div class="gm-mas"><div class="gm-m ${an}">${gmSvg(s.pose)}</div><div class="gm-say"><b>${esc(s.b)}</b><small>${esc(s.s)}</small></div></div>
+            ${body}`;
+        }
+
+        const pickBtns = () => `
+            <button class="pick" data-k="ch" onclick="openPick('ch')"><span class="pk-t"><span class="pk-l">Глава</span><span class="pk-v">${esc(chap === '' ? 'Все главы' : (+chap ? chap + ' · ' : '') + CHAPTERS[chap])}</span></span>${ic('chevron')}</button>
+            <button class="pick" data-k="cat" onclick="openPick('cat')"><span class="pk-t"><span class="pk-l">Тема</span><span class="pk-v">${esc(cat || 'Все темы')}</span></span>${ic('chevron')}</button>`;
+
+        function gamesMenuHtml() {
+            const n = gPool().length;
+            return `
+            <div class="gm-mas"><div class="gm-m hop">${gmSvg('wave')}</div><div class="gm-say"><b>Hei! Давай играть!</b><small>Выбери игру. Слова берутся из выбранной ниже главы и темы.</small></div></div>
+            <div class="row">${pickBtns()}</div>
+            <div class="stats"><span>Слов для игры: <b>${n}</b></span></div>
+            ${gmMsg ? `<div class="msg" style="margin:0 0 10px">${gmMsg}</div>` : ''}
+            <div class="gm-grid">${GAMES.map(g => {
+                const b = (S.gm || {})[g[0]];
+                return `<button class="gm-tile" onclick="startGame('${g[0]}')"><span class="gm-ti">${ic(g[3])}</span><span class="gm-tt"><b>${g[1]}</b><small>${g[2]}</small>${b != null ? `<em>Рекорд: ${G_BEST[g[0]](b)}</em>` : ''}</span></button>`;
+            }).join('')}</div>`;
+        }
+
+        function startGame(kind) {
+            stopGame();
+            const pool = gPool();
+            const elig = kind === 'build' ? pool.filter(buildOk) : pool;
+            if (elig.length < G_NEED[kind]) {
+                gmMsg = kind === 'build'
+                    ? 'Для этой игры нужно хотя бы 5 коротких слов без артиклей и скобок. Выберите другую главу или тему.'
+                    : `Для этой игры нужно минимум ${G_NEED[kind]} слов. Выберите другую главу или тему.`;
+                render(); return;
+            }
+            gmMsg = '';
+            const g = G = { kind, score: 0, n: 0, pool, elig, say: { pose: 'wave', b: 'Hei! Lykke til!', s: 'Удачи!' }, anim: 'hop' };
+            if (kind === 'quiz') { g.deck = shuffled(elig).slice(0, 10); g.total = g.deck.length; quizQ(); }
+            else if (kind === 'pairs') {
+                let src = elig.filter(c => c.no.length <= 24 && c.ru.length <= 28);
+                if (src.length < 6) src = elig;
+                const ch = shuffled(src).slice(0, 6);
+                g.L = shuffled(ch); g.R = shuffled(ch); g.got = new Set(); g.sel = null; g.bad = null; g.lock = false; g.mis = 0; g.total = 6;
+            }
+            else if (kind === 'build') { g.deck = shuffled(elig).slice(0, 8); g.total = g.deck.length; buildQ(); }
+            else { g.lives = 3; g.limit = 40000; g.t0 = Date.now(); g.last = ''; blitzQ(); gTimer = setInterval(blitzTick, 200); }
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function renderGame() { if (tab !== 'games' || !G) return; $('v').innerHTML = G.done ? gEnd() : gameHtml(); }
+        function gameHtml() { return { quiz: quizHtml, pairs: pairsHtml, build: buildHtml, blitz: blitzHtml }[G.kind](); }
+
+        function gFinish() {
+            clearInterval(gTimer);
+            const g = G; if (!g || g.done) return;
+            clearTimeout(g.adv);
+            g.done = true;
+            let stars, title, detail, val;
+            if (g.kind === 'pairs') { val = g.mis; stars = val <= 1 ? 3 : val <= 3 ? 2 : 1; title = val === 0 ? 'Ни одной ошибки!' : 'Все пары найдены!'; detail = 'Ошибок: ' + val; }
+            else if (g.kind === 'blitz') { val = g.score; stars = val >= 15 ? 3 : val >= 8 ? 2 : val >= 3 ? 1 : 0; title = g.lives <= 0 ? 'Жизни закончились' : 'Время вышло!'; detail = 'Верных ответов: ' + val; }
+            else { val = g.score; const r = val / g.total; stars = r >= .9 ? 3 : r >= .6 ? 2 : r >= .3 ? 1 : 0; title = ['Не страшно, повторим!', 'Хорошее начало!', 'Хороший результат!', 'Великолепно!'][stars]; detail = 'Верно: ' + val + ' из ' + g.total; }
+            S.gm = S.gm || {};
+            const old = S.gm[g.kind];
+            if (old == null || (g.kind === 'pairs' ? val < old : val > old)) { S.gm[g.kind] = val; g.record = !(old == null && val === 0 && g.kind !== 'pairs'); }
+            save();
+            g.res = { stars, title, detail };
+            g.anim = stars >= 2 ? 'hop' : 'wob';
+            renderGame();
+            if (stars >= 2) { burst(innerWidth / 2, innerHeight / 3, 14 + stars * 8); try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {} }
+        }
+        function gEnd() {
+            const g = G, r = g.res, an = g.anim || ''; g.anim = '';
+            const extra = r.stars === 3 ? PR.trophy + PR.star(40, 40) + PR.star(162, 84, 1.2) : r.stars >= 1 ? PR.star(40, 40) : '';
+            return `<div class="gm-end">
+                <div class="gm-m big ${an}">${gmSvg(r.stars >= 2 ? 'up' : r.stars === 1 ? 'wave' : 'down', extra)}</div>
+                <div class="gm-stars">${[1, 2, 3].map(k => `<span class="${k <= r.stars ? 'on' : ''}">${ic('star')}</span>`).join('')}</div>
+                <h2>${esc(r.title)}</h2>
+                <p>${esc(r.detail)}${g.record ? ' · новый рекорд!' : ''}</p>
+                <button class="pri" onclick="startGame('${g.kind}')">${ic('undo')}Играть ещё раз</button>
+                <button class="pri sec" onclick="stopGame();render()">К списку игр</button>
+            </div>`;
+        }
+
+        /* --- 1. Выбери перевод --- */
+        function quizQ() {
+            const g = G, c = g.deck[g.n], dir = Math.random() < .4 ? 1 : 0;   // 0: норв. → рус., 1: рус. → норв.
+            const key = x => (dir ? x.no : x.ru).toLowerCase();
+            const used = new Set([key(c)]), wrong = [];
+            for (const src of [g.pool, cards()]) {
+                for (const x of shuffled(src)) { if (wrong.length >= 3) break; const k = key(x); if (!used.has(k)) { used.add(k); wrong.push(x); } }
+            }
+            g.q = { c, dir, pick: -1, opts: shuffled([c].concat(wrong)).map(x => ({ c: x, ok: x === c })) };
+        }
+        function quizHtml() {
+            const g = G, q = g.q, c = q.c, done = q.pick >= 0;
+            const opts = q.opts.map((o, k) => {
+                const cl = !done ? '' : o.ok ? 'ok' : k === q.pick ? 'bad' : 'dim';
+                return `<button class="gm-opt ${cl}" ${done ? 'disabled' : ''} onclick="quizPick(${k})">${esc(q.dir ? o.c.no : o.c.ru)}${q.dir ? `<small>[${esc(trOf(o.c))}]</small>` : ''}</button>`;
+            }).join('');
+            const body = `
+                <div class="gm-q"><div class="gm-l">Вопрос ${g.n + 1} из ${g.total} · ${q.dir ? 'Как по-норвежски?' : 'Что это значит?'}</div>
+                    <div class="gm-w">${esc(q.dir ? c.ru : c.no)}</div>${q.dir ? '' : `<div class="gm-t">[${esc(trOf(c))}]</div>`}</div>
+                <div class="gm-opts">${opts}</div>
+                ${done && !q.opts[q.pick].ok ? `<button class="pri" onclick="quizNext()">Дальше</button>` : ''}`;
+            return gShell(body, (g.n + (done ? 1 : 0)) / g.total * 100, g.score);
+        }
+        function quizPick(k) {
+            const g = G; if (!g || g.done || g.kind !== 'quiz') return;
+            const q = g.q; if (q.pick >= 0) return;
+            q.pick = k;
+            const o = q.opts[k], c = q.c;
+            if (o.ok) { g.score++; gSay(true, c.no + ' — ' + c.ru); g.adv = setTimeout(() => { if (G === g && !g.done && g.q === q) quizNext(); }, 1000); }
+            else { gWrong(c); gSay(false, 'Правильно: ' + c.no + ' — ' + c.ru); }
+            renderGame();
+        }
+        function quizNext() {
+            const g = G; if (!g || g.done) return;
+            clearTimeout(g.adv);
+            g.n++;
+            if (g.n >= g.total) { gFinish(); return; }
+            quizQ(); renderGame();
+        }
+
+        /* --- 2. Найди пару --- */
+        function pairsHtml() {
+            const g = G;
+            const col = (arr, side) => arr.map(c => {
+                const cl = g.got.has(c.id) ? 'ok' : g.bad && g.bad.some(b => b.id === c.id && b.side === side) ? 'bad' : g.sel && g.sel.id === c.id && g.sel.side === side ? 'sel' : '';
+                return `<button class="gm-p ${cl}" onclick="pairTap('${side}','${c.id}')">${side === 'no' ? esc(c.no) + `<small>[${esc(trOf(c))}]</small>` : esc(c.ru)}</button>`;
+            }).join('');
+            const body = `<div class="gm-hint">Выбери слово слева и его перевод справа</div><div class="gm-pairs"><div class="gm-col">${col(g.L, 'no')}</div><div class="gm-col">${col(g.R, 'ru')}</div></div>`;
+            return gShell(body, g.got.size / g.total * 100, g.got.size + '/' + g.total);
+        }
+        function pairTap(side, id) {
+            const g = G; if (!g || g.done || g.lock || g.got.has(id)) return;
+            if (!g.sel || g.sel.side === side) { g.sel = { side, id }; hap(true); renderGame(); return; }
+            const a = g.sel, b = { side, id };
+            if (a.id === id) {
+                g.got.add(id); g.sel = null;
+                const c = g.L.find(x => x.id === id);
+                gSay(true, c.no + ' — ' + c.ru);
+                if (g.got.size >= g.total) { g.lock = true; g.adv = setTimeout(() => { if (G === g) gFinish(); }, 700); }
+                renderGame();
+            } else {
+                g.mis++; g.bad = [a, b]; g.lock = true;
+                gSay(false, 'Это не пара — попробуй ещё');
+                renderGame();
+                g.adv = setTimeout(() => { if (G !== g || g.done) return; g.bad = null; g.sel = null; g.lock = false; renderGame(); }, 650);
+            }
+        }
+
+        /* --- 3. Собери слово --- */
+        function buildQ() {
+            const g = G, c = g.deck[g.n], t = c.no.trim().toLowerCase();
+            g.q = {
+                c, t, res: null, failed: false, hint: 0,
+                slots: [...t].map(ch => ch === ' ' ? { ch, sp: 1 } : { ch, fill: null, tile: -1, lock: false }),
+                tiles: shuffled([...t].filter(x => x !== ' ')).map(ch => ({ ch, used: false }))
+            };
+        }
+        function buildHtml() {
+            const g = G, q = g.q, c = q.c;
+            const slots = q.slots.map((s, i) => s.sp ? '<div class="gm-slot sp"></div>' :
+                `<button class="gm-slot ${s.fill !== null ? 'f' : ''} ${q.res === 'ok' ? 'ok' : ''} ${q.res === 'skip' ? 'rv' : ''} ${q.res === 'bad' && !s.lock ? 'bad' : ''} ${s.lock && !q.res ? 'lk' : ''}" onclick="bSlot(${i})">${s.fill !== null ? esc(s.fill.toUpperCase()) : ''}</button>`).join('');
+            const tiles = q.tiles.map((t, k) => `<button class="gm-lt ${t.used ? 'used' : ''}" onclick="bTile(${k})">${esc(t.ch.toUpperCase())}</button>`).join('');
+            const tools = q.res === null
+                ? `<div class="gm-tools"><button class="pri sec" onclick="bHint()">Подсказка</button><button class="pri ghost" onclick="bSkip()">Не знаю</button></div>`
+                : q.res === 'skip' ? `<button class="pri" onclick="bNext()">Дальше</button>` : '';
+            const body = `
+                <div class="gm-q"><div class="gm-l">Слово ${g.n + 1} из ${g.total} · Собери по-норвежски</div>
+                    <div class="gm-w">${esc(c.ru)}</div><div class="gm-t">[${esc(trOf(c))}]</div></div>
+                <div class="gm-slots">${slots}</div>
+                <div class="gm-tiles">${tiles}</div>
+                ${tools}`;
+            return gShell(body, (g.n + (q.res === 'ok' || q.res === 'skip' ? 1 : 0)) / g.total * 100, g.score);
+        }
+        function bTile(k) {
+            const g = G; if (!g || g.done) return;
+            const q = g.q; if (q.res !== null) return;
+            const t = q.tiles[k]; if (t.used) return;
+            const idx = q.slots.findIndex(s => !s.sp && s.fill === null); if (idx < 0) return;
+            q.slots[idx].fill = t.ch; q.slots[idx].tile = k; t.used = true;
+            hap(true);
+            bCheck();
+        }
+        function bSlot(i) {
+            const g = G; if (!g || g.done) return;
+            const q = g.q, s = q.slots[i];
+            if (q.res !== null || s.sp || s.fill === null || s.lock) return;
+            q.tiles[s.tile].used = false; s.fill = null; s.tile = -1;
+            renderGame();
+        }
+        function bCheck() {
+            const g = G, q = g.q;
+            if (q.slots.some(s => !s.sp && s.fill === null)) { renderGame(); return; }
+            const word = q.slots.map(s => s.sp ? ' ' : s.fill).join('');
+            if (word === q.t) {
+                q.res = 'ok';
+                if (!q.failed && !q.hint) g.score++;
+                gSay(true, q.c.no + ' — ' + q.c.ru);
+                g.adv = setTimeout(() => { if (G === g && !g.done && g.q === q) bNext(); }, 1100);
+            } else {
+                q.res = 'bad'; q.failed = true;
+                gWrong(q.c);
+                gSay(false, 'Попробуй ещё раз');
+                g.adv = setTimeout(() => {
+                    if (G !== g || g.done || g.q !== q) return;
+                    q.slots.forEach(s => { if (!s.sp && !s.lock) { if (s.tile >= 0) q.tiles[s.tile].used = false; s.fill = null; s.tile = -1; } });
+                    q.res = null; renderGame();
+                }, 800);
+            }
+            renderGame();
+        }
+        function bHint() {
+            const g = G; if (!g || g.done) return;
+            const q = g.q; if (q.res !== null) return;
+            q.slots.forEach(s => { if (!s.sp && !s.lock && s.fill !== null && s.fill !== s.ch) { q.tiles[s.tile].used = false; s.fill = null; s.tile = -1; } });
+            const s = q.slots.find(x => !x.sp && x.fill === null); if (!s) return;
+            const k = q.tiles.findIndex(t => !t.used && t.ch === s.ch); if (k < 0) return;
+            s.fill = s.ch; s.tile = k; s.lock = true; q.tiles[k].used = true; q.hint++;
+            bCheck();
+        }
+        function bSkip() {
+            const g = G; if (!g || g.done) return;
+            const q = g.q; if (q.res !== null) return;
+            q.slots.forEach(s => { if (!s.sp) { s.fill = s.ch; s.lock = true; } });
+            q.tiles.forEach(t => t.used = true);
+            q.res = 'skip';
+            gWrong(q.c);
+            gSay(false, 'Это слово: ' + q.c.no);
+            renderGame();
+        }
+        function bNext() {
+            const g = G; if (!g || g.done) return;
+            clearTimeout(g.adv);
+            g.n++;
+            if (g.n >= g.total) { gFinish(); return; }
+            buildQ(); renderGame();
+        }
+
+        /* --- 4. Блиц: верно или нет --- */
+        function blitzQ() {
+            const g = G;
+            let c, k = 0;
+            do { c = g.elig[rnd(g.elig.length)]; k++; } while (c.id === g.last && g.elig.length > 1 && k < 10);
+            g.last = c.id;
+            let truth = Math.random() < .5, shown = c;
+            if (!truth) {
+                const others = g.elig.filter(x => x.ru.toLowerCase() !== c.ru.toLowerCase());
+                shown = others.length ? others[rnd(others.length)] : c;
+                if (shown === c) truth = true;
+            }
+            g.q = { c, ru: shown.ru, truth, res: null };
+        }
+        function blitzHtml() {
+            const g = G, q = g.q, c = q.c;
+            const rem = Math.max(0, g.limit - (Date.now() - g.t0));
+            const lives = [0, 1, 2].map(k => `<svg viewBox="-16 -16 32 30" width="28" height="26" class="${k < g.lives ? '' : 'lost'}">${PR.heart(0, 0, 1)}</svg>`).join('');
+            const dis = q.res !== null ? 'disabled' : '';
+            const body = `
+                <div class="gm-lives">${lives}<span class="gm-time" id="gm-time">${Math.ceil(rem / 1000)} c</span></div>
+                <div class="gm-q ${q.res === true ? 'ok' : q.res === false ? 'bad' : ''}">
+                    <div class="gm-w">${esc(c.no)}</div><div class="gm-t">[${esc(trOf(c))}]</div>
+                    <div class="gm-eq">=</div>
+                    <div class="gm-w sm">${esc(q.ru)}</div>
+                </div>
+                <div class="gm-tf">
+                    <button class="gm-no" ${dis} onclick="blitzAns(false)">${ic('x')} Неверно</button>
+                    <button class="gm-yes" ${dis} onclick="blitzAns(true)">${ic('check')} Верно</button>
+                </div>`;
+            return gShell(body, rem / g.limit * 100, g.score, rem < 10000);
+        }
+        function blitzAns(yes) {
+            const g = G; if (!g || g.done || g.kind !== 'blitz') return;
+            const q = g.q; if (q.res !== null) return;
+            const ok = yes === q.truth;
+            q.res = ok;
+            if (ok) { g.score++; gSay(true, q.c.no + ' — ' + q.c.ru); }
+            else { g.lives--; gWrong(q.c); gSay(false, 'Правильно: ' + q.c.no + ' — ' + q.c.ru); }
+            renderGame();
+            if (g.lives <= 0) { g.adv = setTimeout(() => { if (G === g) gFinish(); }, 900); return; }
+            g.adv = setTimeout(() => { if (G !== g || g.done) return; blitzQ(); renderGame(); }, ok ? 550 : 1000);
+        }
+        function blitzTick() {
+            const g = G;
+            if (!g || g.kind !== 'blitz' || g.done) { clearInterval(gTimer); return; }
+            const rem = Math.max(0, g.limit - (Date.now() - g.t0));
+            const bi = $('gm-bi'), tm = $('gm-time');
+            if (bi) { bi.style.width = (rem / g.limit * 100) + '%'; bi.parentNode.classList.toggle('warn', rem < 10000); }
+            if (tm) tm.textContent = Math.ceil(rem / 1000) + ' c';
+            if (rem <= 0) gFinish();
         }
 
         /* Свайп: карточка едет за пальцем, темнеет и подсвечивается; вправо — «знаю», влево — «не знаю» */
