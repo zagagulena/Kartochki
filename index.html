@@ -1339,8 +1339,162 @@ liten|маленький|Прилагательные|Har du den i liten større
         if (!S.done || typeof S.done !== 'object') S.done = {};
         if (!Array.isArray(S.del)) S.del = [];   // id удалённых встроенных карточек
 
-        const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {} };
+        /* ---------- Вход через Telegram и общий прогресс на всех устройствах (Telegram CloudStorage) ---------- */
+        var cloud = (tg && tg.initData && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9')) ? tg.CloudStorage : null;
+        var syncState = !(tg && tg.initData) ? 'web' : (cloud ? 'idle' : 'old');
+        var cloudReady = false, cloudBusy = false, cloudAgain = false, cloudTimer = 0, cloudRetry = 0, cloudN = 0, editedEarly = false, lastSyncAt = 0;
+        const SYNC_SKIP = ['perf', 'autoLite'];   // настройки плавности зависят от телефона — между устройствами не переносим
+        const snapObj = () => { const o = {}; for (const k in S) if (!SYNC_SKIP.includes(k)) o[k] = S[k]; return o; };
+        const snapStr = () => { const o = snapObj(); delete o.ts; return JSON.stringify(o); };
+        var curSnap = snapStr();
+
+        const save = () => {
+            const sn = snapStr();
+            if (sn !== curSnap) {
+                curSnap = sn;
+                if (cloudReady) { S.ts = Date.now(); cloudDirty(); } else editedEarly = true;
+            }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {}
+        };
         delete S.days; delete S.remind;   // напоминания и счётчик дней убраны
+
+        function chunkStr(str, max = 3000) {   // значения в облаке ограничены 4096 символами
+            const out = []; let cur = '', bytes = 0;
+            for (const ch of str) {
+                const c = ch.codePointAt(0), b = c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4;
+                if (bytes + b > max) { out.push(cur); cur = ''; bytes = 0; }
+                cur += ch; bytes += b;
+            }
+            if (cur) out.push(cur);
+            return out;
+        }
+        const cs = (m, ...a) => new Promise((res, rej) => {
+            const t = setTimeout(() => rej(new Error('timeout')), 9000);
+            try { cloud[m](...a, (err, v) => { clearTimeout(t); err ? rej(new Error(String(err))) : res(v); }); }
+            catch (e) { clearTimeout(t); rej(e); }
+        });
+
+        function syncText() {
+            const t = lastSyncAt ? new Date(lastSyncAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
+            return ({
+                web: 'Вход не выполнен: приложение открыто не в Telegram. Откройте его через бота — тогда прогресс станет общим на всех ваших устройствах.',
+                old: 'Эта версия Telegram не поддерживает облачное хранение. Обновите Telegram — и прогресс будет синхронизироваться.',
+                idle: 'Ожидание…',
+                busy: 'Синхронизация…',
+                ok: '✓ Всё сохранено в облаке' + (t ? ' · ' + t : ''),
+                err: '⚠ Нет связи. Прогресс сохранён на этом устройстве и отправится, как только появится сеть.'
+            })[syncState];
+        }
+        function syncSet(st) {
+            syncState = st;
+            if (st === 'ok') lastSyncAt = Date.now();
+            const el = document.getElementById('sync-st');
+            if (el) el.textContent = syncText();
+        }
+        function accountPanel() {
+            const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+            const who = u ? esc([u.first_name, u.last_name].filter(Boolean).join(' ')) + (u.username ? ' (@' + esc(u.username) + ')' : '') : '';
+            return `
+                <div class="stats" style="font-size:16px;"><span><b>Аккаунт</b></span></div>
+                <div class="panel">
+                    <label>${ic('sparkles')}Вход через Telegram</label>
+                    ${u ? `<div class="cur">Вы вошли как <b>${who}</b></div>` : ''}
+                    <div class="cur" id="sync-st">${esc(syncText())}</div>
+                    ${cloud ? `<button class="pri sec" onclick="syncNow()">${ic('undo')}Синхронизировать сейчас</button>` : ''}
+                    <div class="hint2">Прогресс, свои слова, цвета и рекорды хранятся в облаке Telegram и одинаковы на всех устройствах, где вы вошли в один аккаунт. Фото для фона остаётся только на этом устройстве.</div>
+                </div>`;
+        }
+
+        function cloudDirty() { if (!cloud) return; clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudPush, 1500); }
+
+        async function cloudPush() {
+            if (!cloud) return;
+            clearTimeout(cloudTimer); cloudTimer = 0;
+            if (cloudBusy) { cloudAgain = true; return; }
+            cloudBusy = true; syncSet('busy');
+            try {
+                if (!S.ts) S.ts = Date.now();
+                const ts = S.ts, str = JSON.stringify(snapObj()), parts = chunkStr(str);
+                for (let i = 0; i < parts.length; i++) await cs('setItem', 'nk_d' + i, parts[i]);
+                await cs('setItem', 'nk_meta', JSON.stringify({ t: ts, n: parts.length, len: str.length }));
+                if (cloudN > parts.length) { const rm = []; for (let i = parts.length; i < cloudN; i++) rm.push('nk_d' + i); await cs('removeItems', rm); }
+                cloudN = parts.length;
+                syncSet('ok');
+            } catch (e) {
+                syncSet('err');
+                clearTimeout(cloudRetry); cloudRetry = setTimeout(cloudPush, 20000);
+            }
+            cloudBusy = false;
+            if (cloudAgain) { cloudAgain = false; cloudDirty(); }
+        }
+
+        function applyCloud(obj, t) {
+            const keep = {};
+            SYNC_SKIP.forEach(k => { if (S[k] !== undefined) keep[k] = S[k]; });
+            Object.keys(S).forEach(k => delete S[k]);
+            Object.assign(S, obj, keep);
+            S.ts = t;
+            if (!S.st || typeof S.st !== 'object') S.st = {};
+            if (!Array.isArray(S.cu)) S.cu = [];
+            if (!S.done || typeof S.done !== 'object') S.done = {};
+            if (!Array.isArray(S.del)) S.del = [];
+            curSnap = snapStr();
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {}
+            applyTheme(); applyPerf();
+            build();
+            if (!G) render();
+        }
+
+        /* 'none' — в облаке пусто, 'local' — на устройстве новее, 'same' — одинаково, 'applied' — взяли данные из облака */
+        async function cloudPull() {
+            const r = await cs('getItems', ['nk_meta']);
+            let meta = null;
+            try { meta = JSON.parse((r && r.nk_meta) || 'null'); } catch (e) {}
+            if (!meta || !meta.n) return 'none';
+            cloudN = meta.n;
+            const mine = S.ts || 0;
+            if (meta.t <= mine) return meta.t < mine ? 'local' : 'same';
+            const keys = Array.from({ length: meta.n }, (_, i) => 'nk_d' + i);
+            const d = await cs('getItems', keys);
+            const str = keys.map(k => (d && d[k]) || '').join('');
+            if (str.length !== meta.len) throw new Error('inconsistent');
+            applyCloud(JSON.parse(str), meta.t);
+            return 'applied';
+        }
+
+        const hasProgress = () => Object.keys(S.st).length || S.cu.length || S.del.length || Object.keys(S.done).length || S.cardColor || S.bgColor || (S.gm && Object.keys(S.gm).length);
+
+        async function cloudInit() {
+            if (!cloud) { cloudReady = true; return; }
+            syncSet('busy');
+            try {
+                const r = await cloudPull();
+                cloudReady = true;
+                if (r === 'applied' || r === 'same') { if (r === 'same' && editedEarly) { S.ts = Date.now(); await cloudPush(); } else syncSet('ok'); }
+                else if (r === 'local' || editedEarly || hasProgress()) { if (editedEarly || !S.ts) S.ts = Date.now(); await cloudPush(); }
+                else syncSet('ok');
+            } catch (e) {
+                syncSet('err');                                   // пока не узнали, что в облаке, ничего туда не пишем
+                clearTimeout(cloudRetry); cloudRetry = setTimeout(cloudInit, 15000);
+            }
+        }
+        async function syncNow() {
+            if (!cloud || cloudBusy) return;
+            if (!cloudReady) { await cloudInit(); return; }
+            syncSet('busy');
+            try {
+                const r = await cloudPull();
+                if (r === 'local' || r === 'none') await cloudPush(); else syncSet('ok');
+            } catch (e) { syncSet('err'); }
+        }
+        function cloudFlush() { if (cloud && cloudReady && cloudTimer) cloudPush(); }
+        document.addEventListener('visibilitychange', () => {
+            if (!cloud) return;
+            if (document.hidden) cloudFlush();
+            else if (cloudReady && !cloudBusy && !cloudTimer) cloudPull().then(r => { if (r === 'applied') syncSet('ok'); }).catch(() => {});
+        });
+        window.addEventListener('pagehide', cloudFlush);
+
 
         /* ---------- Производительность: «быстрый режим» без размытия, теней и лишней анимации ---------- */
         const weakDevice = () => { const n = navigator; return !!((n.deviceMemory && n.deviceMemory <= 3) || (n.hardwareConcurrency && n.hardwareConcurrency <= 4) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)); };
@@ -2090,6 +2244,7 @@ liten|маленький|Прилагательные|Har du den i liten større
                 const bgCustom = !BG_COLORS.some(x => x[0] === bc);
                 const pf = S.perf || 'auto';
                 h += `
+                ${accountPanel()}
                 <div class="stats" style="font-size:16px;"><span><b>Внешний вид</b></span></div>
 
                 <div class="pv">
@@ -2597,6 +2752,7 @@ liten|маленький|Прилагательные|Har du den i liten større
         build();
         render();
         perfProbe();
+        cloudInit();
     </script>
 </body>
 </html>
