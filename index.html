@@ -671,6 +671,18 @@
         html.lite .opt { animation: none; opacity: 1; }
         html.lite .drop { display: none; }
         html.lite *, html.lite *::before, html.lite *::after { transition-duration: .12s !important; }
+
+        /* ===== Подсказки словаря при добавлении слова ===== */
+        .lk { margin: 8px 4px 0; font-size: 14px; line-height: 1.35; color: var(--mut); overflow-wrap: anywhere; }
+        .lk:empty { margin: 0; }
+        .lk-ok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 600; color: #c8ffe6; }
+        .lk-ok .i { width: 18px; height: 18px; flex: none; }
+        .lk-ok i { font-style: normal; font-weight: 500; opacity: .85; }
+        .lk-st { font-weight: 600; margin-top: 6px; }
+        .lk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .lk-chip { padding: 9px 13px; border-radius: 15px; font-size: 15px; font-weight: 700; line-height: 1.25; text-align: left; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); }
+        .lk-chip small { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--cmut); }
+        .lk-chip:active { transform: scale(.97); }
     </style>
 </head>
 <body>
@@ -1401,7 +1413,7 @@ liten|маленький|Прилагательные|Har du den i liten større
                     ${u ? `<div class="cur">Вы вошли как <b>${who}</b></div>` : ''}
                     <div class="cur" id="sync-st">${esc(syncText())}</div>
                     ${cloud ? `<button class="pri sec" onclick="syncNow()">${ic('undo')}Синхронизировать сейчас</button>` : ''}
-                    <div class="hint2">Прогресс, свои слова, цвета и рекорды хранятся в облаке Telegram и одинаковы на всех устройствах, где вы вошли в один аккаунт. Фото для фона остаётся только на этом устройстве.</div>
+                    <div class="hint2">Прогресс, свои слова, цвета и рекорды хранятся в облаке Telegram и одинаковы на всех устройствах, где вы вошли в один аккаунт. Фото для фона тоже переносится между устройствами (оно сжимается до небольшого размера).</div>
                 </div>`;
         }
 
@@ -1443,6 +1455,7 @@ liten|маленький|Прилагательные|Har du den i liten større
             applyTheme(); applyPerf();
             build();
             if (!G) render();
+            bgSync();
         }
 
         /* 'none' — в облаке пусто, 'local' — на устройстве новее, 'same' — одинаково, 'applied' — взяли данные из облака */
@@ -1473,6 +1486,7 @@ liten|маленький|Прилагательные|Har du den i liten større
                 if (r === 'applied' || r === 'same') { if (r === 'same' && editedEarly) { S.ts = Date.now(); await cloudPush(); } else syncSet('ok'); }
                 else if (r === 'local' || editedEarly || hasProgress()) { if (editedEarly || !S.ts) S.ts = Date.now(); await cloudPush(); }
                 else syncSet('ok');
+                await bgAdopt(); bgSync();
             } catch (e) {
                 syncSet('err');                                   // пока не узнали, что в облаке, ничего туда не пишем
                 clearTimeout(cloudRetry); cloudRetry = setTimeout(cloudInit, 15000);
@@ -1485,13 +1499,106 @@ liten|маленький|Прилагательные|Har du den i liten større
             try {
                 const r = await cloudPull();
                 if (r === 'local' || r === 'none') await cloudPush(); else syncSet('ok');
+                bgSync();
             } catch (e) { syncSet('err'); }
         }
         function cloudFlush() { if (cloud && cloudReady && cloudTimer) cloudPush(); }
+        /* --- Фото на фоне: сжимается до ~150 КБ и хранится в облаке кусками по 4000 символов --- */
+        var bgPushing = false, bgAgain = false, bgN = 0, bgRetry = 0, bgFetching = false;
+        const BGV_KEY = 'nk_bgv_' + userId;
+        const bgVer = () => { try { return +localStorage.getItem(BGV_KEY) || 0 } catch (e) { return 0 } };
+        const bgSetVer = v => { try { localStorage.setItem(BGV_KEY, String(v)) } catch (e) {} };
+
+        function fitData(img) {
+            let MAX = 1000, data = '';
+            for (let k = 0; k < 6; k++) {
+                let w = img.width, h = img.height;
+                if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
+                const cv = document.createElement('canvas');
+                cv.width = w; cv.height = h;
+                cv.getContext('2d').drawImage(img, 0, 0, w, h);
+                for (const qq of [.7, .6, .5, .4]) { data = cv.toDataURL('image/jpeg', qq); if (data.length <= 150000) return data; }
+                MAX = Math.round(MAX * .8);
+            }
+            return data;
+        }
+        const shrinkData = src => new Promise((res, rej) => { const im = new Image(); im.onload = () => { try { res(fitData(im)); } catch (e) { rej(e); } }; im.onerror = rej; im.src = src; });
+
+        function bgLocalChanged(has) {
+            S.bgHas = has ? 1 : 0; S.bgTs = Date.now(); bgSetVer(S.bgTs); save();
+            if (!cloud) return;
+            if (has) bgPush(); else bgDelCloud();
+        }
+        async function bgPush() {
+            if (!cloud || !BG) return;
+            if (bgPushing) { bgAgain = true; return; }
+            bgPushing = true; syncSet('busy');
+            try {
+                const ts = S.bgTs, data = BG, parts = [];
+                for (let k = 0; k < data.length; k += 4000) parts.push(data.slice(k, k + 4000));
+                if (parts.length <= 900) {
+                    for (let k = 0; k < parts.length; k += 6) await Promise.all(parts.slice(k, k + 6).map((p, j) => cs('setItem', 'nk_b' + (k + j), p)));
+                    await cs('setItem', 'nk_bgm', JSON.stringify({ t: ts, n: parts.length, len: data.length }));
+                    if (bgN > parts.length) { const rm = []; for (let k = parts.length; k < bgN; k++) rm.push('nk_b' + k); await cs('removeItems', rm); }
+                    bgN = parts.length;
+                }
+                syncSet('ok');
+            } catch (e) { syncSet('err'); clearTimeout(bgRetry); bgRetry = setTimeout(bgPush, 20000); }
+            bgPushing = false;
+            if (bgAgain) { bgAgain = false; bgPush(); }
+        }
+        async function bgDelCloud() {
+            try {
+                const r = await cs('getItems', ['nk_bgm']);
+                let m = null; try { m = JSON.parse((r && r.nk_bgm) || 'null'); } catch (e) {}
+                const n = Math.max(bgN, m ? m.n : 0), rm = ['nk_bgm'];
+                for (let k = 0; k < n; k++) rm.push('nk_b' + k);
+                await cs('removeItems', rm); bgN = 0;
+            } catch (e) {}
+        }
+        /* старое локальное фото, о котором облако ещё не знает → загружаем */
+        async function bgAdopt() {
+            if (!cloud || !cloudReady || S.bgTs || !BG) return;
+            if (BG.length > 170000) { try { BG = await shrinkData(BG); try { localStorage.setItem(BG_KEY, BG) } catch (e) {} } catch (e) {} }
+            bgLocalChanged(1);
+        }
+        /* приводит фото на этом устройстве к версии из облака */
+        async function bgSync() {
+            if (!cloud || !cloudReady || bgFetching || bgPushing) return;
+            const ver = bgVer();
+            if (S.bgHas) {
+                if (BG && ver === S.bgTs) return;
+                bgFetching = true;
+                try {
+                    const r = await cs('getItems', ['nk_bgm']);
+                    let m = null; try { m = JSON.parse((r && r.nk_bgm) || 'null'); } catch (e) {}
+                    if (!m || m.t !== S.bgTs) { clearTimeout(bgRetry); bgRetry = setTimeout(bgSync, 12000); return; }   // с другого устройства фото ещё догружается
+                    bgN = m.n;
+                    const keys = Array.from({ length: m.n }, (_, k) => 'nk_b' + k);
+                    let str = '';
+                    for (let k = 0; k < keys.length; k += 12) {
+                        const part = keys.slice(k, k + 12), d = await cs('getItems', part);
+                        str += part.map(x => (d && d[x]) || '').join('');
+                    }
+                    if (str.length !== m.len) throw new Error('inconsistent');
+                    BG = str;
+                    try { localStorage.setItem(BG_KEY, str) } catch (e) {}
+                    bgSetVer(S.bgTs); applyTheme();
+                    if (tab === 'settings') render();
+                } catch (e) { clearTimeout(bgRetry); bgRetry = setTimeout(bgSync, 20000); }
+                finally { bgFetching = false; }
+            } else if (S.bgTs && BG && ver !== S.bgTs) {   // фото убрали на другом устройстве
+                BG = '';
+                try { localStorage.removeItem(BG_KEY) } catch (e) {}
+                bgSetVer(S.bgTs); applyTheme();
+                if (tab === 'settings') render();
+            } else if (S.bgTs && ver !== S.bgTs) bgSetVer(S.bgTs);
+        }
+
         document.addEventListener('visibilitychange', () => {
             if (!cloud) return;
             if (document.hidden) cloudFlush();
-            else if (cloudReady && !cloudBusy && !cloudTimer) cloudPull().then(r => { if (r === 'applied') syncSet('ok'); }).catch(() => {});
+            else if (cloudReady && !cloudBusy && !cloudTimer) cloudPull().then(r => { if (r === 'applied') syncSet('ok'); bgSync(); }).catch(() => {});
         });
         window.addEventListener('pagehide', cloudFlush);
 
@@ -1731,6 +1838,7 @@ liten|маленький|Прилагательные|Har du den i liten større
             BG = '';
             try { localStorage.removeItem(BG_KEY) } catch (e) {}
             bgMsg = '';
+            bgLocalChanged(0);
             applyTheme(); render();
         }
         const setBgMode = m => { S.bgMode = m; bgMsg = ''; save(); applyTheme(); render(); };
@@ -1748,19 +1856,11 @@ liten|маленький|Прилагательные|Har du den i liten større
                 const img = new Image();
                 img.onerror = fail;
                 img.onload = () => {
-                    const MAX = 1080;
-                    let w = img.width, h = img.height;
-                    if (w > MAX || h > MAX) {
-                        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-                        else { w = Math.round(w * MAX / h); h = MAX; }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                     try {
-                        const data = canvas.toDataURL('image/jpeg', 0.72);
+                        const data = fitData(img);
                         localStorage.setItem(BG_KEY, data);
                         BG = data;
+                        bgLocalChanged(1);
                         bgMsg = ic('check') + ' Фон обновлён';
                         applyTheme();
                         render();
@@ -2032,6 +2132,1313 @@ liten|маленький|Прилагательные|Har du den i liten større
         function refreshList() { const h = listHtml(); $('lst').innerHTML = h; $('fnd').textContent = lstInfo; $('stl').innerHTML = statsHtml(); watchMore(); }
         const refreshListSoon = debounce(refreshList, 140);
         /* «Знаю / не знаю» в списке: меняем только точку и счётчики, список не перерисовываем */
+        /* ---------- Словарь норвежских слов: перевод и транскрипция при добавлении карточки ---------- */
+        const DICT_RAW = `jeg|я
+du|ты
+han|он
+hun|она
+den|он, она, оно (о предмете)
+det|оно, это
+vi|мы
+dere|вы
+de|они
+meg|меня, мне
+deg|тебя, тебе
+ham|его, ему
+henne|её, ей
+oss|нас, нам
+dem|их, им
+min|мой
+din|твой
+hans|его (чей)
+hennes|её (чей)
+vår|наш
+deres|их, ваш
+sin|свой
+hvem|кто
+hva|что
+hvor|где, куда
+hvorfor|почему
+hvordan|как
+når|когда
+hvilken|какой
+hvor mye|сколько (о количестве)
+hvor mange|сколько (о числе)
+og|и
+eller|или
+men|но
+fordi|потому что
+hvis|если
+at|что (союз)
+som|который, как
+da|тогда, в то время как
+så|так, затем
+også|тоже, также
+ikke|не
+aldri|никогда
+alltid|всегда
+ofte|часто
+noen ganger|иногда
+sjelden|редко
+her|здесь
+der|там
+hit|сюда
+dit|туда
+nå|сейчас
+snart|скоро
+senere|позже
+tidlig|рано
+sent|поздно
+i dag|сегодня
+i går|вчера
+i morgen|завтра
+i morges|сегодня утром
+i kveld|сегодня вечером
+i natt|сегодня ночью
+i|в
+på|на
+til|к, в (направление)
+fra|от, из
+med|с
+uten|без
+for|для, за
+av|из, от
+om|о, об, через
+over|над, через
+under|под
+foran|перед
+bak|за, позади
+ved|у, возле
+mellom|между
+mot|против, к
+etter|после
+før|до, перед (о времени)
+siden|с (о времени), с тех пор
+gjennom|через, сквозь
+rundt|вокруг
+blant|среди
+hos|у (кого-то)
+inn|внутрь
+ut|наружу
+opp|вверх
+ned|вниз
+bort|прочь
+hjem|домой
+hjemme|дома
+borte|вдали, отсутствует
+oppe|наверху
+nede|внизу
+inne|внутри
+ute|снаружи
+nær|близко
+langt|далеко
+sammen|вместе
+alene|один, в одиночестве
+bare|только
+veldig|очень
+litt|немного
+mye|много
+mange|много (счётного)
+få|мало (счётного)
+noe|что-то
+noen|кто-то, какие-то
+ingen|никто, никакой
+alle|все
+hver|каждый
+annen|другой
+samme|тот же
+mer|больше
+mest|больше всего
+mindre|меньше
+minst|меньше всего
+nok|достаточно
+kanskje|может быть
+sikkert|наверняка
+selvfølgelig|конечно
+dessverre|к сожалению
+heldigvis|к счастью
+egentlig|вообще-то, на самом деле
+faktisk|фактически
+nesten|почти
+helt|совсем, полностью
+ganske|довольно
+omtrent|примерно
+akkurat|именно, как раз
+ennå|ещё, пока
+fortsatt|всё ещё
+allerede|уже
+igjen|снова, опять
+først|сначала, первый
+til slutt|в конце концов
+plutselig|вдруг
+forresten|кстати
+altså|итак
+altfor|слишком
+hei|привет
+morn|привет (разг.)
+ha det|пока
+ha det bra|всего хорошего
+god morgen|доброе утро
+god dag|добрый день
+god kveld|добрый вечер
+god natt|спокойной ночи
+takk|спасибо
+tusen takk|большое спасибо
+vær så snill|пожалуйста (просьба)
+vær så god|пожалуйста (прошу, возьмите)
+unnskyld|извините
+beklager|сожалею
+ingen årsak|не за что
+velkommen|добро пожаловать
+ja|да
+nei|нет
+jo|да (в ответ на отрицание)
+greit|ладно, хорошо
+null|ноль
+en|один
+to|два
+tre|три
+fire|четыре
+fem|пять
+seks|шесть
+sju|семь
+åtte|восемь
+ni|девять
+ti|десять
+elleve|одиннадцать
+tolv|двенадцать
+tretten|тринадцать
+fjorten|четырнадцать
+femten|пятнадцать
+seksten|шестнадцать
+sytten|семнадцать
+atten|восемнадцать
+nitten|девятнадцать
+tjue|двадцать
+tretti|тридцать
+førti|сорок
+femti|пятьдесят
+seksti|шестьдесят
+sytti|семьдесят
+åtti|восемьдесят
+nitti|девяносто
+hundre|сто
+tusen|тысяча
+en million|миллион
+første|первый
+andre|второй
+tredje|третий
+fjerde|четвёртый
+femte|пятый
+mandag|понедельник
+tirsdag|вторник
+onsdag|среда
+torsdag|четверг
+fredag|пятница
+lørdag|суббота
+søndag|воскресенье
+januar|январь
+februar|февраль
+mars|март
+april|апрель
+mai|май
+juni|июнь
+juli|июль
+august|август
+september|сентябрь
+oktober|октябрь
+november|ноябрь
+desember|декабрь
+en vår|весна
+en sommer|лето
+en høst|осень
+en vinter|зима
+å være|быть
+å ha|иметь
+å gjøre|делать
+å si|говорить, сказать
+å gå|идти, ходить
+å komme|приходить
+å se|видеть, смотреть
+å ta|брать
+å gi|давать
+å få|получать
+å finne|находить
+å vite|знать (факт)
+å kunne|уметь, мочь
+å ville|хотеть
+å skulle|собираться, должен (будущее)
+å måtte|должен, приходится
+å burde|следовало бы
+å la|позволять, оставлять
+å sette|ставить, сажать
+å legge|класть
+å sitte|сидеть
+å stå|стоять
+å ligge|лежать
+å henge|висеть
+å bo|жить, проживать
+å leve|жить (существовать)
+å arbeide|работать
+å jobbe|работать
+å studere|учиться, изучать
+å lære|учить, учиться
+å lese|читать
+å skrive|писать
+å snakke|говорить, разговаривать
+å prate|болтать
+å høre|слышать
+å lytte|слушать
+å spørre|спрашивать
+å svare|отвечать
+å forstå|понимать
+å tenke|думать
+å tro|верить, думать
+å mene|считать, иметь мнение
+å huske|помнить
+å glemme|забывать
+å kjenne|знать (человека), чувствовать
+å hete|называться, зваться
+å kalle|называть
+å bety|значить
+å bruke|использовать
+å trenge|нуждаться
+å prøve|пытаться, пробовать
+å begynne|начинать
+å slutte|заканчивать, прекращать
+å fortsette|продолжать
+å vente|ждать
+å hjelpe|помогать
+å spise|есть
+å drikke|пить
+å lage|делать, готовить
+å koke|варить, кипятить
+å steke|жарить
+å bake|печь
+å smake|пробовать на вкус
+å kjøpe|покупать
+å selge|продавать
+å betale|платить
+å koste|стоить
+å bestille|заказывать
+å handle|делать покупки
+å åpne|открывать
+å lukke|закрывать
+å stenge|закрывать (магазин)
+å bære|нести
+å løfte|поднимать
+å kaste|бросать
+å fange|ловить
+å holde|держать
+å trekke|тянуть
+å dytte|толкать
+å slå|бить
+å falle|падать
+å reise|ехать, путешествовать
+å kjøre|ехать, водить
+å sykle|ездить на велосипеде
+å fly|летать
+å løpe|бегать
+å svømme|плавать
+å hoppe|прыгать
+å danse|танцевать
+å synge|петь
+å spille|играть
+å leke|играть (о детях)
+å trene|тренироваться
+å gå tur|гулять
+å sove|спать
+å våkne|просыпаться
+å stå opp|вставать
+å legge seg|ложиться спать
+å hvile|отдыхать
+å slappe av|расслабляться
+å vaske|мыть, стирать
+å dusje|принимать душ
+å bade|купаться
+å pusse|чистить
+å rydde|убирать
+å male|красить, рисовать
+å tegne|рисовать
+å tørke|вытирать, сушить
+å kle på seg|одеваться
+å ta av|снимать
+å møte|встречать
+å treffe|встречаться
+å besøke|навещать
+å invitere|приглашать
+å ringe|звонить
+å sende|отправлять
+å motta|получать
+å vise|показывать
+å gjemme|прятать
+å lete|искать
+å søke|искать, подавать заявку
+å velge|выбирать
+å bestemme|решать
+å planlegge|планировать
+å håpe|надеяться
+å ønske|желать
+å elske|любить
+å like|нравиться
+å hate|ненавидеть
+å savne|скучать
+å le|смеяться
+å gråte|плакать
+å smile|улыбаться
+å rope|кричать
+å hviske|шептать
+å fortelle|рассказывать
+å forklare|объяснять
+å beskrive|описывать
+å diskutere|обсуждать
+å love|обещать
+å tillate|разрешать
+å forby|запрещать
+å tåle|выносить
+å trives|чувствовать себя хорошо
+å skje|происходить
+å bli|становиться, оставаться
+å høres ut|звучать
+å se ut|выглядеть
+å virke|казаться
+å passe|подходить
+å mangle|не хватать
+å eie|владеть
+å tjene|зарабатывать
+å spare|копить, экономить
+å låne|одалживать
+å leie|арендовать
+å flytte|переезжать
+å bygge|строить
+å reparere|чинить
+å lukte|пахнуть
+å regne|идти (о дожде)
+å snø|идти (о снеге)
+å blåse|дуть
+å skinne|светить
+å fryse|мёрзнуть
+å svette|потеть
+å føle|чувствовать
+å bekymre seg|беспокоиться
+å glede seg|радоваться (в ожидании)
+å feire|праздновать
+å gratulere|поздравлять
+å takke|благодарить
+å hilse|приветствовать
+å vinne|выигрывать
+å tape|проигрывать
+å feile|ошибаться
+å øve|упражняться
+å telle|считать
+å måle|измерять
+å veie|взвешивать
+å dø|умирать
+å vokse|расти
+å plante|сажать
+å fiske|ловить рыбу
+å jakte|охотиться
+å padle|грести
+å klatre|лазить
+å vandre|ходить в поход
+å savne|скучать
+å dele|делить
+å samle|собирать
+å velge|выбирать
+å skille|разделять
+å blande|смешивать
+å fylle|наполнять
+å tømme|опорожнять
+å bytte|менять
+å endre|изменять
+å sjekke|проверять
+å rette|исправлять
+å glede|радовать
+å lykkes|удаваться
+å overraske|удивлять
+å forberede|готовить, подготавливать
+å bestå|сдать (экзамен), состоять
+å melde|сообщать
+å kontakte|связываться
+å delta|участвовать
+å oppleve|переживать, испытывать
+å oppdage|обнаружить
+å utvikle|развивать
+å hente|забирать, приносить
+å levere|доставлять, сдавать
+å pakke|упаковывать
+å sende|отправлять
+en mor|мать
+en far|отец
+en mamma|мама
+en pappa|папа
+en bror|брат
+ei/en søster|сестра
+en sønn|сын
+ei/en datter|дочь
+et barn|ребёнок
+en bestemor|бабушка
+en bestefar|дедушка
+en onkel|дядя
+ei/en tante|тётя
+en fetter|двоюродный брат
+ei/en kusine|двоюродная сестра
+en mann|мужчина, муж
+ei/en kone|жена
+ei/en kvinne|женщина
+en kjæreste|возлюбленный, парень, девушка
+en venn|друг
+ei/en venninne|подруга
+en gutt|мальчик
+ei/en jente|девочка
+ei/en dame|дама
+et menneske|человек
+en person|человек, персона
+et folk|народ, люди
+en nabo|сосед
+en gjest|гость
+en kollega|коллега
+en sjef|начальник
+en lærer|учитель
+en elev|ученик
+en student|студент
+en lege|врач
+ei/en sykepleier|медсестра, медбрат
+en tannlege|стоматолог
+en politimann|полицейский
+en brannmann|пожарный
+en kokk|повар
+en servitør|официант
+en frisør|парикмахер
+en sjåfør|водитель
+en bonde|фермер
+en fisker|рыбак
+en kunstner|художник
+en musiker|музыкант
+en forfatter|писатель
+en journalist|журналист
+en ingeniør|инженер
+en advokat|адвокат
+en turist|турист
+en nordmann|норвежец
+en utlending|иностранец
+en kunde|клиент
+en pasient|пациент
+en arbeider|рабочий
+en direktør|директор
+et hode|голова
+et ansikt|лицо
+et øye|глаз
+et øre|ухо
+en nese|нос
+en munn|рот
+en tann|зуб
+en tunge|язык (орган)
+ei/en leppe|губа
+et hår|волосы
+en hals|шея
+en skulder|плечо
+en arm|рука (от плеча до кисти)
+en albue|локоть
+en hånd|кисть, рука
+en finger|палец (руки)
+en rygg|спина
+en mage|живот
+et bryst|грудь
+et ben|нога
+et kne|колено
+en fot|ступня
+en tå|палец ноги
+et hjerte|сердце
+en kropp|тело
+ei/en hud|кожа
+et blod|кровь
+en hjerne|мозг
+en stemme|голос
+en helse|здоровье
+en sykdom|болезнь
+en smerte|боль
+en feber|жар, температура
+en forkjølelse|простуда
+en hoste|кашель
+en hodepine|головная боль
+en tablett|таблетка
+en medisin|лекарство
+et apotek|аптека
+et sykehus|больница
+en mat|еда
+en frokost|завтрак
+en lunsj|обед (лёгкий)
+en middag|обед, ужин
+et måltid|приём пищи
+et brød|хлеб
+en skive|ломтик, бутерброд
+et smør|масло (сливочное)
+en ost|сыр
+et egg|яйцо
+ei/en melk|молоко
+en yoghurt|йогурт
+et pålegg|начинка для бутерброда
+en skinke|ветчина
+en pølse|сосиска
+et kjøtt|мясо
+en kylling|курица
+en biff|говядина, стейк
+en fisk|рыба
+en laks|лосось
+en torsk|треска
+ei/en reke|креветка
+ei/en suppe|суп
+en salat|салат
+en pizza|пицца
+en pasta|паста
+en ris|рис
+en potet|картофель
+en grønnsak|овощ
+en gulrot|морковь
+en løk|лук
+en tomat|помидор
+en agurk|огурец
+en paprika|перец (овощ)
+en sopp|гриб
+en frukt|фрукт
+et eple|яблоко
+en banan|банан
+en appelsin|апельсин
+en sitron|лимон
+ei/en pære|груша
+en drue|виноград
+et jordbær|клубника
+et blåbær|черника
+ei/en kake|торт, пирог
+en kjeks|печенье
+en sjokolade|шоколад
+en is|мороженое
+et sukker|сахар
+et salt|соль
+en pepper|перец (специя)
+en olje|масло (растительное)
+en saus|соус
+en honning|мёд
+et syltetøy|варенье
+en nøtt|орех
+en kaffe|кофе
+en te|чай
+en juice|сок
+et vann|вода
+en brus|газировка
+et øl|пиво
+en vin|вино
+en flaske|бутылка
+et glass|стакан, стекло
+en kopp|чашка
+en tallerken|тарелка
+ei/en skje|ложка
+en gaffel|вилка
+en kniv|нож
+ei/en bolle|булочка
+ei/en vaffel|вафля
+ei/en pannekake|блин
+en grøt|каша
+en hamburger|бургер
+et hus|дом
+ei/en leilighet|квартира
+et rom|комната
+et kjøkken|кухня
+ei/en stue|гостиная
+et soverom|спальня
+et bad|ванная, купание
+et toalett|туалет
+en gang|коридор, раз
+en kjeller|подвал
+et loft|чердак
+en hage|сад
+en balkong|балкон
+ei/en dør|дверь
+et vindu|окно
+et tak|крыша, потолок
+et gulv|пол
+en vegg|стена
+ei/en trapp|лестница
+en heis|лифт
+en nøkkel|ключ
+en adresse|адрес
+en husleie|квартплата
+et møbel|мебель
+en stol|стул
+et bord|стол
+en sofa|диван
+ei/en seng|кровать
+et skap|шкаф
+ei/en hylle|полка
+et teppe|ковёр, плед
+ei/en pute|подушка
+ei/en dyne|одеяло
+en lampe|лампа
+et speil|зеркало
+et bilde|картина, фото
+et ur|часы
+ei/en klokke|часы, колокол
+et kjøleskap|холодильник
+en komfyr|плита
+en ovn|духовка, печь
+en oppvaskmaskin|посудомоечная машина
+en vaskemaskin|стиральная машина
+en støvsuger|пылесос
+en tv|телевизор
+en radio|радио
+en datamaskin|компьютер
+en telefon|телефон
+en mobil|мобильный телефон
+et nettbrett|планшет
+en skjerm|экран
+et tastatur|клавиатура
+ei/en mus|мышь
+en printer|принтер
+et batteri|батарея
+en lader|зарядное устройство
+ei/en ledning|провод
+et lys|свет, свеча
+ei/en såpe|мыло
+et håndkle|полотенце
+ei/en tannbørste|зубная щётка
+en tannpasta|зубная паста
+en kam|расчёска
+et søppel|мусор
+ei/en bøtte|ведро
+ei/en boks|коробка, банка
+ei/en pose|пакет
+ei/en veske|сумка
+en ryggsekk|рюкзак
+ei/en koffert|чемодан
+ei/en lommebok|кошелёк
+ei/en paraply|зонт
+en genser|свитер
+ei/en skjorte|рубашка
+ei/en t-skjorte|футболка
+ei/en bukse|брюки
+en shorts|шорты
+ei/en kjole|платье
+et skjørt|юбка
+ei/en jakke|куртка, пиджак
+en frakk|пальто
+ei/en lue|шапка
+et skjerf|шарф
+en hanske|перчатка
+en vott|варежка
+en sokk|носок
+en sko|ботинок, туфля
+en støvel|сапог
+et belte|ремень
+en slips|галстук
+en dress|костюм
+en badedrakt|купальник
+et undertøy|нижнее бельё
+en pyjamas|пижама
+en farge|цвет
+rød|красный
+blå|синий, голубой
+grønn|зелёный
+gul|жёлтый
+svart|чёрный
+hvit|белый
+grå|серый
+brun|коричневый
+oransje|оранжевый
+rosa|розовый
+lilla|фиолетовый
+en by|город
+et sted|место
+ei/en gate|улица
+en vei|дорога
+et torg|площадь
+ei/en bro|мост
+en park|парк
+ei/en butikk|магазин
+et supermarked|супермаркет
+et kjøpesenter|торговый центр
+en kiosk|киоск
+et bakeri|пекарня
+en restaurant|ресторан
+en kafé|кафе
+et hotell|отель
+et museum|музей
+et teater|театр
+en kino|кинотеатр
+et bibliotek|библиотека
+ei/en skole|школа
+et universitet|университет
+ei/en barnehage|детский сад
+ei/en kirke|церковь
+en bank|банк
+et postkontor|почтовое отделение
+et rådhus|ратуша
+en politistasjon|полицейский участок
+en stasjon|станция
+en flyplass|аэропорт
+ei/en havn|порт
+et busstopp|автобусная остановка
+et kontor|офис
+en fabrikk|фабрика
+en gård|ферма, двор
+et land|страна
+ei/en landsby|деревня
+et sentrum|центр
+ei/en strand|пляж
+en fjord|фьорд
+et fjell|гора
+ei/en skog|лес
+en innsjø|озеро
+en sjø|море, озеро
+et hav|океан
+ei/en elv|река
+ei/en øy|остров
+ei/en dal|долина
+ei/en bakke|холм, склон
+en foss|водопад
+en isbre|ледник
+en himmel|небо
+ei/en sol|солнце
+en måne|луна
+ei/en stjerne|звезда
+et nordlys|северное сияние
+en natur|природа
+et dyr|животное
+en fugl|птица
+en hund|собака
+ei/en katt|кошка
+en hest|лошадь
+ei/en ku|корова
+ei/en gris|свинья
+en sau|овца
+ei/en geit|коза
+en elg|лось
+en rein|северный олень
+en bjørn|медведь
+en ulv|волк
+en rev|лиса
+en hare|заяц
+en frosk|лягушка
+ei/en bie|пчела
+en sommerfugl|бабочка
+en edderkopp|паук
+ei/en blomst|цветок
+et tre|дерево
+et gress|трава
+ei/en plante|растение
+et blad|лист, журнал
+en stein|камень
+et sand|песок
+en snø|снег
+et regn|дождь
+en vind|ветер
+ei/en sky|облако
+ei/en tåke|туман
+et vær|погода
+en storm|буря
+et lyn|молния
+en torden|гром
+en bil|машина
+en buss|автобус
+et tog|поезд
+ei/en trikk|трамвай
+en t-bane|метро
+ei/en sykkel|велосипед
+en motorsykkel|мотоцикл
+et fly|самолёт
+en båt|лодка
+et skip|корабль
+ei/en ferje|паром
+en drosje|такси
+en lastebil|грузовик
+en billett|билет
+ei/en rute|маршрут
+en avgang|отправление
+en ankomst|прибытие
+et kart|карта
+en reise|поездка
+en ferie|отпуск
+en tur|прогулка, поездка
+et pass|паспорт
+ei/en grense|граница
+en bagasje|багаж
+et hjul|колесо
+ei/en parkering|парковка
+en bensin|бензин
+en trafikk|движение
+et kryss|перекрёсток
+en fotgjenger|пешеход
+en tid|время
+et sekund|секунда
+et minutt|минута
+en time|час, урок
+en dag|день
+ei/en uke|неделя
+en måned|месяц
+et år|год
+et århundre|век
+en morgen|утро
+en formiddag|время до полудня
+en ettermiddag|послеобеденное время
+en kveld|вечер
+ei/en natt|ночь
+et øyeblikk|мгновение
+en fremtid|будущее
+en fortid|прошлое
+en helg|выходные
+en bursdag|день рождения
+en jul|Рождество
+en påske|Пасха
+en fest|праздник, вечеринка
+ei/en gave|подарок
+et nyttår|Новый год
+ei/en klasse|класс
+et fag|предмет
+ei/en lekse|домашнее задание
+ei/en prøve|тест, проба
+en eksamen|экзамен
+en karakter|оценка
+ei/en bok|книга
+ei/en avis|газета
+et brev|письмо
+en e-post|электронная почта
+ei/en melding|сообщение
+et ord|слово
+ei/en setning|предложение
+en tekst|текст
+en oppgave|задание
+et spørsmål|вопрос
+et svar|ответ
+en feil|ошибка
+ei/en ordbok|словарь
+ei/en penn|ручка
+en blyant|карандаш
+et papir|бумага
+ei/en tavle|доска
+ei/en pult|парта
+et språk|язык
+et kurs|курс
+ei/en lærebok|учебник
+en jobb|работа
+et arbeid|работа, труд
+et yrke|профессия
+en arbeidsplass|рабочее место
+ei/en lønn|зарплата
+en penger|деньги
+en kontrakt|договор
+et møte|встреча, собрание
+ei/en søknad|заявление
+et intervju|интервью
+en erfaring|опыт
+en utdanning|образование
+ei/en bedrift|предприятие
+et firma|фирма
+en avdeling|отдел
+et liv|жизнь
+en verden|мир
+ei/en historie|история
+en hobby|хобби
+en idé|идея
+et problem|проблема
+ei/en løsning|решение
+en grunn|причина
+ei/en mulighet|возможность
+en forskjell|разница
+en fordel|преимущество
+en ulempe|недостаток
+et valg|выбор
+ei/en plan|план
+et mål|цель
+ei/en drøm|мечта
+et minne|воспоминание
+ei/en følelse|чувство
+en kjærlighet|любовь
+et vennskap|дружба
+en frihet|свобода
+en fred|мир (покой)
+ei/en krig|война
+en politikk|политика
+et samfunn|общество
+ei/en kultur|культура
+ei/en tradisjon|традиция
+en religion|религия
+ei/en lov|закон
+en sikkerhet|безопасность
+en økonomi|экономика
+en pris|цена, приз
+ei/en regning|счёт (к оплате)
+et beløp|сумма
+ei/en krone|крона
+en euro|евро
+en dollar|доллар
+en rabatt|скидка
+et tilbud|предложение, акция
+ei/en kvittering|чек
+et kort|карта, открытка
+et bankkort|банковская карта
+en konto|банковский счёт
+ei/en maskin|машина (механизм)
+en teknologi|технология
+et internett|интернет
+et nettsted|сайт
+et passord|пароль
+et program|программа
+en app|приложение
+en film|фильм
+ei/en serie|сериал, серия
+en musikk|музыка
+ei/en sang|песня
+en konsert|концерт
+et maleri|картина (живопись)
+en fotball|футбол
+en sport|спорт
+et lag|команда
+ei/en kamp|матч, борьба
+ei/en ski|лыжа
+ei/en skøyte|конёк
+en ball|мяч
+en idrett|спорт
+ei/en trening|тренировка
+et spill|игра
+ei/en leke|игрушка
+et telt|палатка
+et bål|костёр
+en sovepose|спальный мешок
+ei/en hytte|хижина, дача
+en fottur|пеший поход
+en skitur|лыжная прогулка
+en ting|вещь
+en måte|способ
+en del|часть
+et tall|число
+ei/en side|сторона, страница
+en kant|край
+en midte|середина
+en slutt|конец
+en begynnelse|начало
+en gruppe|группа
+ei/en liste|список
+et eksempel|пример
+ei/en situasjon|ситуация
+ei/en nyhet|новость
+en informasjon|информация
+en hjelp|помощь
+en risiko|риск
+Norge|Норвегия
+Sverige|Швеция
+Danmark|Дания
+Finland|Финляндия
+Island|Исландия
+Russland|Россия
+Ukraina|Украина
+Tyskland|Германия
+Frankrike|Франция
+England|Англия
+Spania|Испания
+Italia|Италия
+Polen|Польша
+Kina|Китай
+Japan|Япония
+stor|большой
+liten|маленький
+lang|длинный
+kort|короткий
+høy|высокий, громкий
+lav|низкий
+bred|широкий
+smal|узкий
+tykk|толстый
+tynn|тонкий
+tung|тяжёлый
+lett|лёгкий
+ny|новый
+gammel|старый
+ung|молодой
+god|хороший, вкусный
+dårlig|плохой
+fin|красивый, хороший
+pen|красивый, аккуратный
+stygg|некрасивый
+søt|милый, сладкий
+snill|добрый
+slem|злой
+hyggelig|приятный
+morsom|смешной
+kjedelig|скучный
+interessant|интересный
+viktig|важный
+vanskelig|трудный
+enkel|простой
+vanlig|обычный
+spesiell|особенный
+rar|странный
+forskjellig|разный
+lik|похожий
+riktig|правильный
+feil|неправильный
+sann|правдивый
+falsk|ложный
+ren|чистый
+skitten|грязный
+fersk|свежий
+billig|дешёвый
+dyr|дорогой (о цене)
+gratis|бесплатный
+rik|богатый
+fattig|бедный
+glad|радостный
+trist|грустный
+sint|сердитый
+redd|испуганный
+sliten|уставший
+trøtt|сонный
+sulten|голодный
+tørst|испытывающий жажду
+mett|сытый
+syk|больной
+frisk|здоровый
+sterk|сильный
+svak|слабый
+rask|быстрый
+sakte|медленный, медленно
+fort|быстро
+stille|тихий
+mørk|тёмный
+lys|светлый
+åpen|открытый
+stengt|закрытый
+full|полный
+tom|пустой
+hel|целый
+halv|половина
+ødelagt|сломанный
+ledig|свободный
+opptatt|занятый
+klar|готовый, ясный
+ferdig|готовый, законченный
+sikker|уверенный
+nødvendig|необходимый
+mulig|возможный
+umulig|невозможный
+farlig|опасный
+trygg|безопасный
+flink|умелый, способный
+dum|глупый
+smart|умный
+klok|мудрый
+modig|смелый
+sjenert|стеснительный
+vennlig|дружелюбный
+ensom|одинокий
+gift|женатый, замужем
+singel|не состоящий в паре
+norsk|норвежский
+russisk|русский
+engelsk|английский
+svensk|шведский
+dansk|датский
+tysk|немецкий
+fransk|французский
+spansk|испанский
+ukrainsk|украинский
+utenlandsk|иностранный
+kald|холодный
+varm|тёплый, горячий
+kjølig|прохладный
+solrik|солнечный
+skyet|облачный
+våt|мокрый
+tørr|сухой
+lite|мало, немного
+bedre|лучше
+best|лучший
+verre|хуже
+verst|худший
+flere|больше (о числе)
+flest|больше всего
+færre|меньше (о числе)`;
+        const ART_RE = /^(å|ei\/en|en|et|ei)\s+/;
+        const headOf = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim().replace(ART_RE, '').trim();
+        const DICT = [], DIDX = new Map(), DFOLD = new Map();
+        DICT_RAW.trim().split('\n').forEach(l => {
+            const p = l.split('|');
+            if (p.length < 2) return;
+            const e = { no: p[0].trim(), ru: p[1].trim() };
+            const h = headOf(e.no);
+            DICT.push(e);
+            if (!DIDX.has(h)) DIDX.set(h, e);
+            const f = fold(h);
+            if (!DFOLD.has(f)) DFOLD.set(f, e);
+        });
+        /* неправильные формы → начальная форма */
+        const IRREG = {
+            var: 'være', vært: 'være', er: 'være', har: 'ha', hadde: 'ha', hatt: 'ha', gjorde: 'gjøre', gjort: 'gjøre', gjør: 'gjøre', sa: 'si', sagt: 'si', sier: 'si',
+            'går': 'gå', gikk: 'gå', 'gått': 'gå', kommer: 'komme', kom: 'komme', kommet: 'komme', ser: 'se', sett: 'se', tar: 'ta', tok: 'ta', tatt: 'ta',
+            gir: 'gi', ga: 'gi', gitt: 'gi', 'får': 'få', fikk: 'få', 'fått': 'få', finner: 'finne', fant: 'finne', funnet: 'finne',
+            vet: 'vite', visste: 'vite', visst: 'vite', kan: 'kunne', vil: 'ville', skal: 'skulle', 'må': 'måtte', 'bør': 'burde',
+            lar: 'la', lot: 'la', satt: 'sitte', sitter: 'sitte', sittet: 'sitte', setter: 'sette', satte: 'sette',
+            sto: 'stå', 'står': 'stå', 'stått': 'stå', 'lå': 'ligge', ligger: 'ligge', ligget: 'ligge', legger: 'legge', lagt: 'legge',
+            skrev: 'skrive', skriver: 'skrive', skrevet: 'skrive', leser: 'lese', leste: 'lese', lest: 'lese',
+            drakk: 'drikke', drikker: 'drikke', drukket: 'drikke', spiser: 'spise', spiste: 'spise', spist: 'spise',
+            'løp': 'løpe', 'løper': 'løpe', 'løpt': 'løpe', 'fløy': 'fly', flyr: 'fly', sov: 'sove', sover: 'sove', sovet: 'sove',
+            hjalp: 'hjelpe', hjelper: 'hjelpe', hjulpet: 'hjelpe', spurte: 'spørre', 'spør': 'spørre', spurt: 'spørre',
+            trodde: 'tro', tror: 'tro', trodd: 'tro', het: 'hete', heter: 'hete', hett: 'hete', bar: 'bære', 'bærer': 'bære', 'båret': 'bære',
+            ble: 'bli', blir: 'bli', blitt: 'bli', solgte: 'selge', selger: 'selge', solgt: 'selge',
+            bodde: 'bo', bor: 'bo', bodd: 'bo', trakk: 'trekke', trekker: 'trekke', trukket: 'trekke', falt: 'falle', faller: 'falle',
+            holdt: 'holde', holder: 'holde', 'slo': 'slå', 'slår': 'slå', 'slått': 'slå', valgte: 'velge', velger: 'velge', valgt: 'velge',
+            vant: 'vinne', vinner: 'vinne', vunnet: 'vinne', traff: 'treffe', treffer: 'treffe', truffet: 'treffe',
+            forsto: 'forstå', 'forstår': 'forstå', 'forstått': 'forstå', 'dør': 'dø', 'døde': 'dø', 'sluttet': 'slutte',
+            'bøker': 'bok', 'bøkene': 'bok', menn: 'mann', mennene: 'mann', 'føtter': 'fot', 'føttene': 'fot', hender: 'hånd', hendene: 'hånd',
+            'brødre': 'bror', 'brødrene': 'bror', 'mødre': 'mor', fedre: 'far', 'døtre': 'datter', 'døtrene': 'datter',
+            'tær': 'tå', 'trær': 'tre', 'trærne': 'tre', 'øyne': 'øye', 'øynene': 'øye', 'ører': 'øre', 'ørene': 'øre', barna: 'barn',
+            tenner: 'tann', tennene: 'tann', 'bønder': 'bonde', nordmenn: 'nordmann', 'større': 'stor', 'størst': 'stor',
+            lille: 'liten', 'små': 'liten', eldre: 'gammel', eldst: 'gammel', yngre: 'ung', yngst: 'ung', lengre: 'lang', lengst: 'lang',
+            'høyere': 'høy', 'høyest': 'høy', 'færrest': 'få'
+        };
+        const SUF = [['ene', ''], ['ene', 'e'], ['er', ''], ['er', 'e'], ['ar', ''], ['ar', 'e'], ['en', ''], ['et', ''], ['a', ''], ['a', 'e'],
+            ['te', ''], ['te', 'e'], ['de', ''], ['de', 'e'], ['dde', ''], ['t', ''], ['t', 'e'], ['e', ''], ['r', ''], ['s', ''],
+            ['ere', ''], ['est', ''], ['este', ''], ['ste', '']];
+        function wordCands(w) {
+            const out = [];
+            const add = x => { if (x && x.length >= 2 && x !== w && !out.includes(x)) out.push(x); };
+            if (IRREG[w]) add(IRREG[w]);
+            SUF.forEach(([s, a]) => { if (w.length - s.length >= 2 && w.endsWith(s)) add(w.slice(0, -s.length) + a); });
+            return out;
+        }
+        function lemmaCands(h) {
+            const sp = h.indexOf(' ');
+            if (sp < 0) return wordCands(h);
+            const first = h.slice(0, sp), rest = h.slice(sp);
+            return wordCands(first).map(c => c + rest);
+        }
+
+        let ownKey = '', ownMap = new Map(), sugArr = [];
+        function ownIdx() {
+            const cs = cards(), key = cs.length + ':' + S.cu.length;
+            if (key !== ownKey) {
+                ownKey = key; ownMap = new Map(); sugArr = [];
+                const push = (e, own) => {
+                    const h = headOf(e.no);
+                    if (own && !ownMap.has(h)) ownMap.set(h, e);
+                    sugArr.push({ e, h, fh: fold(h), fr: fold(e.ru).replace(/[^a-zа-я0-9 ]+/g, ' ').split(/\s+/).filter(Boolean) });
+                };
+                cs.forEach(c => push(c, true));
+                DICT.forEach(e => push(e, false));
+            }
+            return ownMap;
+        }
+        const mkRes = (e, extra) => Object.assign({ no: e.no, ru: e.ru }, extra);
+        function lookupWord(raw) {
+            const w = String(raw || '').toLowerCase().replace(/\s+/g, ' ').trim();
+            if (!w) return null;
+            const h = w.replace(ART_RE, '').trim() || w;
+            const own = ownIdx();
+            let e = own.get(h) || own.get(w);
+            if (e) return mkRes(e, { src: 'cards' });
+            e = DIDX.get(h) || DIDX.get(w);
+            if (e) return mkRes(e, { src: 'dict' });
+            const irr = IRREG[h];
+            if (irr) { e = own.get(irr) || DIDX.get(irr); if (e) return mkRes(e, { src: 'form', form: true }); }
+            e = DFOLD.get(fold(h));
+            if (e) return mkRes(e, { src: 'dict' });
+            const cs = lemmaCands(h);
+            for (const c of cs) { e = own.get(c) || DIDX.get(c); if (e) return mkRes(e, { src: 'form', form: true }); }
+            for (const c of cs) { e = DFOLD.get(fold(c)); if (e) return mkRes(e, { src: 'form', form: true }); }
+            return null;
+        }
+        function suggestWords(raw, limit = 5) {
+            const qs = String(raw || '').toLowerCase().trim();
+            if (qs.length < 2) return [];
+            ownIdx();
+            const cyr = /[а-яё]/.test(qs);
+            const qf = cyr ? qs.replace(/ё/g, 'е') : fold(qs);
+            const B = [[], [], []], seen = new Set();
+            for (const x of sugArr) {
+                if (seen.has(x.h)) continue;
+                let rank = -1;
+                if (cyr) { if (x.fr.includes(qf)) rank = 0; else if (x.fr.some(t => t.startsWith(qf))) rank = 1; }
+                else if (x.fh === qf) rank = 0;
+                else if (x.fh.startsWith(qf)) rank = 1;
+                else if (x.fh.includes(qf)) rank = 2;
+                if (rank < 0) continue;
+                seen.add(x.h);
+                B[rank].push(x.e);
+            }
+            return B[0].concat(B[1], B[2]).slice(0, limit);
+        }
+
+        /* Онлайн-запасной вариант (MyMemory), если слова нет в словаре */
+        const ONL = new Map();
+        async function onlineTr(w) {
+            const k = w.toLowerCase();
+            if (ONL.has(k)) return ONL.get(k);
+            let out = '', answered = false;
+            for (const lp of ['no|ru', 'nb|ru']) {
+                try {
+                    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 6000);
+                    const r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(w) + '&langpair=' + lp, { signal: ctl.signal });
+                    clearTimeout(t);
+                    const j = await r.json();
+                    answered = true;
+                    const cand = [j && j.responseData && j.responseData.translatedText].concat(((j && j.matches) || []).map(m => m.translation));
+                    const good = cand.find(x => x && /[а-яё]/i.test(x) && !/MYMEMORY|WARNING|INVALID|QUERY/i.test(x));
+                    if (good) {
+                        out = String(good).replace(/<[^>]*>/g, '').replace(/[.!]+$/, '').trim();
+                        if (w === w.toLowerCase()) out = out.charAt(0).toLowerCase() + out.slice(1);
+                        break;
+                    }
+                } catch (e) {}
+            }
+            if (answered) ONL.set(k, out);
+            return out;
+        }
+
+        let lkTimer = 0, lkSeq = 0, lkList = [];
+        const lookupDeb = () => { clearTimeout(lkTimer); lkTimer = setTimeout(lookupRun, 250); };
+        function chipsHtml(list, title) {
+            lkList = list;
+            return `<div class="lk-st">${title}</div><div class="lk-chips">${list.map((e, k) => `<button type="button" class="lk-chip" onclick="useSug(${k})">${esc(e.no)}<small>${esc(e.ru)}</small></button>`).join('')}</div>`;
+        }
+        function useSug(k) {
+            const e = lkList[k], noEl = $('a-no'), ruEl = $('a-ru'), trEl = $('a-tr');
+            if (!e || !noEl || !ruEl) return;
+            noEl.value = e.no; ruEl.value = e.ru; ruEl.dataset.m = '';
+            if (trEl) trEl.dataset.m = '';
+            trFill(); chkDup(); lookupRun();
+        }
+        async function lookupRun() {
+            const box = $('lk'), noEl = $('a-no'), ruEl = $('a-ru');
+            if (!box || !noEl || !ruEl) return;
+            const no = noEl.value.trim(), ruQ = ruEl.value.trim(), seq = ++lkSeq;
+            if (!no) {
+                if (ruEl.dataset.m !== '1') ruEl.value = '';
+                const s = ruQ.length >= 2 && ruEl.dataset.m === '1' ? suggestWords(ruQ) : [];
+                box.innerHTML = s.length ? chipsHtml(s, 'Подсказки из словаря:') : '';
+                return;
+            }
+            const r = lookupWord(no);
+            if (r) {
+                if (ruEl.dataset.m !== '1') ruEl.value = r.ru;
+                chkDup();
+                const diff = r.no.toLowerCase() !== no.toLowerCase();
+                box.innerHTML = `<div class="lk-ok">${ic('check')} <b>${esc(r.no)}</b> — ${esc(r.ru)}${r.form ? ' <i>(форма слова)</i>' : ''}</div>` + (diff ? chipsHtml([r], 'Начальная форма:') : '');
+                return;
+            }
+            const s = suggestWords(no);
+            const online = no.length >= 3 && navigator.onLine !== false;
+            box.innerHTML = (s.length ? chipsHtml(s, 'Возможно, вы имели в виду:') : '') + (online ? `<div class="lk-st">Ищу перевод онлайн…</div>` : `<div class="lk-st">Такого слова нет в словаре. Введите перевод сами.</div>`);
+            if (!online) return;
+            const tx = await onlineTr(no);
+            if (seq !== lkSeq || !$('a-no') || $('a-no').value.trim() !== no) return;
+            if (tx) {
+                if (ruEl.dataset.m !== '1') ruEl.value = tx;
+                chkDup();
+                box.innerHTML = `<div class="lk-ok">${ic('sparkles')} Онлайн-перевод: <b>${esc(tx)}</b> — проверьте, прежде чем добавлять</div>` + (s.length ? chipsHtml(s, 'Или из словаря:') : '');
+            } else {
+                box.innerHTML = `<div class="lk-st">Не нашёл это слово. Введите перевод сами.</div>` + (s.length ? chipsHtml(s, 'Возможно, вы имели в виду:') : '');
+            }
+        }
+
         function setSt(id, v) {
             S.st[id] = v; save();
             const d = document.querySelector('.item[data-id="' + id + '"] .it-main .dot'); if (d) d.className = 'dot ' + v;
@@ -2221,9 +3628,10 @@ liten|маленький|Прилагательные|Har du den i liten større
             } else if (tab === 'add') {
                 h += `
                 <label>По-норвежски</label>
-                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup();trFill()">
+                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup();trFill();lookupDeb()">
+                <div class="lk" id="lk"></div>
                 <label>Перевод</label>
-                <input id="a-ru" autocomplete="off" enterkeyhint="next" oninput="chkDup()">
+                <input id="a-ru" autocomplete="off" enterkeyhint="next" oninput="this.dataset.m = this.value ? '1' : '';chkDup();lookupDeb()">
                 <div id="dup"></div>
                 <label>Транскрипция (подставляется сама, можно исправить)</label>
                 <input id="a-tr" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" oninput="this.dataset.m = this.value ? '1' : ''">
