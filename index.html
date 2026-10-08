@@ -663,6 +663,8 @@
         /* ===== Производительность ===== */
         nav, .sh-pn { -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }   /* размытие — только у нижнего меню и панели выбора */
         .more { margin-top: 6px; }
+        .aex { margin: 6px 2px 0; }
+        .aex .lk-ok i { font-style: normal; font-size: 14px; opacity: .9; }
         /* Быстрый режим: без размытия, лишних теней и бесконечных анимаций */
         html.lite { --blur: none; --tsh: 0 1px 1px rgba(0, 20, 60, .5); --edge: inset 0 1px 0 rgba(255, 255, 255, .35); }
         html.lite nav, html.lite .sh-pn { -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -5513,6 +5515,143 @@ færre|меньше (о числе)`;
             return out;
         }
 
+        /* ---------- Автопример на норвежском: подставляется при добавлении нового слова ---------- */
+        const AE_SRC = { cards: 'из ваших карточек', web: 'Tatoeba', web2: 'MyMemory', tmpl: 'простой шаблон — замените, если хочется' };
+        const EX_ART = /^(a|ei\/en|en|et|ei) /;   // артикль/«å» в уже «сложенном» (fold) тексте
+        let AE = null, aeTimer = 0;
+        const exDeb = () => { clearTimeout(aeTimer); aeTimer = setTimeout(autoEx, 600); };
+
+        /* Формы слова, по которым ищем его в предложениях: spise → spiser, spiste, spist… */
+        function exForms(words) {
+            const f = new Set();
+            for (const w of words) {
+                if (!w || w.includes(' ') || w.length < 3) continue;
+                f.add(w);
+                ['a', 'e', 'en', 'et', 'er', 'ene', 's', 't', 'te', 'de', 'r'].forEach(x => f.add(w + x));
+                if (w.endsWith('e') && w.length > 3) { const w0 = w.slice(0, -1); ['', 'er', 'et', 'te', 'de', 't', 'a', 'ene', 'en'].forEach(x => f.add(w0 + x)); }
+            }
+            return f;
+        }
+        const exScore = t => Math.abs(t.length - 38);
+        const exHas = (text, words, forms) => {
+            const fx = fold(text);
+            if (words.some(w => w.includes(' ') && fx.includes(w))) return true;
+            return forms.size > 0 && fx.split(/[^a-z0-9]+/).some(t => forms.has(t));
+        };
+        function localEx(words, forms) {
+            const out = [], seen = new Set();
+            for (const c of cards()) {
+                if (!c.ex || seen.has(c.ex)) continue;
+                if (exHas(c.ex, words, forms)) { seen.add(c.ex); out.push({ t: c.ex, src: 'cards' }); }
+            }
+            return out.sort((a, b) => exScore(a.t) - exScore(b.t)).slice(0, 4);
+        }
+        /* Простые грамматически верные предложения — запасной вариант, если ничего больше не нашлось */
+        function tmplEx(base, ru) {
+            const b = base.trim();
+            if (!b) return '';
+            if (/^å /i.test(b)) return b.length > 3 ? 'Jeg vil ' + b.slice(2).trim() + '.' : '';
+            const m = b.match(/^(en|ei|et)(?:\/(?:en|ei|et))? (.+)$/i);
+            if (m) {
+                const art = m[1].toLowerCase(), form = art + ' ' + m[2];
+                return art === 'et' ? 'Jeg ser ' + form + '.' : art === 'ei' ? 'Her er ' + form + '.' : 'Det er ' + form + '.';
+            }
+            const r1 = String(ru || '').split(/[,;(]/)[0].trim().toLowerCase();
+            if (!/\s/.test(b) && /(ый|ий|ой|ая|ое|яя|ее)$/.test(r1) && !/^[A-ZÆØÅ]/.test(b)) return 'Han er ' + b + '.';   // прилагательное
+            if (/^[A-ZÆØÅ]/.test(b)) return 'Jeg vil gjerne se ' + b + '.';
+            if (!/\s/.test(b)) { const g = nounGender(b); if (g) return g === 'et' ? 'Jeg ser et ' + b + '.' : 'Det er en ' + b + '.'; }                                              // название места
+            return 'Hva betyr «' + b + '»?';
+        }
+        /* Род существительного для шаблона: берём у известного слова, которым оканчивается составное слово (takstein → stein),
+           либо по надёжным окончаниям (-sjon, -ning, -het …) */
+        let NGEN = null;
+        function nounGender(w) {
+            if (!NGEN) {
+                NGEN = new Map();
+                const add = no => { const m = String(no).match(/^(en|ei\/en|et|ei) (.+)$/i); if (m) { const h = m[2].toLowerCase().trim(); if (!NGEN.has(h)) NGEN.set(h, m[1].toLowerCase()); } };
+                cards().forEach(c => add(c.no)); DICT.forEach(e => add(e.no));
+            }
+            const x = w.toLowerCase();
+            if (NGEN.has(x)) return NGEN.get(x);
+            for (let k = 1; k <= x.length - 3; k++) { const suf = x.slice(k); if (NGEN.has(suf)) return NGEN.get(suf); }
+            if (/(else|ning|sjon|het|dom|ist|ør|ant)$/.test(x)) return 'en';
+            if (/(ment|eri|um)$/.test(x)) return 'et';
+            return '';
+        }
+        const flatTr = a => Array.isArray(a) ? a.flatMap(flatTr) : (a ? [a] : []);
+        const clean = x => String(x || '').replace(/<[^>]*>/g, '').trim();
+        /* Онлайн-источник 1: Tatoeba — настоящие предложения с русским переводом */
+        const NETC = new Map();
+        async function getJson(url, key) {
+            if (NETC.has(key)) return NETC.get(key);
+            let j = null;
+            try {
+                const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 6000);
+                const r = await fetch(url, { signal: ctl.signal });
+                clearTimeout(t);
+                j = await r.json();
+            } catch (e) {}
+            if (j) NETC.set(key, j);
+            return j;
+        }
+        async function tatoeba(w) {
+            const j = await getJson('https://tatoeba.org/en/api_v0/search?from=nob&to=rus&orphans=no&unapproved=no&query=' + encodeURIComponent(w), 't:' + w.toLowerCase());
+            return ((j && j.results) || []).map(x => ({ t: clean(x.text), ru: clean((flatTr(x.translations).find(y => y && y.lang === 'rus') || {}).text) }));
+        }
+        /* Онлайн-источник 2: память переводов MyMemory (шумнее, поэтому строже фильтр) */
+        async function memEx(w) {
+            const j = await getJson('https://api.mymemory.translated.net/get?langpair=no|ru&q=' + encodeURIComponent(w), 'm:' + w.toLowerCase());
+            return ((j && j.matches) || []).map(x => ({ t: clean(x.segment), ru: clean(x.translation) }))
+                .filter(x => /^[A-ZÆØÅ]/.test(x.t) && /[.!?]$/.test(x.t) && x.t.split(/\s+/).length >= 3 && !/[А-Яа-яЁё]/.test(x.t));
+        }
+        function aeBox(html) { const b = $('aex'); if (b) b.innerHTML = html; }
+        function aeApply(i) {
+            const e = AE && AE.list[i], ex = $('a-ex');
+            if (!e || !ex) return;
+            AE.i = i; ex.value = e.t; ex.dataset.m = '';
+            aeBox(`<div class="lk-ok">${ic('sparkles')} Автопример · ${AE_SRC[e.src]}${e.ru ? '<br><i>' + esc(e.ru) + '</i>' : ''}</div><div class="chips"><button type="button" class="chip" onclick="exNext()">${ic('shuffle')} Другой пример</button></div>`);
+        }
+        const aePick = (arr, src) => arr.filter(x => x.t.length >= 10 && x.t.length <= 90 && !AE.list.some(y => y.t === x.t) && exHas(x.t, AE.words, AE.forms))
+            .sort((a, b) => (!b.ru - !a.ru) || exScore(a.t) - exScore(b.t)).slice(0, 4).map(x => ({ t: x.t, ru: x.ru, src }));
+        async function aeMore() {
+            if (!AE || AE.onl) return;
+            AE.onl = true;
+            const key = AE.key;
+            if (navigator.onLine !== false) {
+                AE.list.push(...aePick(await tatoeba(AE.q), 'web'));
+                if (!AE || AE.key !== key) return;
+                if (AE.list.length < 2) { AE.list.push(...aePick(await memEx(AE.q), 'web2')); if (!AE || AE.key !== key) return; }
+            }
+            const tm = tmplEx(AE.base, AE.ru);
+            if (tm && !AE.list.some(y => y.t === tm)) AE.list.push({ t: tm, src: 'tmpl' });
+        }
+        async function autoEx() {
+            const ex = $('a-ex'), no = $('a-no');
+            if (!ex || !no || !$('aex')) return;
+            const typed = no.value.trim();
+            if (typed.length < 2) { AE = null; aeBox(''); if (ex.dataset.m !== '1') ex.value = ''; return; }
+            const key = typed.toLowerCase();
+            if (AE && AE.key === key) return;
+            const r = lookupWord(typed), base = r && r.no ? r.no : typed;
+            const ruEl = $('a-ru'), ru = (ruEl && ruEl.value.trim()) || (r && r.ru) || '';
+            const words = [...new Set([fold(typed), fold(base)].map(x => x.replace(EX_ART, '')).filter(x => x.length >= 2))];
+            const forms = exForms(words);
+            AE = { key, base, ru, words, forms, q: base.replace(/^å /i, '').replace(/^(en|ei|et)(\/(en|ei|et))? /i, '').trim() || typed, list: localEx(words, forms), i: -1, onl: false };
+            if (ex.dataset.m === '1') { aeBox(''); return; }          // свой пример пользователя не трогаем
+            ex.value = '';                                            // старый автопример от прошлого слова убираем
+            if (AE.list.length) { aeApply(0); return; }
+            aeBox('<div class="lk-st">Подбираю пример…</div>');
+            await aeMore();
+            if (!AE || AE.key !== key || ex.dataset.m === '1') return;
+            if (AE.list.length) aeApply(0); else aeBox('<div class="lk-st">Пример подобрать не удалось — можно написать свой.</div>');
+        }
+        async function exNext() {
+            if (!AE) return;
+            if (AE.i + 1 >= AE.list.length && !AE.onl) { aeBox('<div class="lk-st">Ищу ещё…</div>'); const key = AE.key; await aeMore(); if (!AE || AE.key !== key) return; }
+            if (!AE.list.length) { aeBox('<div class="lk-st">Больше примеров нет — можно написать свой.</div>'); return; }
+            aeApply((AE.i + 1) % AE.list.length);
+        }
+
         let lkTimer = 0, lkSeq = 0, lkList = [];
         const lookupDeb = () => { clearTimeout(lkTimer); lkTimer = setTimeout(lookupRun, 250); };
         function chipsHtml(list, title) {
@@ -5524,7 +5663,7 @@ færre|меньше (о числе)`;
             if (!e || !noEl || !ruEl) return;
             noEl.value = e.no; ruEl.value = e.ru; ruEl.dataset.m = '';
             if (trEl) trEl.dataset.m = '';
-            trFill(); chkDup(); lookupRun();
+            trFill(); chkDup(); lookupRun(); exDeb();
         }
         async function lookupRun() {
             const box = $('lk'), noEl = $('a-no'), ruEl = $('a-ru');
@@ -5748,7 +5887,7 @@ færre|меньше (о числе)`;
             } else if (tab === 'add') {
                 h += `
                 <label>По-норвежски</label>
-                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup();trFill();lookupDeb()">
+                <input id="a-no" autocomplete="off" autocapitalize="none" enterkeyhint="next" oninput="chkDup();trFill();lookupDeb();exDeb()">
                 <div class="lk" id="lk"></div>
                 <label>Перевод</label>
                 <input id="a-ru" autocomplete="off" enterkeyhint="next" oninput="this.dataset.m = this.value ? '1' : '';chkDup();lookupDeb()">
@@ -5759,8 +5898,9 @@ færre|меньше (о числе)`;
                 <label>Тема</label>
                 <input id="a-cat" value="Мои слова" autocomplete="off" enterkeyhint="next">
                 <div class="chips">${cats().map(c => `<button type="button" class="chip" data-v="${esc(c)}" onclick="pickChip(this)">${esc(c)}</button>`).join('')}</div>
-                <label>Пример (необязательно)</label>
-                <input id="a-ex" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter')add()">
+                <label>Пример на норвежском (подставляется сам, можно исправить)</label>
+                <input id="a-ex" autocomplete="off" enterkeyhint="done" oninput="this.dataset.m = this.value ? '1' : ''" onkeydown="if(event.key==='Enter')add()">
+                <div class="aex" id="aex"></div>
                 <button class="pri" onclick="add()">Добавить карточку</button>
                 <div class="msg">${msg}</div>`;
             } else if (tab === 'games') {
@@ -5851,7 +5991,7 @@ færre|меньше (о числе)`;
             }
             dupArm = '';
             S.cu.push({ id: 'c' + Date.now(), no, ru, tr: $('a-tr').value.trim() || autoTr(no), cat: $('a-cat').value.trim() || 'Мои слова', ex: $('a-ex').value.trim(), ch: +chap || 0 });
-            save();
+            save(); AE = null;
             msg = ic('check') + ' Добавлено! Всего карточек: ' + cards().length;
             render();
             $('a-no').focus();
