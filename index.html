@@ -685,11 +685,36 @@
         .lk-chip { padding: 9px 13px; border-radius: 15px; font-size: 15px; font-weight: 700; line-height: 1.25; text-align: left; cursor: pointer; color: var(--ctx); background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); }
         .lk-chip small { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--cmut); }
         .lk-chip:active { transform: scale(.97); }
+
+        /* ===== Кот и переворот карточки ===== */
+        .cat-w { transform-box: fill-box; transform-origin: 50% 100%; animation: catSway 2.6s ease-in-out infinite; }
+        @keyframes catSway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+        .card.flip-out { animation: flipOut .17s ease-in forwards; transform-origin: 50% 50%; pointer-events: none; }
+        .card.flip-in { animation: flipIn .26s cubic-bezier(.2, .9, .3, 1.15); transform-origin: 50% 50%; }
+        @keyframes flipOut { from { transform: perspective(900px) rotateY(0); filter: brightness(1); } to { transform: perspective(900px) rotateY(90deg); filter: brightness(.82); } }
+        @keyframes flipIn { from { transform: perspective(900px) rotateY(-90deg); filter: brightness(.82); } to { transform: perspective(900px) rotateY(0); filter: brightness(1); } }
+        html.lite .cat-w { animation: none; }
+        @media (prefers-reduced-motion: reduce) { .cat-w, .card.flip-in, .card.flip-out { animation: none; } }
+
+        /* ===== Сцены в играх ===== */
+        .gm-sv { position: relative; flex: none; width: 150px; aspect-ratio: 150 / 132; border-radius: 28px; overflow: hidden; border: 1px solid var(--bd); box-shadow: var(--edge); background: var(--glass); color: var(--ctx); }
+        .gm-sv::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 60% at 15% 0, rgba(255, 255, 255, .35), transparent 55%); pointer-events: none; }
+        .gm-sv svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+        .gm-sv .sn { position: absolute; left: 8px; top: 7px; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 800; color: #fff; background: rgba(0, 20, 60, .38); }
+        .gm-sv.big { width: min(100%, 300px); margin: 0 auto 6px; }
+        .gm-sv.big .sn { font-size: 13px; left: 12px; top: 10px; }
+        .gm-sv.hop { animation: gmHop .6s cubic-bezier(.2, 1.2, .4, 1); }
+        .gm-sv.wob { animation: gmWob .5s ease; }
+        .gm-sv.swap { animation: scnSwap .5s cubic-bezier(.2, 1.1, .4, 1); }
+        @keyframes scnSwap { 0% { opacity: 0; transform: translateX(-14px) scale(.92); } 60% { opacity: 1; transform: translateX(3px) scale(1.02); } 100% { transform: none; } }
+        html.lite .gm-sv.hop, html.lite .gm-sv.wob, html.lite .gm-sv.swap { animation: none; }
+        @media (prefers-reduced-motion: reduce) { .gm-sv.hop, .gm-sv.wob, .gm-sv.swap { animation: none; } }
     </style>
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <linearGradient id="pearl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdf1ea"/><stop offset=".35" stop-color="#cfe0f2"/><stop offset=".68" stop-color="#d8cdea"/><stop offset="1" stop-color="#fbd8c8"/></linearGradient>
+<image id="kimImg" href="data:image/png;base64,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" width="207" height="480"/>
 <linearGradient id="pearl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9ecf5"/><stop offset=".5" stop-color="#e6d6f5"/><stop offset="1" stop-color="#fde3d6"/></linearGradient>
 </defs></svg>
 <div id="splash" aria-hidden="true"></div>
@@ -4058,17 +4083,14 @@ liten|маленький|Прилагательные|Har du den i liten større
             }
         }
 
-        /* ---------- Персонаж (жемчужный «стеклянный» человечек) ---------- */
-        const MA = { down: ['M63 100Q38 108 44 134', 'M137 100Q162 108 156 134'], wave: ['M63 100Q38 108 44 134', 'M137 98Q166 84 160 58'], up: ['M63 98Q34 84 40 58', 'M137 98Q166 84 160 58'], hold: ['M63 104Q44 124 70 136', 'M137 104Q156 124 130 136'] };
+        /* ---------- Персонаж: Ким (чиби в чёрном пальто) ---------- */
+        const SPARK = (x, y, k = 1) => `<path transform="translate(${x} ${y}) scale(${k})" d="M0-8L2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" fill="#fff6c8" stroke="#ffd36b" stroke-width="1"/>`;
         const mascot = pose => {
-            const O = '#8388ab';
-            const limb = (d, w1, w2) => `<path d="${d}" fill="none" stroke="${O}" stroke-width="${w1}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="url(#pearl2)" stroke-width="${w2}" stroke-linecap="round"/>`;
-            const foot = x => `<rect x="${x - 6}" y="134" width="12" height="18" rx="5" fill="#ddd6ee" stroke="${O}" stroke-width="2"/><ellipse cx="${x}" cy="154" rx="13" ry="7.5" fill="url(#pearl2)" stroke="${O}" stroke-width="2"/>`;
-            const ear = `<path d="M63 66Q62 36 68 28Q70 25 74 27L89 40Z" fill="url(#pearl)"/><path d="M63 66Q62 36 68 28Q70 25 74 27L89 40" fill="none" stroke="${O}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M69 46Q70 36 72 34L82 41Q75 41 69 46Z" fill="#ead3ec"/>`;
-            const a = MA[pose] || MA.down;
-            return limb('M130 152Q164 162 168 138', 11, 7).replace('url(#pearl2)', '#c9cbe0') + limb(a[0], 11, 7) + limb(a[1], 11, 7) + foot(82) + foot(118)
-                + `<rect x="62" y="38" width="76" height="102" rx="36" fill="url(#pearl)" stroke="${O}" stroke-width="2.4"/>` + ear + `<g transform="translate(200 0) scale(-1 1)">${ear}</g>`
-                + `<circle cx="82" cy="82" r="5.2" fill="#6f7592"/><circle cx="118" cy="82" r="5.2" fill="#6f7592"/><path d="M92 93Q100 100 108 93" fill="none" stroke="#6f7592" stroke-width="3" stroke-linecap="round"/>`;
+            const tf = { up: 'translate(0 -3) rotate(-3 100 100)', down: 'translate(0 2) rotate(3 100 100)' }[pose] || '';
+            const extra = pose === 'up' ? SPARK(58, 38, 1.1) + SPARK(146, 56, .8) + SPARK(60, 118, .7)
+                : pose === 'down' ? '<path d="M128 40C133 48 135 53 128 57C121 53 123 48 128 40Z" fill="#8fd3ff" stroke="#fff" stroke-width="1.5"/>' : '';
+            return '<ellipse cx="100" cy="158" rx="34" ry="5" fill="#0b1a3a" fill-opacity=".28"/>'
+                + `<g class="${pose === 'wave' ? 'cat-w' : ''}"><g transform="${tf}"><use href="#kimImg" transform="translate(71.5 22) scale(.275)"/></g></g>` + extra;
         };
         const PR = {
             bub: t => `<rect x="104" y="4" width="76" height="28" rx="14" fill="#fff" fill-opacity=".92" stroke="#9499b8" stroke-width="2"/><text x="142" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#6c7194" style="text-shadow:none">${t}</text>`,
@@ -4082,6 +4104,85 @@ liten|маленький|Прилагательные|Har du den i liten større
             case: `<g transform="translate(-130 0)"><path d="M156 134v-7h14v7" fill="none" stroke="#9499b8" stroke-width="3"/><rect x="146" y="134" width="34" height="26" rx="5" fill="#5cb8ff" stroke="#3b82c4" stroke-width="2"/><path d="M146 147h34" stroke="#3b82c4" stroke-width="2"/></g>`,
             flag: `<path d="M26 56V10" stroke="#9499b8" stroke-width="3" stroke-linecap="round"/><path d="M26 10h26l-6 8 6 8H26z" fill="#ff6b81" stroke="#fff" stroke-width="1.5"/>`
         };
+        /* ---------- Сцены для игр: ситуация зависит от темы слова ---------- */
+        const _r = (x, y, w, h, r, f, e = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}" ${e}/>`;
+        const _c = (x, y, r, f, e = '') => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" ${e}/>`;
+        const _p = (d, f, e = '') => `<path d="${d}" fill="${f}" ${e}/>`;
+        const _l = (d, col, w = 3, e = '') => `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" ${e}/>`;
+        const _t = (x, y, t, sz, f = '#fff') => `<text x="${x}" y="${y}" font-size="${sz}" font-weight="800" text-anchor="middle" fill="${f}" style="text-shadow:none">${t}</text>`;
+        const _cloud = (x, y, k = 1) => `<g transform="translate(${x} ${y}) scale(${k})" fill="#fff"><ellipse cx="0" cy="0" rx="20" ry="9"/><circle cx="-8" cy="-6" r="9"/><circle cx="8" cy="-8" r="11"/></g>`;
+        const WIN = '#ffe28a';
+
+        const SCN = {
+            cafe: { n: 'Кафе', g: ['#ffb36b', '#ff6b81'], p: _r(66, 96, 80, 7, 3.5, '#8a5530') + _r(102, 103, 8, 17, 3, '#8a5530') + _r(82, 76, 26, 20, 6, '#fff') + _l('M108 80q10 0 10 8t-10 7', '#fff') + _l('M89 70q-4-6 0-12M99 70q-4-6 0-12', '#fff', 2.4, 'stroke-opacity=".85"')
+                + `<ellipse cx="130" cy="94" rx="15" ry="4" fill="#fff"/>` + _p('M119 92l11-17 11 17z', '#ffd0dc') + _c(130, 73, 4, '#ff4d6d'),
+                intro: ['På kafé!', 'Закажем что-нибудь? Вспоминай слова про еду.'], ok: [['Nam, nam!', 'Вкуснятина!'], ['Deilig!', 'Объедение!']], bad: [['Å nei, sølt!', 'Ой, пролил кофе!'], ['Ikke i dag!', 'Сегодня не вышло']] },
+            clock: { n: 'Время', g: ['#6c8cff', '#7b5cff'], p: _c(108, 58, 31, '#fff') + _l('M108 58V38M108 58l13 8', '#3b4a8a', 4) + _l('M108 31v4M108 81v4M83 58h4M129 58h4', '#9aa3d6', 2.4) + _c(108, 58, 3.5, '#ff6b81') + _p('M84 28l-9-8a9 9 0 0 1 12-6z', '#ffd36b') + _p('M132 28l9-8a9 9 0 0 0-12-6z', '#ffd36b') + _r(96, 92, 24, 6, 3, '#fff', 'fill-opacity=".5"'),
+                intro: ['Hva er klokka?', 'Сколько времени? Слова про время.'], ok: [['Akkurat i tide!', 'Точно в срок!'], ['Presis!', 'Ровно!']], bad: [['For sent!', 'Опоздал!'], ['Tiden går!', 'Время идёт!']] },
+            chat: { n: 'Общение', g: ['#35c9b5', '#4a8dff'], p: _r(74, 24, 56, 28, 14, '#fff') + _p('M86 50l-2 12 12-10z', '#fff') + _t(102, 43, 'Hei!', 15, '#2a6f97') + _r(92, 62, 50, 26, 13, '#ffd36b') + _p('M130 86l4 11-14-9z', '#ffd36b') + _t(117, 80, 'Takk', 13, '#8a5a00') + PR.heart(130, 108, .8),
+                intro: ['Hei, hei!', 'Давай поболтаем!'], ok: [['Hyggelig!', 'Приятно!'], ['Så bra!', 'Отлично сказано!']], bad: [['Hva sa du?', 'Что-что?'], ['Jeg forstår ikke', 'Не понимаю']] },
+            study: { n: 'Урок', g: ['#7b6cff', '#4aa3ff'], p: _r(68, 20, 76, 48, 6, '#2f5d50', 'stroke="#c8a165" stroke-width="3"') + _t(106, 52, 'æ ø å', 22) + _r(74, 100, 56, 10, 3, '#ff6b81') + _r(79, 90, 48, 10, 3, '#5cb8ff') + _r(84, 80, 40, 10, 3, '#ffd36b') + _l('M138 112l8-26', '#fff', 4) + _p('M146 86l-3-7-4 8z', '#ffb36b'),
+                intro: ['Tid for å lære!', 'Урок начинается.'], ok: [['Flink elev!', 'Умница!'], ['Riktig!', 'Верно!']], bad: [['Prøv igjen!', 'Ещё разок'], ['Nesten!', 'Почти!']] },
+            numbers: { n: 'Числа', g: ['#35d49a', '#2aa5c9'], p: _r(72, 88, 30, 30, 7, '#ff6b81') + _t(87, 110, '1', 22) + _r(106, 88, 30, 30, 7, '#ffd36b') + _t(121, 110, '2', 22, '#8a5a00') + _r(89, 56, 30, 30, 7, '#5cb8ff') + _t(104, 78, '3', 22) + _t(138, 66, '+', 22) + _t(76, 66, '=', 20),
+                intro: ['La oss telle!', 'Считаем вместе.'], ok: [['Riktig sum!', 'Верная сумма!'], ['Du kan tall!', 'Цифры — твоё!']], bad: [['Regnet feil!', 'Ошибся в счёте!']] },
+            world: { n: 'Страны', g: ['#3aa0ff', '#2bd1c9'], p: _c(106, 62, 33, '#4cc3ff', 'stroke="#fff" stroke-width="2.5"') + _p('M88 48q10-10 20-2t4 12-14 4-14-6z', '#58d68d') + _p('M104 72q14-4 20 6t-8 14-12-8z', '#58d68d') + _l('M106 29v66', '#fff', 1.4, 'stroke-opacity=".6"') + `<ellipse cx="106" cy="62" rx="14" ry="33" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.4"/>` + _l('M130 108V84', '#fff', 3) + _p('M130 84h15l-4 6 4 6h-15z', '#ff6b81'),
+                intro: ['Hvor kommer du fra?', 'Откуда ты? Страны и языки.'], ok: [['Verdensmester!', 'Чемпион мира!']], bad: [['Feil land!', 'Не та страна!']] },
+            todo: { n: 'Дела', g: ['#ff9f43', '#ee5a6f'], p: _r(74, 20, 66, 90, 8, '#fff') + [38, 60, 82].map(y => _l(`M83 ${y}l5 5 9-11`, '#4cd9a0', 3.6) + _r(106, y - 3, 26, 6, 3, '#cfd6ee')).join('') + _c(140, 112, 6, '#ffd36b') + _l('M64 70h-8M62 84h-12M64 98h-8', '#fff', 2.4, 'stroke-opacity=".6"'),
+                intro: ['Hva gjør vi i dag?', 'Список дел — глаголы в действии.'], ok: [['Ferdig!', 'Готово!'], ['Sjekk!', 'Галочка!']], bad: [['Glemte det!', 'Забыл!']] },
+            past: { n: 'Вчера', g: ['#5b5bd6', '#a04fc9'], p: _r(76, 22, 56, 58, 8, '#fff') + _r(76, 22, 56, 15, 8, '#ff6b81') + _t(104, 64, 'i går', 14, '#4a4a7a') + _p('M120 112a14 14 0 1 1-6-24 11 11 0 1 0 6 24z', '#ffe9a3') + _l('M80 100a16 16 0 1 0 6-14', '#fff', 3) + _p('M80 86l8-3-2 9z', '#fff'),
+                intro: ['Hva skjedde i går?', 'Вчера... всё в прошедшем времени.'], ok: [['Husker det!', 'Помню!']], bad: [['Glemt!', 'Забылось!']] },
+            family: { n: 'Семья', g: ['#ff8fa3', '#ffb36b'], p: _p('M76 70l32-26 32 26v36H76z', '#fff') + _l('M70 72l38-31 38 31', '#ff6b81', 6) + _r(100, 82, 16, 24, 3, '#ffb36b') + _r(82, 78, 12, 12, 2, '#bfe6ff') + PR.heart(128, 34, 1.1) + PR.heart(88, 30, .7),
+                intro: ['Hele familien!', 'Семья в сборе.'], ok: [['Så koselig!', 'Как уютно!'], ['Kjære deg!', 'Дорогой мой!']], bad: [['Hvem er det?', 'А это кто?']] },
+            home: { n: 'Дом', g: ['#8e7bff', '#4aa3ff'], p: _r(72, 22, 40, 44, 4, '#bfe6ff', 'stroke="#fff" stroke-width="3"') + _l('M92 22v44M72 44h40', '#fff', 2.4) + _r(68, 20, 8, 50, 3, '#ff6b81') + _p('M120 64l10-16h16l10 16z'.replace('M120', 'M118'), '#ffd36b') + _r(134, 64, 3, 42, 1.5, '#fff') + _r(70, 92, 58, 24, 9, '#ff6b81') + _r(66, 84, 12, 32, 6, '#ff4d6d') + _r(120, 84, 12, 32, 6, '#ff4d6d'),
+                intro: ['Hjemme igjen!', 'Дом, милый дом.'], ok: [['Så koselig!', 'Как уютно!']], bad: [['Å nei!', 'Ой-ой!']] },
+            leisure: { n: 'Отдых', g: ['#35d49a', '#7bd34a'], p: _l('M80 66a24 24 0 0 1 48 0', '#fff', 6) + _r(74, 62, 12, 20, 6, '#ff6b81') + _r(122, 62, 12, 20, 6, '#ff6b81') + _l('M98 108V86l18-4v22', '#fff', 4) + _c(94, 109, 6, '#fff') + _c(112, 105, 6, '#fff') + _p('M130 42q6-8 12 0-6 8-12 0z', '#ffd36b'),
+                intro: ['Fri tid!', 'Свободное время — отдыхаем.'], ok: [['Gøy!', 'Весело!'], ['Kjempefint!', 'Классно!']], bad: [['Dessverre!', 'Увы!']] },
+            work: { n: 'Работа', g: ['#5f7bd0', '#3aa0ff'], p: _r(76, 52, 56, 38, 5, '#2b3a67') + _r(80, 56, 48, 30, 3, '#8fd3ff') + _r(86, 72, 7, 10, 1.5, '#4a8dff') + _r(97, 66, 7, 16, 1.5, '#4cd9a0') + _r(108, 62, 7, 20, 1.5, '#ff6b81') + _p('M70 92h68l-6 9H76z', '#c9cfe8') + _r(66, 101, 80, 6, 3, '#8a5530') + _r(118, 24, 24, 24, 3, '#ffd36b') + _l('M123 32h14M123 38h10', '#b8860b', 2),
+                intro: ['På jobb!', 'Рабочий день начался.'], ok: [['Godt jobbet!', 'Хорошая работа!']], bad: [['Feil!', 'Ошибка!'], ['Ny runde!', 'Новый заход!']] },
+            weather: { n: 'Погода', g: ['#58b8ff', '#9be0ff'], p: _c(128, 36, 13, '#ffd36b') + _l('M128 14v5M128 53v5M106 36h5M145 36h5M112 20l3 3M141 49l3 3M144 20l-3 3M115 49l-3 3', '#ffd36b', 3) + _cloud(94, 50, 1.1) + _l('M84 66l-3 9M95 66l-3 9M106 66l-3 9', '#fff', 3) + _p('M70 108a30 26 0 0 1 60 0z', '#ff6b81') + _l('M100 108v10q0 6-6 6', '#fff', 3),
+                intro: ['For et vær!', 'Погода — слова про неё.'], ok: [['Solskinn!', 'Солнышко!']], bad: [['Regn igjen!', 'Опять дождь!']] },
+            transport: { n: 'Транспорт', g: ['#ffd36b', '#ff9f43'], p: _r(66, 62, 80, 42, 9, '#fff') + _r(66, 62, 80, 14, 9, '#ff6b81') + [72, 94, 116].map(x => _r(x, 78, 16, 13, 3, '#bfe6ff')).join('') + _c(86, 106, 8, '#2b3a67') + _c(128, 106, 8, '#2b3a67') + _c(86, 106, 3, '#fff') + _c(128, 106, 3, '#fff') + _r(58, 114, 94, 5, 2.5, '#5a6a8a') + _l('M70 117h8M92 117h8M114 117h8M136 117h8', '#fff', 2),
+                intro: ['God tur!', 'В путь! Слова про транспорт.'], ok: [['Riktig buss!', 'Тот автобус!']], bad: [['Bommet!', 'Мимо!'], ['Bussen gikk!', 'Автобус ушёл!']] },
+            road: { n: 'Дорога', g: ['#4cc9a8', '#3b82c4'], p: _r(104, 30, 5, 88, 2.5, '#fff') + _p('M80 40h40l9 9-9 9H80z', '#ff6b81') + _p('M132 66H92l-9 9 9 9h40z', '#ffd36b') + _c(106, 24, 6, '#fff') + _p('M70 120q36-22 76 0z', '#5a6a8a', 'fill-opacity=".7"'),
+                intro: ['Hvor er veien?', 'Где дорога? Ориентиры и направления.'], ok: [['Rett vei!', 'Верный путь!']], bad: [['Feil vei!', 'Не туда!'], ['Jeg gikk meg bort', 'Я заблудился']] },
+            city: { n: 'Город', g: ['#6c7bff', '#ff8fa3'], p: _r(70, 70, 22, 48, 2, '#2b3a67') + _r(94, 50, 24, 68, 2, '#3b4f8a') + _r(120, 78, 24, 40, 2, '#2b3a67') + [[76, 78], [76, 92], [100, 58], [100, 74], [100, 90], [126, 86], [126, 100]].map(a => _r(a[0], a[1], 7, 7, 1, WIN)).join('') + _r(78, 24, 30, 20, 5, '#fff') + _c(93, 34, 6, '#3b4f8a') + _c(93, 34, 2.5, '#8fd3ff') + PR.star(130, 38, 1),
+                intro: ['Byvandring!', 'Гуляем по городу.'], ok: [['Flott tur!', 'Отличная прогулка!']], bad: [['Gikk meg bort!', 'Заблудился!']] },
+            clothes: { n: 'Одежда', g: ['#ff7aa8', '#9b6cff'], p: _l('M108 40a7 7 0 1 1 7 7l-38 22h76l-38-22', '#fff', 3.4) + _p('M84 66h48l9 12-9 6v30H84V84l-9-6z', '#5cb8ff') + _l('M108 66v52', '#fff', 2, 'stroke-opacity=".6"') + _c(108, 82, 2.5, '#fff') + _c(108, 96, 2.5, '#fff'),
+                intro: ['Hva skal jeg ha på?', 'Что надеть? Одежда.'], ok: [['Så pent!', 'Как красиво!']], bad: [['Ikke min stil', 'Не мой стиль']] },
+            shop: { n: 'Магазин', g: ['#ff6b9a', '#ff9f43'], p: _r(74, 70, 34, 46, 6, '#ff6b81') + _l('M83 70v-8a8 8 0 0 1 16 0v8', '#fff', 3) + _r(104, 84, 32, 32, 6, '#ffd36b') + _l('M112 84v-6a8 8 0 0 1 16 0v6', '#fff', 3) + _r(104, 28, 36, 20, 5, '#fff') + _t(122, 43, '-30%', 12, '#e0436a') + PR.star(78, 40, .9),
+                intro: ['På handletur!', 'За покупками!'], ok: [['God handel!', 'Отличная покупка!']], bad: [['For dyrt!', 'Слишком дорого!']] },
+            colors: { n: 'Цвета', g: ['#ff7ab6', '#ffb347'], p: `<ellipse cx="108" cy="70" rx="34" ry="30" fill="#fff"/>` + _c(92, 58, 7, '#ff6b81') + _c(110, 48, 7, '#ffd36b') + _c(128, 60, 7, '#4cd9a0') + _c(126, 82, 7, '#5cb8ff') + _c(104, 78, 6, '#fff', 'stroke="#d5d9ee" stroke-width="2"') + _l('M70 112l26-26', '#8a5530', 5) + _p('M96 86l7-7 4 4-7 7z', '#ff6b81'),
+                intro: ['Så fargerikt!', 'Какие яркие цвета!'], ok: [['Fin farge!', 'Красивый цвет!']], bad: [['Feil farge!', 'Не тот цвет!']] },
+            hello: { n: 'Привет', g: ['#6ab7ff', '#8e7bff'], p: _c(108, 56, 22, '#ffe28a') + _r(99, 76, 18, 11, 3, '#c9cfe8') + _l('M108 22v-6M82 34l-4-4M134 34l4-4M76 58h-6M140 58h6', '#fff', 3) + _r(80, 100, 58, 10, 3, '#ff6b81') + _r(86, 90, 46, 10, 3, '#ffd36b'),
+                intro: ['Hei!', 'Начнём!'], ok: null, bad: null }
+        };
+        const SCN_BY_CAT = [[/прош/i, 'past'], [/еда|кафе|продукт|напит/i, 'cafe'], [/транспорт/i, 'transport'], [/свобод|хобби|(^|\s)спорт|музык|досуг/i, 'leisure'], [/врем/i, 'clock'],
+            [/общен|приветств|фраз|знаком/i, 'chat'], [/грамматик|язык|существит|прилагат/i, 'study'], [/числ/i, 'numbers'], [/стран|национ/i, 'world'], [/глагол|модальн/i, 'todo'],
+            [/сем|родствен/i, 'family'], [/дом|быт|квартир|мебел/i, 'home'], [/работ|профес|офис/i, 'work'], [/погод|природ|сезон/i, 'weather'],
+            [/дорог|направлен|маршрут/i, 'road'], [/город|туризм|путешеств/i, 'city'], [/одежд/i, 'clothes'], [/покупк|магазин|деньг/i, 'shop'], [/цвет/i, 'colors']];
+        const SCN_BY_CH = { 1: 'chat', 2: 'chat', 3: 'family', 4: 'clock', 5: 'weather', 6: 'past', 7: 'transport', 8: 'shop' };
+        function sceneFor(c) {
+            if (!c) return 'hello';
+            for (const [re, id] of SCN_BY_CAT) if (re.test(c.cat || '')) return id;
+            return SCN_BY_CH[chOf(c)] || 'hello';
+        }
+        function sceneOfPool(list) {
+            const cnt = {};
+            list.forEach(c => { const s = sceneFor(c); cnt[s] = (cnt[s] || 0) + 1; });
+            const top = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+            return top ? top[0] : 'hello';
+        }
+        /* картинка сцены: фон-градиент задаётся стилем, внутри — реквизит и персонаж */
+        function scnHtml(id, pose, cls = '', extra = '') {
+            const sc = SCN[id] || SCN.hello;
+            const tf = { up: 'translate(0 -3) rotate(-3 48 70)', down: 'translate(0 2) rotate(3 48 70)' }[pose] || '';
+            const fx = pose === 'up' ? SPARK(78, 22, 1) + SPARK(18, 40, .8) + SPARK(70, 104, .7)
+                : pose === 'down' ? '<path d="M70 26C74 33 76 37 70 41C64 37 66 33 70 26Z" fill="#8fd3ff" stroke="#fff" stroke-width="1.4"/>' : '';
+            return `<div class="gm-sv ${cls}" title="${sc.n}" style="--s1:${sc.g[0]};--s2:${sc.g[1]}"><svg viewBox="0 0 150 132" aria-hidden="true">${sc.p}`
+                + `<ellipse cx="48" cy="122" rx="24" ry="4.5" fill="#0b1a3a" fill-opacity=".28"/>`
+                + `<g class="${pose === 'wave' ? 'cat-w' : ''}"><g transform="${tf}"><use href="#kimImg" transform="translate(24 8) scale(.2375)"/></g></g>${fx}${extra}</svg></div>`;
+        }
+
         const CH_SCENE = {
             1: ['wave', PR.bub('Hei!')], 2: ['up', PR.bub('Bare bra!')], 3: ['down', PR.heart(26, 70, 1.3) + PR.heart(176, 60) + PR.heart(30, 30, .8)],
             4: ['wave', PR.sun], 5: ['hold', PR.cloud + PR.sun.replace(/158/g, '40').replace(/138/g, '20').replace(/172/g, '54').replace(/144/g, '26').replace(/168/g, '50').replace(/148/g, '30').replace(/178/g, '60')],
@@ -5864,7 +5965,7 @@ færre|меньше (о числе)`;
                     const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
                     h += `
                     <div class="stats"><span>Карточка ${i + 1} / ${deck.length}</span>${streak >= 2 ? `<span class="streak ${streakPop ? 'pop' : ''}">${ic('flame')} серия ${streak}</span>` : ''}</div>
-                    <div class="card ${enter ? 'enter' : ''}" onclick="tap()">
+                    <div class="card ${enter ? 'enter' : ''} ${flipFx ? 'flip-in' : ''}" onclick="tap()">
                         <span class="cat">${esc(c.cat)}</span>
                         <div class="big">${esc(f)}</div>
                         ${S.dir ? '' : `<div class="tr">[${esc(trOf(c))}]</div>`}
@@ -5985,13 +6086,22 @@ færre|меньше (о числе)`;
                 <button class="pri ghost" onclick="resetAll()">Сбросить оформление</button>`;
             }
 
-            enter = false; streakPop = false;
+            enter = false; flipFx = false; streakPop = false;
             if (moreIO) { moreIO.disconnect(); moreIO = null; }
             $('v').innerHTML = h;
             if (tab === 'list') watchMore();
         }
 
-        function tap() { if (swiped || busy) return; flip = !flip; render(); }
+        let flipFx = false, flipping = false;
+        function doFlip() {
+            const c = document.querySelector('.card');
+            const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!c || flipping || calm) { flip = !flip; render(); return; }
+            flipping = true;
+            c.classList.add('flip-out');
+            setTimeout(() => { flip = !flip; flipFx = true; flipping = false; render(); }, 170);
+        }
+        function tap() { if (swiped || busy || flipping) return; doFlip(); }
 
         function add() {
             const no = $('a-no').value.trim(), ru = $('a-ru').value.trim();
@@ -6033,7 +6143,8 @@ færre|меньше (о числе)`;
 
         function stopGame() { clearInterval(gTimer); if (G) clearTimeout(G.adv); G = null; }
         function gSay(ok, extra) {
-            const p = (ok ? G_OK : G_BAD)[rnd((ok ? G_OK : G_BAD).length)];
+            const sc = SCN[G.sc] || SCN.hello, base = ok ? G_OK : G_BAD, own = ok ? sc.ok : sc.bad, arr = own ? own.concat(base) : base;
+            const p = arr[rnd(arr.length)];
             G.say = { pose: ok ? 'up' : 'down', b: p[0], s: extra || p[1] };
             G.anim = ok ? 'hop' : 'wob';
             hap(ok);
@@ -6042,14 +6153,14 @@ færre|меньше (о числе)`;
 
         function gShell(body, prog, scoreTxt, warn) {
             const s = G.say || { pose: 'wave', b: 'Hei! Lykke til!', s: 'Удачи!' };
-            const an = G.anim || ''; G.anim = '';
+            const an = G.swap ? 'swap' : (G.anim || ''); G.anim = ''; G.swap = false;
             return `
             <div class="gm-top">
                 <button class="ib gm-x" aria-label="Выйти из игры" onclick="stopGame();render()">${ic('x')}</button>
                 <div class="gm-bar ${warn ? 'warn' : ''}"><i id="gm-bi" style="width:${Math.max(0, Math.min(100, prog))}%"></i></div>
                 <div class="gm-sc" id="gm-sc">${scoreTxt}</div>
             </div>
-            <div class="gm-mas"><div class="gm-m ${an}">${gmSvg(s.pose)}</div><div class="gm-say"><b>${esc(s.b)}</b><small>${esc(s.s)}</small></div></div>
+            <div class="gm-mas">${scnHtml(G.sc || 'hello', s.pose, an)}<div class="gm-say"><b>${esc(s.b)}</b><small>${esc(s.s)}</small></div></div>
             ${body}`;
         }
 
@@ -6059,8 +6170,9 @@ færre|меньше (о числе)`;
 
         function gamesMenuHtml() {
             const n = gPool().length;
+            const pl = gPool(), sid = cat ? sceneFor({ cat }) : chap !== '' ? sceneOfPool(pl) : 'hello';
             return `
-            <div class="gm-mas"><div class="gm-m hop">${gmSvg('wave')}</div><div class="gm-say"><b>Hei! Давай играть!</b><small>Выбери игру. Слова берутся из выбранной ниже главы и темы.</small></div></div>
+            <div class="gm-mas">${scnHtml(sid, 'wave', 'hop')}<div class="gm-say"><b>Hei! Давай играть!</b><small>Выбери игру. Слова берутся из выбранной ниже главы и темы, а ситуация с Кимом подстраивается под тему.</small></div></div>
             <div class="row">${pickBtns()}</div>
             <div class="stats"><span>Слов для игры: <b>${n}</b></span></div>
             ${gmMsg ? `<div class="msg" style="margin:0 0 10px">${gmMsg}</div>` : ''}
@@ -6087,7 +6199,7 @@ færre|меньше (о числе)`;
                 let src = elig.filter(c => c.no.length <= 24 && c.ru.length <= 28);
                 if (src.length < 6) src = elig;
                 const ch = shuffled(src).slice(0, 6);
-                g.L = shuffled(ch); g.R = shuffled(ch); g.got = new Set(); g.sel = null; g.bad = null; g.lock = false; g.mis = 0; g.total = 6;
+                setScene(g, sceneOfPool(ch)); g.L = shuffled(ch); g.R = shuffled(ch); g.got = new Set(); g.sel = null; g.bad = null; g.lock = false; g.mis = 0; g.total = 6;
             }
             else if (kind === 'build') { g.deck = shuffled(elig).slice(0, 8); g.total = g.deck.length; buildQ(); }
             else { g.lives = 3; g.limit = 40000; g.t0 = Date.now(); g.last = ''; blitzQ(); gTimer = setInterval(blitzTick, 200); }
@@ -6118,9 +6230,9 @@ færre|меньше (о числе)`;
         }
         function gEnd() {
             const g = G, r = g.res, an = g.anim || ''; g.anim = '';
-            const extra = r.stars === 3 ? PR.trophy + PR.star(40, 40) + PR.star(162, 84, 1.2) : r.stars >= 1 ? PR.star(40, 40) : '';
+            const extra = r.stars === 3 ? `<g transform="translate(-4 6) scale(.85)">${PR.trophy}</g>` + PR.star(18, 26, 1.2) + PR.star(136, 104, 1.1) : r.stars >= 1 ? PR.star(18, 26, 1) : '';
             return `<div class="gm-end">
-                <div class="gm-m big ${an}">${gmSvg(r.stars >= 2 ? 'up' : r.stars === 1 ? 'wave' : 'down', extra)}</div>
+                ${scnHtml(g.sc || 'hello', r.stars >= 2 ? 'up' : r.stars === 1 ? 'wave' : 'down', 'big ' + an, extra)}
                 <div class="gm-stars">${[1, 2, 3].map(k => `<span class="${k <= r.stars ? 'on' : ''}">${ic('star')}</span>`).join('')}</div>
                 <h2>${esc(r.title)}</h2>
                 <p>${esc(r.detail)}${g.record ? ' · новый рекорд!' : ''}</p>
@@ -6130,8 +6242,16 @@ færre|меньше (о числе)`;
         }
 
         /* --- 1. Выбери перевод --- */
+        function setScene(g, sc) {
+            if (g.sc === sc) return;
+            g.sc = sc;
+            const i = (SCN[sc] || SCN.hello).intro;
+            g.say = { pose: 'wave', b: i[0], s: i[1] };
+            g.swap = true;
+        }
         function quizQ() {
-            const g = G, c = g.deck[g.n], dir = Math.random() < .4 ? 1 : 0;   // 0: норв. → рус., 1: рус. → норв.
+            const g = G, c = g.deck[g.n], dir = Math.random() < .4 ? 1 : 0;
+            setScene(g, sceneFor(c));   // 0: норв. → рус., 1: рус. → норв.
             const key = x => (dir ? x.no : x.ru).toLowerCase();
             const used = new Set([key(c)]), wrong = [];
             for (const src of [g.pool, cards()]) {
@@ -6200,6 +6320,7 @@ færre|меньше (о числе)`;
         /* --- 3. Собери слово --- */
         function buildQ() {
             const g = G, c = g.deck[g.n], t = c.no.trim().toLowerCase();
+            setScene(g, sceneFor(c));
             g.q = {
                 c, t, res: null, failed: false, hint: 0,
                 slots: [...t].map(ch => ch === ' ' ? { ch, sp: 1 } : { ch, fill: null, tile: -1, lock: false }),
@@ -6292,6 +6413,7 @@ færre|меньше (о числе)`;
             let c, k = 0;
             do { c = g.elig[rnd(g.elig.length)]; k++; } while (c.id === g.last && g.elig.length > 1 && k < 10);
             g.last = c.id;
+            setScene(g, sceneFor(c));
             let truth = Math.random() < .5, shown = c;
             if (!truth) {
                 const others = g.elig.filter(x => x.ru.toLowerCase() !== c.ru.toLowerCase());
@@ -6424,7 +6546,7 @@ færre|меньше (о числе)`;
 
         document.addEventListener('keydown', e => {
             if (tab !== 'study' || /INPUT|SELECT/.test(e.target.tagName)) return;
-            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip = !flip; render(); }
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!flipping) doFlip(); }
             else if (e.key === 'ArrowLeft') mark('u');
             else if (e.key === 'ArrowRight') mark('k');
         });
