@@ -162,7 +162,8 @@
             white-space: nowrap;
         }
         nav button#t-settings { flex: 0 0 56px; font-size: 18px; }
-        nav button.on { background: rgba(255, 255, 255, .3); box-shadow: inset 0 1px 1px rgba(255, 255, 255, .7), 0 2px 10px rgba(0, 30, 90, .25); }
+        nav button { position: relative; z-index: 1; }
+        nav button.on { background: transparent; box-shadow: none; }
 
         .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
 
@@ -709,6 +710,75 @@
         @keyframes scnSwap { 0% { opacity: 0; transform: translateX(-14px) scale(.92); } 60% { opacity: 1; transform: translateX(3px) scale(1.02); } 100% { transform: none; } }
         html.lite .gm-sv.hop, html.lite .gm-sv.wob, html.lite .gm-sv.swap { animation: none; }
         @media (prefers-reduced-motion: reduce) { .gm-sv.hop, .gm-sv.wob, .gm-sv.swap { animation: none; } }
+    
+        /* ---------- Подсказки: узнаваемый шрифт и цвет, читаются на любом фоне ---------- */
+        .card .hint, .hint2, .gm-hint {
+            font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Trebuchet MS", system-ui, sans-serif;
+            font-weight: 700;
+            letter-spacing: .01em;
+            color: #ffe8a3;
+            text-shadow: 0 1px 2px rgba(0, 10, 40, .85);
+            background: rgba(8, 24, 60, .66);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 232, 163, .4);
+            border-radius: 14px;
+            padding: 7px 14px 7px 30px;
+            line-height: 1.35;
+            opacity: 1;
+        }
+        .card .hint::before, .hint2::before, .gm-hint::before { content: "\2726"; position: absolute; left: 12px; top: 50%; margin-top: -.62em; line-height: 1.2; color: #ffd36b; font-size: 1.05em; }
+        .card .hint { left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 14.5px; }
+        .hint2, .gm-hint { position: relative; font-size: 14px; text-align: left; margin-top: 8px; }
+        .gm-hint { text-align: left; }
+        html.lite .card .hint, html.lite .hint2, html.lite .gm-hint { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(8, 24, 60, .8); }
+
+        /* ---------- Нижняя панель: кнопка «перетекает» между вкладками ---------- */
+        nav .ind { position: absolute; top: 6px; bottom: 6px; left: 0; right: 0; border-radius: 999px; background: rgba(255, 255, 255, .3); box-shadow: inset 0 1px 1px rgba(255, 255, 255, .7), 0 2px 10px rgba(0, 30, 90, .25); pointer-events: none; z-index: 0; opacity: 0; }
+        nav .ind.ready { opacity: 1; }
+
+        /* ---------- Переход между вкладками ---------- */
+        main { position: relative; }
+        @keyframes tinR { from { opacity: 0; transform: translateX(34px) scale(.985); } }
+        @keyframes tinL { from { opacity: 0; transform: translateX(-34px) scale(.985); } }
+        @keyframes toutL { to { opacity: 0; transform: translateX(-34px) scale(.985); } }
+        @keyframes toutR { to { opacity: 0; transform: translateX(34px) scale(.985); } }
+        #v.tin-r { animation: tinR .36s cubic-bezier(.2, .85, .25, 1) backwards; }
+        #v.tin-l { animation: tinL .36s cubic-bezier(.2, .85, .25, 1) backwards; }
+        .tout { pointer-events: none; z-index: 2; }
+        .tout.l { animation: toutL .22s ease-in forwards; }
+        .tout.r { animation: toutR .22s ease-in forwards; }
+        html.lite #v.tin-r, html.lite #v.tin-l, html.lite .tout { animation: none; }
+        @media (prefers-reduced-motion: reduce) { #v.tin-r, #v.tin-l, .tout { animation: none !important; } nav .ind { transition: none !important; } }
+    
+        /* ---------- Удобство: компактные фильтры, цель дня, повторение, озвучка ---------- */
+        .row.cmp { gap: 8px; margin-bottom: 4px; }
+        .row.cmp .pick { flex: 1 1 0; min-height: 46px; padding: 6px 8px 6px 10px; gap: 4px; }
+        .row.cmp .pick[data-k="mode"] { flex: 1.35 1 0; }
+        .row.cmp .pick .pk-l { display: none; }
+        .row.cmp .pick .pk-v { font-size: 14px; }
+        .row.cmp .pick[data-k="mode"] { flex: 1.35 1 0; }
+        .row.cmp .pick .i { width: 12px; height: 12px; flex: none; }
+        .row.cmp > div { gap: 8px !important; }
+        .row.cmp .ib { min-height: 40px; font-size: 18px; border-radius: 14px; }
+        .goal { padding: 8px 14px 10px; border-radius: 16px; background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); }
+        .goal-t { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: var(--cmut); }
+        .goal-t b { color: var(--ctx); }
+        .goal-b { height: 8px; margin-top: 6px; border-radius: 99px; background: rgba(0, 20, 60, .35); overflow: hidden; }
+        .goal-b i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #ffd36b, #ff9f5c); transition: width .5s cubic-bezier(.2, .9, .3, 1); }
+        .goal.done .goal-b i { background: linear-gradient(90deg, #4cd9a0, #8af0c8); }
+        .goal.done .goal-t span { color: var(--ok); }
+        .due { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 16px; border-radius: 16px; border: 1px solid rgba(255, 232, 163, .5); background: linear-gradient(135deg, rgba(255, 211, 107, .32), rgba(255, 159, 92, .18)); cursor: pointer; text-align: left; font-weight: 700; }
+        .due .i { width: 22px; height: 22px; color: #ffd36b; flex: none; }
+        .due span { flex: 1; }
+        .due em { font-style: normal; font-size: 14px; padding: 5px 12px; border-radius: 99px; background: rgba(255, 255, 255, .25); }
+        .pri.undo { min-height: 44px; font-size: 15px; margin: 2px 0 0; }
+        .st-row { flex-wrap: nowrap; justify-content: space-between; align-items: center; margin: 0 0 2px; }
+        .st-mid { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; justify-content: center; }
+        .mini { flex: none; width: 42px; height: 38px; display: grid; place-items: center; padding: 0; border-radius: 12px; background: var(--glass); border: 1px solid var(--bd); box-shadow: var(--edge); cursor: pointer; }
+        .mini .i { width: 20px; height: 20px; }
+        .mini:active { transform: scale(.94); }
+        @media (max-height: 860px) { h1.logo img { width: min(46vw, 170px); } .card { min-height: min(42dvh, 340px); padding: 36px 20px 40px; } }
     </style>
 </head>
 <body>
@@ -742,6 +812,7 @@
         <div id="v"></div>
     </main>
     <nav>
+        <span class="ind" aria-hidden="true"></span>
         <button id="t-study" onclick="go('study')">Учить</button>
         <button id="t-list" onclick="go('list')">Список</button>
         <button id="t-add" onclick="go('add')">Добавить</button>
@@ -3496,6 +3567,9 @@ liten|маленький|Прилагательные|Har du den i liten større
         try { S = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') } catch (e) {}
         S = S || { st: {}, cu: [], dir: 0, bgColor: '', cardColor: '' };
         if (!S.done || typeof S.done !== 'object') S.done = {};
+        if (!S.sr || typeof S.sr !== 'object') S.sr = {};
+        if (!S.day || typeof S.day !== 'object') S.day = { d: 0, n: 0 };
+        if (!S.goal) S.goal = 10;
         if (!Array.isArray(S.del)) S.del = [];   // id удалённых встроенных карточек
 
         /* ---------- Вход через Telegram и общий прогресс на всех устройствах (Telegram CloudStorage) ---------- */
@@ -3596,6 +3670,9 @@ liten|маленький|Прилагательные|Har du den i liten større
             if (!S.st || typeof S.st !== 'object') S.st = {};
             if (!Array.isArray(S.cu)) S.cu = [];
             if (!S.done || typeof S.done !== 'object') S.done = {};
+        if (!S.sr || typeof S.sr !== 'object') S.sr = {};
+        if (!S.day || typeof S.day !== 'object') S.day = { d: 0, n: 0 };
+        if (!S.goal) S.goal = 10;
             if (!Array.isArray(S.del)) S.del = [];
             curSnap = snapStr();
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)) } catch (e) {}
@@ -4024,19 +4101,81 @@ liten|маленький|Прилагательные|Har du den i liten større
         let streak = 0, streakPop = false;
         let tab = 'study', deck = [], i = 0, flip = false, cat = '', chap = S.chap || '', mode = 'todo', q = '', msg = '', bgMsg = '', rst = false, enter = false;
 
+        /* ---------- Интервальные повторения, цель дня, отмена ответа, озвучка ---------- */
+        const dayNo = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
+        const SR_STEPS = [0, 1, 3, 7, 14, 30];                 // через сколько дней вернуть слово после 1-го, 2-го… верного ответа
+        const isDue = c => S.st[c.id] === 'k' && S.sr[c.id] && S.sr[c.id][1] <= dayNo();
+        const needsReview = c => S.st[c.id] === 'u' || isDue(c);
+        const todayN = () => S.day.d === dayNo() ? S.day.n : 0;
+        const chProg = n => { const a = cards().filter(x => String(chOf(x)) === n); return a.filter(x => S.st[x.id] === 'k').length + '/' + a.length; };
+        function srUpdate(id, ok) { const b = ok ? Math.min((S.sr[id] ? S.sr[id][0] : 0) + 1, 5) : 0; S.sr[id] = [b, dayNo() + SR_STEPS[b]]; }
+        function setGoal(n) { S.goal = n; save(); render(); }
+        let lastAns = null;
+        function undoAns() {
+            const a = lastAns;
+            if (!a || tab !== 'study' || !deck[a.idx] || deck[a.idx].id !== a.id) return;
+            if (a.st === undefined) delete S.st[a.id]; else S.st[a.id] = a.st;
+            if (a.sr) S.sr[a.id] = a.sr; else delete S.sr[a.id];
+            if (a.cd) delete S.done[a.cd];
+            S.day = { d: dayNo(), n: a.day };
+            streak = a.streak; i = a.idx; flip = false; lastAns = null;
+            save(); render();
+        }
+
         function build() {
-            deck = cards().filter(x => (!cat || x.cat === cat) && (chap === '' || String(chOf(x)) === chap) && (mode === 'all' || (mode === 'new' && !S.st[x.id]) || (mode === 'todo' && S.st[x.id] !== 'k') || (mode === 'known' && S.st[x.id] === 'k')));
+            deck = cards().filter(x => (!cat || x.cat === cat) && (chap === '' || String(chOf(x)) === chap) && (mode === 'all' || (mode === 'new' && !S.st[x.id]) || (mode === 'todo' && S.st[x.id] !== 'k') || (mode === 'known' && S.st[x.id] === 'k') || (mode === 'due' && needsReview(x))));
             i = 0;
             flip = false;
             streak = 0;
         }
 
+        /* ---------- Переходы между вкладками и «жидкая» кнопка в нижней панели ---------- */
+        const TABS = ['study', 'list', 'add', 'games', 'settings'];
+        let indTab = null;
+        function moveInd(force) {
+            const nav = document.querySelector('nav'), ind = nav && nav.querySelector('.ind'), b = $('t-' + tab);
+            if (!ind || !b || !b.offsetWidth) return;
+            const L = b.offsetLeft, R = nav.clientWidth - L - b.offsetWidth;
+            if (indTab === null || force || isLite()) ind.style.transition = 'none';
+            else {
+                const lead = '.26s cubic-bezier(.3, 1.15, .4, 1)', lag = '.48s cubic-bezier(.25, 1, .35, 1) .04s';
+                ind.style.transition = TABS.indexOf(tab) >= TABS.indexOf(indTab) ? `left ${lag}, right ${lead}` : `left ${lead}, right ${lag}`;
+                if (tab !== indTab && ind.animate) ind.animate([{ transform: 'scale(1,1)' }, { transform: 'scale(1,.84)', offset: .4 }, { transform: 'scale(1,1)' }], { duration: 460, easing: 'ease-in-out' });
+            }
+            ind.style.left = L + 'px'; ind.style.right = R + 'px'; ind.classList.add('ready');
+            indTab = tab;
+        }
+        window.addEventListener('resize', () => moveInd(true));
+        window.addEventListener('load', () => moveInd(true));
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => moveInd(true));
+        const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function tabSnap(changed) {
+            if (!changed || isLite() || reduceMotion() || window.scrollY > 40) return null;
+            const v = $('v');
+            if (!v || !v.firstElementChild) return null;
+            const c = v.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+            c.removeAttribute('id');
+            c.className = 'tout';
+            c.style.cssText = `position:absolute;top:${v.offsetTop}px;left:${v.offsetLeft}px;width:${v.offsetWidth}px`;
+            return c;
+        }
+        function tabFx(snap, prev, next) {
+            if (prev === next || isLite() || reduceMotion()) return;
+            const dir = TABS.indexOf(next) > TABS.indexOf(prev) ? 'r' : 'l', v = $('v');
+            v.classList.remove('tin-r', 'tin-l'); void v.offsetWidth; v.classList.add('tin-' + dir);
+            setTimeout(() => v.classList.remove('tin-' + dir), 450);
+            if (snap) { snap.classList.add(dir === 'r' ? 'l' : 'r'); document.querySelector('main').appendChild(snap); setTimeout(() => snap.remove(), 320); }
+        }
+
         function go(t) {
+            const prev = tab, snap = tabSnap(prev !== t);
             tab = t; msg = ''; bgMsg = ''; rst = false; lstN = LIST_STEP; disarm(); stopGame(); gmMsg = '';
             if (riseEl) { riseEl.remove(); riseEl = null; clearTimeout(riseT); clearTimeout(riseT2); }
             if (t === 'study') build();
             render();
             window.scrollTo(0, 0);
+            tabFx(snap, prev, t);
         }
 
         function shuf() {
@@ -4049,9 +4188,16 @@ liten|маленький|Прилагательные|Har du den i liten større
 
         function mark(v) {
             if (i >= deck.length) return;
+            const cid = deck[i].id, dn = dayNo();
+            S.hintN = (S.hintN || 0) + 1;
+            lastAns = { id: cid, idx: i, st: S.st[cid], sr: S.sr[cid] ? S.sr[cid].slice() : null, streak, day: todayN(), cd: 0 };
+            if (S.day.d !== dn) S.day = { d: dn, n: 0 };
+            S.day.n++;
+            srUpdate(cid, v === 'k');
             S.st[deck[i].id] = v;
             let cd = 0;
             if (v === 'k') { const n0 = chOf(deck[i]); if (n0 && !S.done[n0] && cards().filter(x => chOf(x) === n0).every(x => S.st[x.id] === 'k')) { S.done[n0] = 1; cd = n0; } }
+            lastAns.cd = cd;
             save();
             if (v === 'k') { streak++; streakPop = true; } else { streak = 0; streakPop = false; }
             i++; flip = false; enter = true; disarm(); render();
@@ -5855,13 +6001,16 @@ færre|меньше (о числе)`;
             ['todo', 'Не знаю + новые', 'Всё, что ещё стоит повторить'],
             ['new', 'Только новые', 'Карточки, которые вы ещё не отмечали'],
             ['all', 'Все', 'Вся колода без фильтра'],
-            ['known', 'Знаю', 'Уже выученные — для повторения']
+            ['known', 'Знаю', 'Уже выученные — для повторения'],
+            ['due', 'На повторение', 'Ошибки и слова, которые пора освежить']
         ];
+        const MODE_SHORT = { todo: 'К изучению', new: 'Новые', all: 'Все', known: 'Знаю', due: 'Повторить' };
         const MODE_ICON = {
             todo: '<i class="dot u"></i><i class="dot n"></i>',
             new: '<i class="dot n"></i>',
             all: null,
-            known: '<i class="dot k"></i>'
+            known: '<i class="dot k"></i>',
+            due: '<i class="dot u"></i>'
         };
 
         /* ---------- Нижняя панель выбора ---------- */
@@ -5871,7 +6020,7 @@ færre|меньше (о числе)`;
             shKind = kind;
             const cur = kind === 'cat' ? cat : kind === 'ch' ? chap : mode;
             const items = kind === 'ch'
-                ? [['', 'Все главы', '', cards().length, ic('cards')]].concat(Object.keys(CHAPTERS).map(n => [n, (+n ? 'Глава ' + n + ' · ' : '') + CHAPTERS[n], '', cards().filter(x => String(chOf(x)) === n).length, ic('tag')]))
+                ? [['', 'Все главы', '', cards().length, ic('cards')]].concat(Object.keys(CHAPTERS).map(n => [n, (+n ? 'Глава ' + n + ' · ' : '') + CHAPTERS[n], '', chProg(n), ic('tag')]))
                 : kind === 'cat'
                 ? [['', 'Все темы', '', cards().length, ic('cards')]].concat(cats().map(c => [c, c, '', cards().filter(x => x.cat === c).length, ic('tag')]))
                 : MODES.map(m => [m[0], m[1], m[2], null, MODE_ICON[m[0]] || ic('cards')]);
@@ -5941,20 +6090,20 @@ færre|меньше (о числе)`;
 
         function render() {
             ['study', 'list', 'add', 'games', 'settings'].forEach(t => { const el = $('t-' + t); if (el) el.className = t === tab ? 'on' : ''; });
+            moveInd();
 
             let h = '';
 
             if (tab === 'study') {
                 h += `
-                <div class="row">
-                    <button class="pick" data-k="ch" onclick="openPick('ch')"><span class="pk-t"><span class="pk-l">Глава</span><span class="pk-v">${esc(chap === '' ? 'Все главы' : (+chap ? chap + ' · ' : '') + CHAPTERS[chap])}</span></span>${ic('chevron')}</button>
-                    <button class="pick" data-k="cat" onclick="openPick('cat')"><span class="pk-t"><span class="pk-l">Тема</span><span class="pk-v">${esc(cat || 'Все темы')}</span></span>${ic('chevron')}</button>
-                    <button class="pick" data-k="mode" onclick="openPick('mode')"><span class="pk-t"><span class="pk-l">Показывать</span><span class="pk-v">${esc((MODES.find(m => m[0] === mode) || MODES[0])[1])}</span></span>${ic('chevron')}</button>
-                    <div style="display:flex; gap:10px; width:100%;">
-                        <button class="ib" style="flex:1;" title="Перемешать" aria-label="Перемешать" onclick="shuf()">${ic('shuffle')}</button>
-                        <button class="ib" style="flex:1;" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">${ic('swap')}</button>
-                    </div>
+                <div class="row cmp">
+                    <button class="pick" data-k="ch" onclick="openPick('ch')"><span class="pk-t"><span class="pk-l">Глава</span><span class="pk-v">${esc(chap === '' ? 'Главы' : (+chap ? 'Гл. ' + chap : CHAPTERS[chap]))}</span></span>${ic('chevron')}</button>
+                    <button class="pick" data-k="cat" onclick="openPick('cat')"><span class="pk-t"><span class="pk-l">Тема</span><span class="pk-v">${esc(cat || 'Темы')}</span></span>${ic('chevron')}</button>
+                    <button class="pick" data-k="mode" onclick="openPick('mode')"><span class="pk-t"><span class="pk-l">Показывать</span><span class="pk-v">${esc(MODE_SHORT[mode] || '')}</span></span>${ic('chevron')}</button>
                 </div>
+
+                <div class="goal ${todayN() >= S.goal ? 'done' : ''}"><div class="goal-t"><span>${todayN() >= S.goal ? 'Цель дня выполнена!' : 'Цель дня'}</span><b>${todayN()} / ${S.goal}</b></div><div class="goal-b"><i style="width:${Math.min(100, todayN() / S.goal * 100)}%"></i></div></div>
+                ${mode !== 'due' && cards().some(isDue) ? `<button class="due" onclick="mode='due';build();render()">${ic('flame')}<span>Пора повторить: <b>${cards().filter(isDue).length}</b></span><em>Начать</em></button>` : ''}
                 `;
 
                 if (!deck.length) {
@@ -5964,7 +6113,7 @@ færre|меньше (о числе)`;
                 } else {
                     const c = deck[i], f = S.dir ? c.ru : c.no, b = S.dir ? c.no : c.ru;
                     h += `
-                    <div class="stats"><span>Карточка ${i + 1} / ${deck.length}</span>${streak >= 2 ? `<span class="streak ${streakPop ? 'pop' : ''}">${ic('flame')} серия ${streak}</span>` : ''}</div>
+                    <div class="stats st-row"><button class="mini" title="Перемешать" aria-label="Перемешать" onclick="shuf()">${ic('shuffle')}</button><span class="st-mid"><span>Карточка ${i + 1} / ${deck.length}</span>${streak >= 2 ? `<span class="streak ${streakPop ? 'pop' : ''}">${ic('flame')} серия ${streak}</span>` : ''}</span><button class="mini" title="Сменить направление" aria-label="Сменить направление" onclick="S.dir^=1;save();render()">${ic('swap')}</button></div>
                     <div class="card ${enter ? 'enter' : ''} ${flipFx ? 'flip-in' : ''}" onclick="tap()">
                         <span class="cat">${esc(c.cat)}</span>
                         <div class="big">${esc(f)}</div>
@@ -5973,7 +6122,7 @@ færre|меньше (о числе)`;
                             <div class="ans">${esc(b)}</div>
                             ${S.dir ? `<div class="tr">[${esc(trOf(c))}]</div>` : ''}
                             ${c.ex ? `<div class="ex">${esc(c.ex)}</div>` : ''}
-                        ` : `<div class="hint">нажмите, чтобы перевернуть</div>`}
+                        ` : ((S.hintN || 0) < 2 ? `<div class="hint">нажмите, чтобы перевернуть</div>` : '')}
                         <div class="shade"></div>
                         <div class="stamp"></div>
                     </div>
@@ -5981,6 +6130,7 @@ færre|меньше (о числе)`;
                         <button class="bn" onclick="fly('u')">Не знаю</button>
                         <button class="bk" onclick="fly('k')">Знаю</button>
                     </div>
+                    ${lastAns && deck[i - 1] && deck[i - 1].id === lastAns.id ? `<button class="pri ghost undo" onclick="undoAns()">${ic('undo')} Вернуть прошлую карточку</button>` : ''}
                     <div class="swipe-tip">${ic('left')} свайп: не знаю · знаю: свайп ${ic('right')}</div>
                     <button class="pri ghost del-cur ${armed === c.id ? 'armed' : ''}" onclick="delCur()">${armed === c.id ? 'Нажмите ещё раз, чтобы удалить' : ic('trash') + ' Удалить карточку'}</button>`;
                 }
@@ -5993,7 +6143,7 @@ færre|меньше (о числе)`;
                 </div>
                 <div class="row" style="flex-wrap:nowrap;">
                     <input id="q" placeholder="Слово, перевод или транскрипция…" value="${esc(q)}" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" oninput="q=this.value;lstN=LIST_STEP;refreshListSoon()">
-                    <button class="ib" onclick="if(rst){S.st={};S.done={};save();rst=false}else rst=true;render()">${rst ? 'Точно?' : 'Сброс'}</button>
+                    <button class="ib" onclick="if(rst){S.st={};S.done={};S.sr={};save();rst=false}else rst=true;render()">${rst ? 'Точно?' : 'Сброс'}</button>
                 </div>
                 ${S.del.length ? `<button class="pri sec" style="margin:0 0 12px;min-height:48px;font-size:15px;" onclick="restoreDel()">${ic('undo')} Вернуть удалённые (${S.del.length})</button>` : ''}
                 <div class="found" id="fnd">${esc(lstInfo)}</div>
@@ -6027,6 +6177,12 @@ færre|меньше (о числе)`;
                 const pf = S.perf || 'auto';
                 h += `
                 ${accountPanel()}
+                <div class="panel">
+                    <label>${ic('flame')}Цель на день</label>
+                    <div class="seg">${[5, 10, 20, 30].map(n => `<button class="${S.goal === n ? 'on' : ''}" onclick="setGoal(${n})">${n}</button>`).join('')}</div>
+                    <div class="hint2">Столько карточек в день — и цель выполнена. Выученные слова возвращаются на повторение через 1, 3, 7, 14 и 30 дней.</div>
+                </div>
+
                 <div class="stats" style="font-size:16px;"><span><b>Внешний вид</b></span></div>
 
                 <div class="pv">
@@ -6549,6 +6705,7 @@ færre|меньше (о числе)`;
             if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!flipping) doFlip(); }
             else if (e.key === 'ArrowLeft') mark('u');
             else if (e.key === 'ArrowRight') mark('k');
+            else if (e.key === 'z' || e.key === 'Z' || e.key === 'я') undoAns();
         });
 
         $('t-settings').innerHTML = ic('gear');
