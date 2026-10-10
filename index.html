@@ -878,6 +878,28 @@
         /* запуск: пока идёт заставка, приложение под ней не прорисовывается; свечение — без лишнего фильтра (градиент и так мягкий) */
         body.splashing main, body.splashing nav { visibility: hidden; }
         #splash::before { filter: none; }
+
+        /* ===== Карточка «парит» и по ней пробегает блик света ===== */
+        /* анимируем отдельные свойства translate/scale и сдвиг блика — они складываются со свайпом и переворотом; всё это работает на видеокарте */
+        @keyframes cardFloat {
+            0%, 100% { translate: 0 0; scale: 1; }
+            50% { translate: 0 -6px; scale: 1.012; }
+        }
+        @keyframes cardGlint {
+            0%, 55% { translate: 0 0; opacity: 0; }
+            62%, 90% { opacity: 1; }
+            100% { translate: 560% 0; opacity: 0; }
+        }
+        /* начинается через пару секунд после появления карточки (задержка 2.5 с) и продолжается, пока она на экране */
+        .card { animation: cardFloat 3.6s ease-in-out 2.5s infinite; }
+        .card.enter { animation: cardIn .28s ease-out, cardFloat 3.6s ease-in-out 2.5s infinite; }
+        .card.flip-in { animation: flipIn .26s cubic-bezier(.2, .9, .3, 1.15), cardFloat 3.6s ease-in-out 2.5s infinite; }
+        .card::after { content: ""; position: absolute; top: -25%; bottom: -25%; left: -55%; width: 38%; pointer-events: none; opacity: 0;
+            background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, .30) 50%, transparent 100%); transform: skewX(-18deg);
+            animation: cardGlint 7s ease-in-out 3s infinite; }
+        .card.drag, .card:active, .card.drag::after, .card:active::after { animation: none; }
+        html.lite .card, html.lite .card::after { animation: none; }
+        @media (prefers-reduced-motion: reduce) { .card, .card.enter, .card.flip-in, .card::after { animation: none; } }
     </style>
 </head>
 <body>
