@@ -863,6 +863,21 @@
         .pri.ghost.sr-open { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 10px 0 6px; font-weight: 700; color: #ffe8a3; background: rgba(8, 24, 60, .66); border: 1px solid rgba(255, 232, 163, .5); text-shadow: 0 1px 2px rgba(0, 10, 40, .8); }
         html.lite .sr-st { animation-duration: .01s; animation-delay: 0s; }
         @media (prefers-reduced-motion: reduce) { .sr-st, .sr-bar i { animation: none !important; opacity: 1; transform: none; } }
+
+        /* ===== Оптимизация отрисовки: вид прежний, нагрузка на телефон меньше ===== */
+        :root { --edge-s: inset 0 1px 1px rgba(255, 255, 255, .5), 0 2px 7px rgba(0, 30, 90, .2); }
+        html.lite { --edge-s: var(--edge); }
+        body { text-rendering: auto; }                                   /* optimizeLegibility заметно замедляет вёрстку текста на телефонах */
+        body::before, body::after { will-change: transform; transform: translateZ(0); }   /* неподвижный фон — отдельным слоем, без перерисовки при прокрутке */
+        .item, .gm-opt, .gm-p, .gm-lt, .lk-chip, .gm-tile, .opt, .pick, .act button { box-shadow: var(--edge-s); }   /* у повторяющихся элементов тень компактнее */
+        .item .t, .item .t * { text-shadow: none; }                      /* в длинном списке тень у каждой буквы не нужна */
+        /* переворот карточки: без анимации filter (она перерисовывает карточку на каждом кадре) */
+        @keyframes flipOut { from { transform: perspective(900px) rotateY(0); } to { transform: perspective(900px) rotateY(90deg); } }
+        @keyframes flipIn { from { transform: perspective(900px) rotateY(-90deg); } to { transform: perspective(900px) rotateY(0); } }
+        .cat-w { animation-iteration-count: 2; }                        /* покачивание — пара раз, а не вечно: нет постоянной перерисовки */
+        /* запуск: пока идёт заставка, приложение под ней не прорисовывается; свечение — без лишнего фильтра (градиент и так мягкий) */
+        body.splashing main, body.splashing nav { visibility: hidden; }
+        #splash::before { filter: none; }
     </style>
 </head>
 <body>
@@ -4274,6 +4289,7 @@ liten|маленький|Прилагательные|Har du den i liten større
             if (!changed || isLite() || reduceMotion() || window.scrollY > 40) return null;
             const v = $('v');
             if (!v || !v.firstElementChild) return null;
+            if (v.getElementsByTagName('*').length > 260) return null;   // длинный список не клонируем — это и есть главная нагрузка при переключении
             const c = v.cloneNode(true);
             c.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
             c.removeAttribute('id');
@@ -5823,16 +5839,21 @@ færre|меньше (о числе)`;
         const ART_RE = /^(å|ei\/en|en|et|ei)\s+/;
         const headOf = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim().replace(ART_RE, '').trim();
         const DICT = [], DIDX = new Map(), DFOLD = new Map();
-        DICT_RAW.trim().split('\n').concat(((document.getElementById('dict-more') || {}).textContent || '').trim().split('\n')).forEach(l => {
-            const p = l.split('|');
-            if (p.length < 2) return;
-            const e = { no: p[0].trim(), ru: p[1].trim() };
-            const h = headOf(e.no);
-            DICT.push(e);
-            if (!DIDX.has(h)) DIDX.set(h, e);
-            const f = fold(h);
-            if (!DFOLD.has(f)) DFOLD.set(f, e);
-        });
+        let dictReady = false;
+        function ensureDict() {
+            if (dictReady) return;
+            dictReady = true;
+            DICT_RAW.trim().split('\n').concat(((document.getElementById('dict-more') || {}).textContent || '').trim().split('\n')).forEach(l => {
+                const p = l.split('|');
+                if (p.length < 2) return;
+                const e = { no: p[0].trim(), ru: p[1].trim() };
+                const h = headOf(e.no);
+                DICT.push(e);
+                if (!DIDX.has(h)) DIDX.set(h, e);
+                const f = fold(h);
+                if (!DFOLD.has(f)) DFOLD.set(f, e);
+            });
+        }
         /* неправильные формы → начальная форма */
         const IRREG = {
             var: 'være', vært: 'være', er: 'være', har: 'ha', hadde: 'ha', hatt: 'ha', gjorde: 'gjøre', gjort: 'gjøre', gjør: 'gjøre', sa: 'si', sagt: 'si', sier: 'si',
@@ -5877,6 +5898,7 @@ færre|меньше (о числе)`;
 
         let ownKey = '', ownMap = new Map(), sugArr = [];
         function ownIdx() {
+            ensureDict();
             const cs = cards(), key = cs.length + ':' + S.cu.length;
             if (key !== ownKey) {
                 ownKey = key; ownMap = new Map(); sugArr = [];
@@ -6016,6 +6038,7 @@ færre|меньше (о числе)`;
         let NGEN = null;
         function nounGender(w) {
             if (!NGEN) {
+                ensureDict();
                 NGEN = new Map();
                 const add = no => { const m = String(no).match(/^(en|ei\/en|et|ei) (.+)$/i); if (m) { const h = m[2].toLowerCase().trim(); if (!NGEN.has(h)) NGEN.set(h, m[1].toLowerCase()); } };
                 cards().forEach(c => add(c.no)); DICT.forEach(e => add(e.no));
