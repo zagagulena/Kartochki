@@ -1228,6 +1228,18 @@
         .tw-l i { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; }
         .tw-l i.ok { background: #4cd9a0; } .tw-l i.ok .i, .tw-l i.fz .i { width: 11px; height: 11px; color: #fff; }
         .tw-l i.no { border: 2px dashed rgba(255, 107, 129, .85); } .tw-l i.fz { border: 2px solid #8fd3ff; background: rgba(143, 211, 255, .3); }
+    
+        /* ---- читаемость кнопок и плиток на «стекле» (телефон, тёмный растр) ---- */
+        html.cg :is(.td-more button, .td-s, .td-plan, .td-week, .td-hero, .td-note) { background: linear-gradient(rgba(0, 0, 0, .5), rgba(0, 0, 0, .5)), var(--glass); }
+        html.cg #v .pri:not(.td-go):not(.ghost) { background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, .6)), var(--glass); border-color: rgba(255, 255, 255, .75); color: #fff; text-shadow: 0 1px 2px #000; }
+        .td-more button { overflow: hidden; }
+        .td-more u { position: absolute; top: 10px; right: 10px; margin: 0; }
+        .td-more button:disabled { opacity: 1; border-style: dashed; }
+        .td-more button:disabled b { color: var(--cmut); }
+        .td-more button:disabled i .i { color: var(--cmut); }
+        .td-more b { white-space: nowrap; }
+        .td-more small { overflow-wrap: anywhere; }
+            .tw-h b { white-space: nowrap; } .td-d em { font-size: 9px; letter-spacing: 0; white-space: nowrap; left: -2px; right: -2px; }
     </style>
 </head>
 <body>
@@ -5454,7 +5466,7 @@ moderne|современный|Прилагательные|Det er en moderne le
         }
 
         /* ---------- Кнопки Telegram ---------- */
-        const tgOn = () => !!(tg && tg.initData && tg.BackButton && tg.MainButton && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1'));
+        const tgOn = () => !!(tg && tg.initData && tg.BackButton && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1'));   // только системная кнопка «Назад»
         let tgBound = false;
         function tgBack() {
             if (chdEl) { closeChd(); return; }
@@ -5468,12 +5480,9 @@ moderne|современный|Прилагательные|Det er en moderne le
                 if (!tgBound) {
                     tgBound = true;
                     tg.BackButton.onClick(tgBack);
-                    tg.MainButton.onClick(() => { if (tab === 'study' && home && !chdEl) startToday(); });
-                    tg.MainButton.setParams({ color: '#ff6b81', text_color: '#ffffff' });
+                    try { tg.MainButton.hide(); } catch (e) {}
                 }
                 (chdEl || G || tab !== 'study' || !home) ? tg.BackButton.show() : tg.BackButton.hide();
-                if (tab === 'study' && home && !chdEl) { const p = todayPlan(); tg.MainButton.setText(p.deck.length ? 'Начать · ' + p.deck.length : 'Учить ещё'); tg.MainButton.show(); }
-                else tg.MainButton.hide();
             } catch (e) {}
         }
 
@@ -5563,7 +5572,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                 const cls = on ? 'on' : fz ? 'fz' : fut ? 'fut' : now ? 'todo' : 'miss';
                 return `<div class="td-d ${cls} ${now ? 'now' : ''}"><span class="nm">${nm}</span><i>${on ? ic('check') : fz ? ic('snow') : ''}</i><span class="dt">${new Date(Date.now() + off * 864e5).getDate()}</span>${now ? '<em>сегодня</em>' : ''}</div>`;
             }).join('');
-            const weekTxt = wDone ? 'вы занимались ' + wDone + ' ' + plu(wDone, 'день', 'дня', 'дней') : 'пока без занятий — начните сегодня';
+            const weekTxt = wDone ? 'занимались ' + wDone + ' ' + plu(wDone, 'день', 'дня', 'дней') : 'начните сегодня';
             const sub = p.deck.length ? (hit ? 'Цель дня уже выполнена — можно позаниматься ещё.' : 'План готов — это займёт пару минут.') : 'Все слова на сегодня пройдены. Отличная работа!';
             const notes = (S.frz.msg ? `<div class="td-note" onclick="dismissFz()">${ic('snow')}<span>Заморозка спасла вашу серию: вчерашний пропуск не засчитан.</span></div>` : '') + (S.frz.earn ? `<div class="td-note" onclick="dismissFz()">${ic('snow')}<span>Вы заработали заморозку! Она сохранит серию, если пропустить один день.</span></div>` : '');
             const hardN = cards().filter(hardOf).length, al = albStats(), alN = al.filter(x => x.c >= ALB_NEED).length, alNew = al.some(x => x.c >= ALB_NEED && !S.alb[x.k]);
@@ -5588,7 +5597,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                     <div class="td-row"><span>${ic('history')}Повторить выученное</span><b>${p.due}</b></div>
                     <div class="td-row"><span>${ic('sparkles')}Новые слова и ошибки</span><b>${p.extra}</b></div>
                 </div>
-                ${tgOn() ? '' : `<button class="pri td-go" onclick="startToday()">${p.deck.length ? ic('flame') + 'Начать · ' + p.deck.length + ' ' + plu(p.deck.length, 'слово', 'слова', 'слов') : ic('cards') + 'Учить ещё'}</button>`}
+                ${`<button class="pri td-go" onclick="startToday()">${p.deck.length ? ic('flame') + 'Начать · ' + p.deck.length + ' ' + plu(p.deck.length, 'слово', 'слова', 'слов') : ic('cards') + 'Учить ещё'}</button>`}
                 <div class="td-week"><div class="tw-h"><b>Эта неделя</b><span>${weekTxt}</span></div><div class="tw-d">${week}</div><div class="tw-l"><span><i class="ok">${ic('check')}</i>занимались</span><span><i class="no"></i>не занимались</span>${wFz ? `<span><i class="fz">${ic('snow')}</i>заморозка</span>` : ''}</div></div>
                 ${more}
                 ${S.beg ? `<div class="td-note beg">${ic('sparkles')}<span>Режим новичка: идём по главам по порядку${begCh() ? ' — сейчас глава ' + begCh() + ' «' + esc(CHAPTERS[begCh()]) + '»' : ''}, порции небольшие.</span></div>` : `<div class="row"><button class="pick" data-k="ch" onclick="openPick('ch')"><span class="pk-t"><span class="pk-l">Новые слова из</span><span class="pk-v">${esc(chap === '' ? 'Все главы' : (+chap ? chap + ' · ' : '') + CHAPTERS[chap])}</span></span>${ic('chevron')}</button></div>`}
