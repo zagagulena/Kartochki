@@ -1245,6 +1245,11 @@
         .ad-i b, .ad-r b { margin: 0 !important; font-size: 14.5px !important; text-align: right; }
         .chd-c.wide textarea, .chd-c.wide input[type="number"] { width: 100%; margin: 8px 0; padding: 10px 12px; border-radius: 14px; font-size: 15px; }
         .chd-c.wide .gm-tools { flex-wrap: wrap; } .chd-c.wide .gm-tools input { flex: 1 1 100%; }
+    
+        .ed-l { display: block; margin: 10px 0 2px; font-size: 13px; font-weight: 700; color: var(--cmut); }
+        .chd-c.wide input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 14px; font-size: 16px; }
+        .pri.ghost.edit-cur { display: flex; align-items: center; justify-content: center; width: 100%; font-weight: 700; color: #fff; background: rgba(8, 24, 60, .66); border: 1px solid rgba(255, 255, 255, .5); text-shadow: 0 1px 2px rgba(0, 10, 40, .8); margin-top: 14px; }
+        .pri.ghost.edit-cur + .del-cur { margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -5053,6 +5058,14 @@ moderne|современный|Прилагательные|Det er en moderne le
             dupArm = '';
             el.innerHTML = (no.trim().length < 2 && ru.trim().length < 3) ? '' : dupHtml(findDup(no, ru));
         }
+        const BASE_BY_ID = new Map(BASE.map(c => [c.id, c]));
+        let ovStr = '';
+        function applyAllOv() {   // правки встроенных карточек: меняем объекты на месте
+            const ov = S.ov || {};
+            BASE.forEach(c => { if (c.o) { Object.assign(c, c.o); c.o = null; } });
+            for (const id in ov) { const c = BASE_BY_ID.get(id); if (!c) continue; const o = {}; for (const k in ov[id]) { o[k] = c[k]; } c.o = o; Object.assign(c, ov[id]); if (typeof FC !== 'undefined') FC.delete(id); }
+            ovStr = JSON.stringify(ov);
+        }
         const cards = () => BASE.concat(S.cu).filter(c => !S.del.includes(c.id));
         const cats = () => [...new Set(cards().map(c => c.cat))];
         const TOPIC_ICON = { 'Общение': 'chat', 'Грамматика': 'book', 'Время': 'clock', 'Еда и кафе': 'food', 'Глаголы': 'zap', 'Глаголы (прош. время)': 'history', 'Модальные глаголы': 'key', 'Существительные': 'cube', 'Прилагательные': 'sparkles', 'Семья': 'users', 'Дом и быт': 'home', 'Свободное время': 'music', 'Работа': 'work', 'Язык': 'globe', 'Числа': 'hash', 'Страны': 'flag', 'Погода': 'cloud', 'Цвета': 'palette', 'Транспорт': 'bus', 'Дорога': 'pin', 'Город и туризм': 'camera', 'Одежда': 'shirt', 'Покупки': 'bag', 'Жильё': 'home', 'Мебель и техника': 'cube', 'Праздники': 'sparkles', 'Природа и география': 'globe', 'Туризм и традиции': 'camera', 'Животные': 'tag', 'Тело': 'users', 'Здоровье': 'drop', 'Спорт и питание': 'flame', 'Образование': 'book', 'Профессии': 'work', 'Общество': 'flag' };
@@ -5559,6 +5572,43 @@ moderne|современный|Прилагательные|Det er en moderne le
             else if (k === 'frz') { S.frz.n = Math.min(9, S.frz.n + 1); save(); adMsg('Заморозок: ' + S.frz.n); }
             else if (k === 'hist') { S.hist = {}; S.frz = { n: 0, used: [], g: 0 }; save(); adMsg('История и серия сброшены.'); }
         }
+
+
+        /* ---------- Правка карточки ---------- */
+        let edId = '';
+        const edField = (id, label, val, ph) => `<label class="ed-l">${label}</label><input id="${id}" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(val || '')}" placeholder="${esc(ph || '')}">`;
+        function editOpen(id) {
+            const c = cards().find(x => x.id === id); if (!c) return;
+            edId = id;
+            const edited = !!(S.ov && S.ov[id]);
+            ovOpen(`<b class="sr-h">Правка карточки</b>
+                <p class="sr-p">Нашли ошибку в слове, транскрипции или примере? Исправьте здесь: правка сохранится в вашем приложении${id[0] === 'c' ? '' : ', исходную карточку можно вернуть'}.</p>
+                ${edField('ed-no', 'По-норвежски', c.no)}
+                ${edField('ed-tr', 'Транскрипция (без скобок)', trOf(c))}
+                ${edField('ed-ru', 'По-русски', c.ru)}
+                ${edField('ed-ex', 'Пример', c.ex, 'Jeg bor i Oslo.')}
+                ${edField('ed-exr', 'Перевод примера', c.exr, 'Я живу в Осло.')}
+                <div class="msg" id="ed-msg"></div>
+                <button class="pri" onclick="editSave()">Сохранить</button>
+                <div class="mp-b">${edited ? `<button class="pri sec" onclick="editReset()">Вернуть исходное</button>` : ''}<button class="pri sec" onclick="closeChd()">Отмена</button></div>`);
+        }
+        function editSave() {
+            const c = cards().find(x => x.id === edId); if (!c) return;
+            const v = k => ($('ed-' + k).value || '').trim(), no = v('no'), ru = v('ru');
+            if (!no || !ru) { const m = $('ed-msg'); if (m) m.textContent = 'Слово и перевод не могут быть пустыми.'; return; }
+            const vals = { no, ru, tr: v('tr'), ex: v('ex'), exr: v('exr') };
+            if (edId[0] === 'c') { Object.assign(c, vals); if (!vals.tr) c.tr = autoTr(no); }
+            else {
+                const orig = c.o || {}, o = {};
+                for (const k in vals) { const base = k in orig ? orig[k] : c[k]; const cmp = k === 'tr' ? (base || autoTr(orig.no || c.no)) : base; if (vals[k] !== (cmp || '')) o[k] = vals[k]; }
+                if (!S.ov) S.ov = {};
+                if (Object.keys(o).length) S.ov[edId] = o; else delete S.ov[edId];
+                applyAllOv();
+            }
+            FC.delete(edId); save(); closeChd();
+            if (tab === 'list') refreshList(); else render();
+        }
+        function editReset() { if (S.ov) delete S.ov[edId]; applyAllOv(); save(); closeChd(); if (tab === 'list') refreshList(); else render(); }
 
         /* ---------- Режим новичка, подсказки чтения, резервная копия ---------- */
         function setBeg(v) { S.beg = v ? 1 : 0; if (v) { const n = begCh(); if (n) { chap = String(n); S.chap = chap; cat = ''; mode = 'todo'; } } save(); build(); render(); }
@@ -6173,6 +6223,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                         <span class="loc">${esc(loc(c))}</span>
                         <button class="sm ok" aria-label="Знаю" onclick="setSt('${c.id}','k')">${ic('check')}</button>
                         <button class="sm no" aria-label="Не знаю" onclick="setSt('${c.id}','u')">${ic('x')}</button>
+                        <button class="sm" aria-label="Править" onclick="editOpen('${c.id}')">${ic('pen')}</button>
                         <button class="sm del ${armed === c.id ? 'armed' : ''}" aria-label="Удалить" onclick="delCard('${c.id}')">${armed === c.id ? 'Удалить?' : ic('trash')}</button>
                     </div>
                 </div>`).join('');
@@ -8053,6 +8104,7 @@ færre|меньше (о числе)`;
         const colorName = (list, c, auto) => { const f = list.find(x => x[0] === c); return f ? f[1] : (c ? 'Свой цвет ' + c : auto); };
 
         function render() {
+            if (JSON.stringify(S.ov || {}) !== ovStr) applyAllOv();
             ['study', 'list', 'add', 'games', 'settings'].forEach(t => { const el = $('t-' + t); if (el) el.className = t === tab ? 'on' : ''; });
             moveInd();
 
@@ -8099,6 +8151,7 @@ færre|меньше (о числе)`;
                         <button class="bk" onclick="fly('k')">Знаю</button>
                     </div>
                     <div class="swipe-tip">${ic('left')} свайп: не знаю · знаю: свайп ${ic('right')}</div>
+                    <button class="pri ghost edit-cur" onclick="editOpen(deck[i].id)">${ic('pen')} Править карточку</button>
                     <button class="pri ghost del-cur ${armed === c.id ? 'armed' : ''}" onclick="delCur()">${armed === c.id ? 'Нажмите ещё раз, чтобы удалить' : ic('trash') + ' Удалить карточку'}</button>`;
                 }
             } else if (tab === 'list') {
