@@ -1240,6 +1240,11 @@
         .td-more b { white-space: nowrap; }
         .td-more small { overflow-wrap: anywhere; }
             .tw-h b { white-space: nowrap; } .td-d em { font-size: 9px; letter-spacing: 0; white-space: nowrap; left: -2px; right: -2px; }
+    
+        .ad-i, .ad-r { display: flex; justify-content: space-between; gap: 10px; padding: 7px 2px; border-bottom: 1px dashed var(--bd); font-size: 14.5px; font-weight: 600; }
+        .ad-i b, .ad-r b { margin: 0 !important; font-size: 14.5px !important; text-align: right; }
+        .chd-c.wide textarea, .chd-c.wide input[type="number"] { width: 100%; margin: 8px 0; padding: 10px 12px; border-radius: 14px; font-size: 15px; }
+        .chd-c.wide .gm-tools { flex-wrap: wrap; } .chd-c.wide .gm-tools input { flex: 1 1 100%; }
     </style>
 </head>
 <body>
@@ -5486,6 +5491,75 @@ moderne|современный|Прилагательные|Det er en moderne le
             } catch (e) {}
         }
 
+
+        /* ---------- Администратор (@Zagagulena) ---------- */
+        const ADMIN_NAMES = ['zagagulena'];
+        const isAdmin = () => { try { const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user; return !!(u && u.username && ADMIN_NAMES.includes(String(u.username).toLowerCase())); } catch (e) { return false; } };
+        function adminPanel() {
+            if (!isAdmin()) return '';
+            return `<div class="panel"><label>${ic('key')}Администратор</label><div class="hint2" style="margin-top:0">Вы вошли как администратор: доступны массовое добавление слов, управление главами и сервисные инструменты.</div><button class="pri" onclick="adOpen()">Открыть админ-панель</button></div>`;
+        }
+        const adMsg = m => { const e = $('ad-msg'); if (e) e.textContent = m; };
+        function adOpen() {
+            if (!isAdmin()) return;
+            const all = cards(), u = (tg.initDataUnsafe || {}).user || {};
+            const known = all.filter(c => S.st[c.id] === 'k').length, hard = all.filter(hardOf).length;
+            const rows = mapStats().map(r => `<div class="ad-r"><span>${r.n} · ${esc(CHAPTERS[r.n])}</span><b>${r.k}/${r.t}</b></div>`).join('');
+            ovOpen(`<b class="sr-h">Админ-панель</b>
+                <div class="ad-i"><span>Пользователь</span><b>@${esc(u.username || '')} · id ${esc(String(u.id || ''))}</b></div>
+                <div class="ad-i"><span>Карточек всего</span><b>${all.length}</b></div>
+                <div class="ad-i"><span>Своих карточек</span><b>${S.cu.length}</b></div>
+                <div class="ad-i"><span>Удалённых встроенных</span><b>${S.del.length}</b></div>
+                <div class="ad-i"><span>Выучено / трудных</span><b>${known} / ${hard}</b></div>
+                <div class="ad-i"><span>Серия / заморозки</span><b>${dayStreak()} / ${S.frz.n}</b></div>
+                <div class="ad-i"><span>Синхронизация</span><b>${esc(String(syncState))}</b></div>
+                <b class="sr-h2">Главы</b>${rows}
+                <b class="sr-h2">Массовое добавление слов</b>
+                <p class="sr-p">По одному слову в строке: норвежское|русское|тема|пример|номер главы. Тема, пример и глава необязательны.</p>
+                <textarea id="ad-ta" rows="5" spellcheck="false" autocapitalize="none" placeholder="et eple|яблоко|Еда и кафе|Jeg spiser et eple.|3"></textarea>
+                <button class="pri" onclick="adMass()">Добавить слова</button>
+                <b class="sr-h2">Главы</b>
+                <div class="gm-tools"><input id="ad-ch" type="number" min="1" max="15" placeholder="Глава 1–15" style="min-width:0"><button class="pri sec" onclick="adChap(1)">Все выучены</button><button class="pri sec" onclick="adChap(0)">Сбросить</button></div>
+                <b class="sr-h2">Сервис</b>
+                <button class="pri sec" onclick="adTool('restore')">Вернуть удалённые карточки (${S.del.length})</button>
+                <button class="pri sec" onclick="adTool('err')">Сбросить счётчики ошибок</button>
+                <button class="pri sec" onclick="adTool('frz')">+1 заморозка серии</button>
+                <button class="pri sec" onclick="adTool('hist')">Сбросить историю и серию</button>
+                <div class="msg" id="ad-msg"></div>
+                <button class="pri" onclick="closeChd()">Закрыть</button>`);
+        }
+        function adMass() {
+            if (!isAdmin()) return;
+            const ta = $('ad-ta'), lines = (ta ? ta.value : '').split('\n').map(l => l.trim()).filter(Boolean);
+            let n = 0, bad = 0; const have = new Set(cards().map(c => c.no.toLowerCase() + '|' + c.ru.toLowerCase()));
+            lines.forEach((l, k) => {
+                const p = l.split('|').map(x => x.trim());
+                if (!p[0] || !p[1]) { bad++; return; }
+                const key = p[0].toLowerCase() + '|' + p[1].toLowerCase(); if (have.has(key)) { bad++; return; } have.add(key);
+                const e = (p[3] || '').split(' ‖ ');
+                S.cu.push({ id: 'c' + Date.now() + '_' + k, no: p[0], ru: p[1], tr: autoTr(p[0]), cat: p[2] || 'Мои слова', ex: e[0], exr: e[1] || '', ch: +p[4] || 0 });
+                n++;
+            });
+            save(); if (ta && n) ta.value = '';
+            adMsg(`Добавлено: ${n}. Пропущено (пустые или повторы): ${bad}. Всего карточек: ${cards().length}.`);
+        }
+        function adChap(on) {
+            if (!isAdmin()) return;
+            const n = +($('ad-ch') || {}).value;
+            const a = cards().filter(x => chOf(x) === n);
+            if (!a.length) { adMsg('Введите номер главы от 1 до 15.'); return; }
+            a.forEach(c => { if (on) { S.st[c.id] = 'k'; if (!S.sr[c.id]) S.sr[c.id] = [1, dayNo() + 1]; } else { delete S.st[c.id]; delete S.sr[c.id]; delete S.err[c.id]; } });
+            if (!on) delete S.done[n];
+            save(); build(); adMsg(`Глава ${n}: ${on ? 'все слова отмечены выученными' : 'прогресс сброшен'} (${a.length}).`);
+        }
+        function adTool(k) {
+            if (!isAdmin()) return;
+            if (k === 'restore') { const c = S.del.length; S.del = []; save(); build(); adMsg(`Возвращено карточек: ${c}.`); }
+            else if (k === 'err') { S.err = {}; save(); adMsg('Счётчики ошибок сброшены.'); }
+            else if (k === 'frz') { S.frz.n = Math.min(9, S.frz.n + 1); save(); adMsg('Заморозок: ' + S.frz.n); }
+            else if (k === 'hist') { S.hist = {}; S.frz = { n: 0, used: [], g: 0 }; save(); adMsg('История и серия сброшены.'); }
+        }
+
         /* ---------- Режим новичка, подсказки чтения, резервная копия ---------- */
         function setBeg(v) { S.beg = v ? 1 : 0; if (v) { const n = begCh(); if (n) { chap = String(n); S.chap = chap; cat = ''; mode = 'todo'; } } save(); build(); render(); }
         function setRh(v) { S.rh = v ? 1 : 0; save(); render(); }
@@ -8073,6 +8147,7 @@ færre|меньше (о числе)`;
                 const pf = S.perf || 'auto';
                 h += `
                 ${accountPanel()}
+                ${adminPanel()}
                 ${begPanel()}
                 <div class="panel">
                     <label>${ic('flame')}Цель на день</label>
