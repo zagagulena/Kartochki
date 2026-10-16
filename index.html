@@ -1289,6 +1289,22 @@
         .lv-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .lv-two .pri { margin-top: 4px !important; }
 
         .lv-rec textarea { width: 100%; box-sizing: border-box; margin: 8px 0; padding: 10px 12px; border-radius: 14px; font-size: 15px; font-family: inherit; color: var(--ctx); background: rgba(128,128,128,.1); border: 1.5px solid currentColor; }
+
+        /* тест уровня на телефоне: лист на всю ширину, ниже шапки Telegram */
+        .chd.lvx { align-items: flex-start; padding: calc(max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px)) + var(--tg-content-safe-area-inset-top, 0px) + 60px) 10px 10px; }
+        .chd.lvx .chd-c.wide { width: min(480px, 100%); max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px)) - var(--tg-content-safe-area-inset-top, 0px) - 74px); padding: 16px 14px 18px; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        .chd.lvx .chd-c.wide * { max-width: 100%; box-sizing: border-box; }
+        .lv-tm { flex-wrap: wrap; } .lv-tm .pri { flex: 1 1 140px; min-width: 0; white-space: nowrap; font-size: 15px; padding: 10px 12px; }
+        .lv-rec .pri { width: 100%; font-size: 16px; padding: 12px; }
+        .lv-opt, .lv-t { min-height: 46px; }
+        .lv-opt span { overflow-wrap: anywhere; min-width: 0; }
+        .lv-model, .lv-ex, .lv-s { overflow-wrap: anywhere; }
+        @media (max-width: 400px) {
+            .chd.lvx { padding-left: 6px; padding-right: 6px; }
+            .lv-q { font-size: 15px !important; } .lv-s { font-size: 17px !important; } .lv-ex { font-size: 16px; }
+            .lv-bars { grid-template-columns: 1fr; } .lv-two { grid-template-columns: 1fr; }
+            .lv-last b, .lv-res strong { font-size: 23px; }
+        }
 </style>
 </head>
 <body>
@@ -5504,6 +5520,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                 <button class="pri sec" onclick="lvSpeakList()">Говорим вслух${spN ? ' · отмечено ' + spN : ''}</button>
                 ${rows ? `<b class="sr-h2">История</b>${rows}` : ''}
                 <button class="pri sec" onclick="lvClose()">Закрыть</button>`);
+            chdEl.classList.add('lvx');
         }
         function lvClose() { lvStop(); closeChd(); }
         function lvStart() {
@@ -5598,7 +5615,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                 ${sp.map(q => `<button class="pri sec lv-sp" onclick="lvSpeak('${q.id}')"><b>Oppgave ${q.s} · ${esc(LVSEC[q.s].ru)}</b><small>${m[q.id] === 1 ? '✓ справился' : m[q.id] === 0 ? 'нужно потренироваться' : LVSEC[q.s].time}</small></button>`).join('')}
                 <button class="pri sec" onclick="showLevel()">Назад</button>`);
         }
-        function ovSet0(h) { if (chdEl) ovSet(h); else ovOpen(h); }
+        function ovSet0(h) { if (chdEl) ovSet(h); else { ovOpen(h); chdEl.classList.add('lvx'); } }
         function lvSpeak(id) {
             lvStop();
             let q = LVQI[id]; if (q.v) q = Object.assign({}, q, q.v[Math.floor(Math.random() * q.v.length)]);
@@ -5615,7 +5632,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                 <div class="lv-tm"><span id="lv-tm"></span><button class="pri" id="lv-tb" onclick="lvTm()">Начать говорить</button></div><div class="goal-b"><i id="lv-tbar" style="width:0"></i></div>
                 <p class="lv-note" id="lv-tn" hidden>Время вышло — здесь экзаменатор остановил бы вас.</p>
                 <small class="lv-sm">Проверка речи</small>
-                <div class="lv-rec">${LV_SR ? `<button class="pri" id="lv-mic" onclick="lvMic()">${lvRec ? 'Остановить запись' : 'Говорить: распознать речь'}</button>` : `<p class="lv-note">В этом окне нет встроенного распознавания речи. Нажмите на поле ниже и используйте микрофон на клавиатуре телефона (диктовка, язык — норвежский), затем нажмите «Проверить».</p>`}
+                <div class="lv-rec">${LV_SR ? `<button class="pri" id="lv-mic" onclick="lvMic()">${lvRec ? 'Остановить запись' : 'Говорить'}</button>` : `<p class="lv-note">В этом окне нет встроенного распознавания речи. Нажмите на поле ниже и используйте микрофон на клавиатуре телефона (диктовка, язык — норвежский), затем нажмите «Проверить».</p>`}
                     <textarea id="lv-tx" rows="4" placeholder="Здесь появится распознанный текст. Его можно править." oninput="LV2.txt=this.value">${esc(LV2.txt || '')}</textarea>
                     <p class="lv-note" id="lv-ms" ${LV2.msg ? '' : 'hidden'}>${esc(LV2.msg || '')}</p>
                     <button class="pri sec" onclick="lvAnalyze()">Проверить ответ</button><div id="lv-an">${LV2.an || ''}</div></div>
@@ -5646,17 +5663,17 @@ moderne|современный|Прилагательные|Det er en moderne le
             lvPaint();
         }
         const LV_SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        function lvRecStop() { const r = lvRec; lvRec = null; if (r) { try { r.onend = null; r.stop(); } catch (e) {} } const b = document.getElementById('lv-mic'); if (b) b.textContent = 'Говорить: распознать речь'; }
+        function lvRecStop() { const r = lvRec; lvRec = null; if (r) { try { r.onend = null; r.stop(); } catch (e) {} } const b = document.getElementById('lv-mic'); if (b) b.textContent = 'Говорить'; }
         function lvMsg(t) { LV2.msg = t; const m = document.getElementById('lv-ms'); if (m) { m.textContent = t; m.hidden = !t; } }
         function lvMic() {
             if (lvRec) { lvRecStop(); lvAnalyze(); return; }
             let r; try { r = new LV_SR(); } catch (e) { return lvMsg('Не удалось включить распознавание. Используйте диктовку на клавиатуре.'); }
-            r.lang = 'nb-NO'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
-            const base = LV2.txt ? LV2.txt.trim() + ' ' : ''; let fin = '';
-            r.onresult = e => {
-                let tmp = ''; fin = '';
-                for (let i = 0; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) fin += t + ' '; else tmp += t; }
-                LV2.txt = (base + fin + tmp).trim();
+            r.lang = 'nb-NO'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+            let base = LV2.txt ? LV2.txt.trim() + ' ' : '';
+            r.onresult = e => {   // берём только последний результат: на Android в списке накапливаются повторы
+                const res = e.results[e.results.length - 1]; if (!res || !res[0]) return;
+                LV2.txt = (base + res[0].transcript.trim()).trim();
+                if (res.isFinal) base = LV2.txt + ' ';
                 const ta = document.getElementById('lv-tx'); if (ta) ta.value = LV2.txt;
             };
             r.onerror = e => {
@@ -5664,7 +5681,7 @@ moderne|современный|Прилагательные|Det er en moderne le
                 lvMsg(c === 'not-allowed' || c === 'service-not-allowed' ? 'Доступ к микрофону закрыт или распознавание недоступно в Telegram. Используйте диктовку на клавиатуре телефона.' : c === 'no-speech' ? 'Речь не слышна. Говорите ближе к микрофону.' : c === 'language-not-supported' ? 'Норвежский язык не поддерживается на этом устройстве. Используйте диктовку на клавиатуре.' : 'Ошибка распознавания: ' + c);
                 if (c !== 'no-speech') lvRecStop();
             };
-            r.onend = () => { if (lvRec === r) { try { r.start(); } catch (e) { lvRecStop(); } } };   // браузер сам останавливается после паузы
+            r.onend = () => { base = LV2.txt ? LV2.txt.trim() + ' ' : ''; if (lvRec === r) { try { r.start(); } catch (e) { lvRecStop(); } } };   // браузер сам останавливается после паузы
             try { lvRec = r; lvMsg(''); r.start(); } catch (e) { lvRec = null; return lvMsg('Не удалось запустить запись.'); }
             const b = document.getElementById('lv-mic'); if (b) b.textContent = 'Остановить запись';
             if (!LV2.run) lvTm();
