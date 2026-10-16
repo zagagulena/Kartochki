@@ -1287,6 +1287,8 @@
         .lv-tm { display: flex; align-items: center; gap: 10px; margin: 10px 0 6px; } .lv-tm span { white-space: nowrap; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; } .lv-tm .pri { margin: 0 0 0 auto !important; padding: 10px 14px; }
         .lv-ck { margin: 0 0 6px; padding-left: 20px; font-size: 15px; text-align: left; } .lv-model { padding: 10px 12px; border-radius: 14px; background: rgba(128,128,128,.14); border: 1px solid var(--bd); font-size: 15px; line-height: 1.45; margin-bottom: 8px; text-align: left; }
         .lv-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .lv-two .pri { margin-top: 4px !important; }
+
+        .lv-rec textarea { width: 100%; box-sizing: border-box; margin: 8px 0; padding: 10px 12px; border-radius: 14px; font-size: 15px; font-family: inherit; color: var(--ctx); background: rgba(128,128,128,.1); border: 1.5px solid currentColor; }
 </style>
 </head>
 <body>
@@ -5481,7 +5483,8 @@ moderne|современный|Прилагательные|Det er en moderne le
             if (q.t === 'mc') return q.o[q.a];
             return q.model || '';
         }
-        function lvStop() { if (lvTimer) { clearInterval(lvTimer); lvTimer = null; } }
+        let lvRec = null;
+        function lvStop() { if (lvTimer) { clearInterval(lvTimer); lvTimer = null; } lvRecStop(); }
         function lvVerdict(a1, a2) {
             if (a1 < 50) return { k: 'pre', big: 'Начало A1', txt: 'Базовые конструкции A1 пока даются нестабильно. Это нормально на старте: пройдите главы 1–5 в разделе «Карта глав», мини-уроки и повторите тест через пару недель.' };
             if (a1 >= 70 && a2 >= 75) return { k: 'a2s', big: 'Уверенный A2', txt: 'База A1 закрыта, а задания A2 (прошедшее время, предлоги, сравнения, условия) вы решаете уверенно. Можно готовиться к экзамену уровня A2.' };
@@ -5599,7 +5602,7 @@ moderne|современный|Прилагательные|Det er en moderne le
         function lvSpeak(id) {
             lvStop();
             let q = LVQI[id]; if (q.v) q = Object.assign({}, q, q.v[Math.floor(Math.random() * q.v.length)]);
-            LV2 = { q, el: 0, run: false, model: false };
+            LV2 = { q, el: 0, run: false, model: false, txt: '', msg: '', an: '' };
             lvSpRender();
         }
         let LV2 = null;
@@ -5611,6 +5614,11 @@ moderne|современный|Прилагательные|Det er en moderne le
                 ${q.partner ? `<div class="lv-pt"><small>Реплики партнёра</small>${q.partner.map(l => `<p lang="nb">${esc(l)}</p>`).join('')}</div>` : ''}
                 <div class="lv-tm"><span id="lv-tm"></span><button class="pri" id="lv-tb" onclick="lvTm()">Начать говорить</button></div><div class="goal-b"><i id="lv-tbar" style="width:0"></i></div>
                 <p class="lv-note" id="lv-tn" hidden>Время вышло — здесь экзаменатор остановил бы вас.</p>
+                <small class="lv-sm">Проверка речи</small>
+                <div class="lv-rec">${LV_SR ? `<button class="pri" id="lv-mic" onclick="lvMic()">${lvRec ? 'Остановить запись' : 'Говорить: распознать речь'}</button>` : `<p class="lv-note">В этом окне нет встроенного распознавания речи. Нажмите на поле ниже и используйте микрофон на клавиатуре телефона (диктовка, язык — норвежский), затем нажмите «Проверить».</p>`}
+                    <textarea id="lv-tx" rows="4" placeholder="Здесь появится распознанный текст. Его можно править." oninput="LV2.txt=this.value">${esc(LV2.txt || '')}</textarea>
+                    <p class="lv-note" id="lv-ms" ${LV2.msg ? '' : 'hidden'}>${esc(LV2.msg || '')}</p>
+                    <button class="pri sec" onclick="lvAnalyze()">Проверить ответ</button><div id="lv-an">${LV2.an || ''}</div></div>
                 <small class="lv-sm">Что стоит сказать</small><ul class="lv-ck">${(q.ck || []).map(c => `<li lang="nb">${esc(c)}</li>`).join('')}</ul>
                 ${LV2.model ? `<small class="lv-sm">Пример ответа</small><div class="lv-model" lang="nb">${esc(q.model)}</div>` : `<button class="pri sec" onclick="LV2.model=true;lvSpRender()">Показать пример ответа</button>`}
                 <small class="lv-sm">Как получилось?</small>
@@ -5637,9 +5645,63 @@ moderne|современный|Прилагательные|Det er en moderne le
             }, 250);
             lvPaint();
         }
+        const LV_SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        function lvRecStop() { const r = lvRec; lvRec = null; if (r) { try { r.onend = null; r.stop(); } catch (e) {} } const b = document.getElementById('lv-mic'); if (b) b.textContent = 'Говорить: распознать речь'; }
+        function lvMsg(t) { LV2.msg = t; const m = document.getElementById('lv-ms'); if (m) { m.textContent = t; m.hidden = !t; } }
+        function lvMic() {
+            if (lvRec) { lvRecStop(); lvAnalyze(); return; }
+            let r; try { r = new LV_SR(); } catch (e) { return lvMsg('Не удалось включить распознавание. Используйте диктовку на клавиатуре.'); }
+            r.lang = 'nb-NO'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+            const base = LV2.txt ? LV2.txt.trim() + ' ' : ''; let fin = '';
+            r.onresult = e => {
+                let tmp = ''; fin = '';
+                for (let i = 0; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) fin += t + ' '; else tmp += t; }
+                LV2.txt = (base + fin + tmp).trim();
+                const ta = document.getElementById('lv-tx'); if (ta) ta.value = LV2.txt;
+            };
+            r.onerror = e => {
+                const c = e.error;
+                lvMsg(c === 'not-allowed' || c === 'service-not-allowed' ? 'Доступ к микрофону закрыт или распознавание недоступно в Telegram. Используйте диктовку на клавиатуре телефона.' : c === 'no-speech' ? 'Речь не слышна. Говорите ближе к микрофону.' : c === 'language-not-supported' ? 'Норвежский язык не поддерживается на этом устройстве. Используйте диктовку на клавиатуре.' : 'Ошибка распознавания: ' + c);
+                if (c !== 'no-speech') lvRecStop();
+            };
+            r.onend = () => { if (lvRec === r) { try { r.start(); } catch (e) { lvRecStop(); } } };   // браузер сам останавливается после паузы
+            try { lvRec = r; lvMsg(''); r.start(); } catch (e) { lvRec = null; return lvMsg('Не удалось запустить запись.'); }
+            const b = document.getElementById('lv-mic'); if (b) b.textContent = 'Остановить запись';
+            if (!LV2.run) lvTm();
+        }
+        const lvNorm = t => t.toLowerCase().replace(/[^a-zæøå0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+        function lvAnalyze() {
+            const q = LV2.q, said = lvNorm(LV2.txt || ''), el = document.getElementById('lv-an');
+            let h;
+            if (said.length < 3) h = '<p class="lv-note">Пока слишком мало текста. Скажите ответ вслух или надиктуйте его.</p>';
+            else {
+                const nm = new Set(); (q.model || '').replace(/[^.!?]\s([A-ZÆØÅ][a-zæøå]+)/g, (m, w) => nm.add(w.toLowerCase())); (q.model || '').replace(/^([A-ZÆØÅ][a-zæøå]+)\s(?=[A-ZÆØÅ])/g, ''); ['anna'].forEach(w => nm.add(w));
+                const key = [...new Set(lvNorm(q.model || '').filter(w => w.length >= 4 && !nm.has(w)))];
+                const same = (a, b) => a === b || (a.length >= 5 && b.length >= 5 && a.slice(0, 5) === b.slice(0, 5));
+                const hit = key.filter(k => said.some(w => same(w, k))), miss = key.filter(k => !hit.includes(k));
+                const target = Math.max(15, Math.round(q.sec / 60 * 30)), n = said.length;
+                const conn = ['fordi', 'men', 'og', 'også', 'derfor', 'hvis', 'når'].filter(c => said.includes(c));
+                const ask = said.join(' ').includes('hva med deg');
+                const cov = key.length ? hit.length / key.length : 0;
+                const ok = n >= target * 0.6 && cov >= 0.25;
+                const tips = [];
+                if (n < target * 0.6) tips.push('Ответ короткий: на экзамене нужно говорить примерно ' + target + ' слов, у вас ' + n + '.');
+                if (!conn.length) tips.push('Добавьте связки: og, men, fordi — так речь звучит связно.');
+                if (q.s === 'C' && !ask) tips.push('В разговоре верните вопрос партнёру: «Hva med deg?».');
+                if (said.join(' ').includes('jeg ikke')) tips.push('Порядок слов: «Jeg forstår ikke», а не «Jeg ikke forstår».');
+                h = `<div class="lv-fb ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Хороший ответ' : 'Можно лучше'}</b>
+                    <p>Слов сказано: ${n} (ориентир ${target}). Слов из примера использовано: ${hit.length} из ${key.length}.</p>
+                    ${conn.length ? `<p>Связки: <span lang="nb">${esc(conn.join(', '))}</span></p>` : ''}
+                    ${tips.map(t => `<p class="lv-e">${esc(t)}</p>`).join('')}
+                    ${miss.length ? `<p class="lv-e">Можно добавить из примера: <span lang="nb">${esc(miss.slice(0, 8).join(', '))}</span></p>` : ''}
+                    <p class="lv-e">Это грубая проверка по ключевым словам, грамматику она не оценивает. Распознавание может ошибаться, поправьте текст вручную.</p></div>`;
+                LV2.auto = ok ? 1 : 0;
+            }
+            LV2.an = h; if (el) el.innerHTML = h;
+        }
         function lvSelf(ok) {
             if (!S.lv) S.lv = { h: [], sp: {} };
-            S.lv.sp = S.lv.sp || {}; S.lv.sp[LV2.q.id] = ok; save(); lvSpeakList();
+            S.lv.sp = S.lv.sp || {}; S.lv.sp[LV2.q.id] = ok; save(); lvStop(); lvSpeakList();
         }
 
         const ALB_NEED = 10;
