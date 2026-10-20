@@ -1479,9 +1479,35 @@
 
         .c5-th { grid-template-columns: 84px 1fr; gap: 10px 14px; padding: 12px 14px; } .c5-tube { height: 150px; width: 38px; } .c5-bulb { width: 54px; height: 54px; margin-top: -8px; } .c5-rc { display: grid; gap: 8px; } .c5-big b { font-size: 46px; } .c5-big span { font-size: 28px; margin-top: 0; } .c5-pm { grid-template-columns: 1fr 1fr; } .c5-pm button { min-height: 40px; }
         .c5-rng { background: transparent !important; border: 0 !important; box-shadow: none !important; }
-        .c5-q .pri, .c5-btns .pri, .c5-card .pri, .c5-fb .pri { background: linear-gradient(135deg, #3b8cff, #1d5fe0); color: #fff; border: 1px solid rgba(255,255,255,.55); text-shadow: 0 1px 2px rgba(0,0,0,.35); box-shadow: 0 6px 16px rgba(20,70,200,.45); } .c5-fb .pri { background: rgba(255,255,255,.95); color: #1d2433; text-shadow: none; box-shadow: none; }
-        .c5-q .pri:disabled { opacity: .45; } .c5-q .pri.ghost, .c5-btns .pri.ghost { background: rgba(0,0,0,.55); box-shadow: none; }
         .c5-q .gm-opt.dim, .c5-q .c5-sc.dim { opacity: .68; } .c5-stars i { color: #9aa3ad; } .c5-stars i.on { color: #ffc94d; }
+
+        /* --- по токенам приложения: фирменные «стеклянные» кнопки, акценты и тени --- */
+        .c5-st, .c5-tk, .c5-pm button, .c5-card .rw { box-shadow: var(--edge-s, var(--edge)); } .c5-st, .c5-tk, .c5-pm button { box-shadow: var(--edge-s, var(--edge)); }
+        .c5-fb { border: 1px solid rgba(255,255,255,.4); box-shadow: var(--edge); } .c5-fb.ok { background: linear-gradient(135deg, rgba(76,217,160,.88), rgba(76,217,160,.5)); border-color: rgba(76,217,160,.95); } .c5-fb.bad { background: linear-gradient(135deg, rgba(255,107,129,.88), rgba(255,107,129,.5)); border-color: rgba(255,107,129,.95); }
+        .c5-fb .pri { margin-top: 10px; min-height: 48px; font-size: 16px; background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.18)); color: #fff; box-shadow: var(--edge); text-shadow: 0 1px 2px rgba(0,20,60,.5); }
+        .c5-q .pri:disabled { opacity: .5; } .c5-q .pri.ghost { margin-top: 8px; }
+        .c5-line.ok { border-color: var(--ok); } .c5-line.bad { border-color: var(--ac); } .c5-sc.ok { border-color: var(--ok); } .c5-sc.bad { border-color: var(--ac); }
+        .c5-st.cur { border-color: var(--no); box-shadow: 0 0 0 2px rgba(255,176,77,.55), var(--edge); } @keyframes c5Cur { 50% { box-shadow: 0 0 0 6px rgba(255,176,77,.2), var(--edge); } }
+        /* --- анимации --- */
+        .c5-enter { animation: c5Slide .38s cubic-bezier(.2,.9,.3,1); } @keyframes c5Slide { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+        .gm-opt.ok.c5ok, .c5-q .gm-opt.ok { animation: c5Ok .55s cubic-bezier(.2,1.5,.4,1); } @keyframes c5Ok { 0% { transform: scale(1); } 35% { transform: scale(1.045); } 100% { transform: scale(1); } }
+        .c5-sc.ok { animation: c5Ok .55s cubic-bezier(.2,1.5,.4,1); }
+        .c5-say p.bmp, .gm-say.bmp { animation: c5Bmp .4s ease-out; } @keyframes c5Bmp { 0% { transform: scale(.96); } 60% { transform: scale(1.03); } 100% { transform: none; } }
+        .c5-say .zb-kim.hp { animation: c5Hop .5s ease-out; } @keyframes c5Hop { 0% { transform: translateY(0); } 35% { transform: translateY(-9px) rotate(-6deg); } 70% { transform: translateY(0) rotate(4deg); } 100% { transform: none; } }
+        .c5-st.wob { animation: gmShake .4s; } .c5-st.lock .em { animation: c5Lock 3s ease-in-out infinite; } @keyframes c5Lock { 0%, 88%, 100% { transform: none; } 92% { transform: rotate(-9deg); } 96% { transform: rotate(8deg); } }
+        .c5-st .stars i.on { animation: c5Twk 3.2s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .3s); } @keyframes c5Twk { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35) drop-shadow(0 0 5px rgba(255,200,60,.9)); } }
+        .c5-big span.bn { animation: c5Bn .28s ease-out; display: block; } @keyframes c5Bn { 0% { transform: scale(.7) rotate(-12deg); } 60% { transform: scale(1.18) rotate(6deg); } 100% { transform: none; } }
+        .c5-th.ok { box-shadow: 0 0 0 3px rgba(76,217,160,.9), 0 0 26px rgba(76,217,160,.6), var(--edge); } .c5-th.ok .c5-big b { color: #7dffc4; } .c5-th.bad { animation: gmShake .4s; box-shadow: 0 0 0 3px rgba(255,107,129,.9), var(--edge); } .c5-th.bad .c5-big b { color: #ff9aa9; }
+        .c5-bulb { animation: c5Bulb 2.4s ease-in-out infinite; } @keyframes c5Bulb { 50% { box-shadow: 0 4px 10px rgba(0,0,0,.25), 0 0 16px var(--mc, #e5493f); } }
+        .c5-tk { transition: transform .12s, opacity .2s; } .c5-line { transition: border-color .2s, background .2s; }
+        .c5s.s-sun .sun { animation: c5Glow 3.5s ease-in-out infinite; } @keyframes c5Glow { 50% { box-shadow: 0 0 34px 14px rgba(255,210,70,.75); } }
+        .c5s .rn::after { content: ''; position: absolute; left: 0; right: 0; bottom: 3%; height: 6%; background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,.35), transparent 40%), radial-gradient(ellipse at 65% 50%, rgba(255,255,255,.3), transparent 38%); animation: c5Rip 1.1s ease-in-out infinite alternate; } @keyframes c5Rip { from { opacity: .2; transform: scaleX(.8); } to { opacity: .9; transform: scaleX(1.05); } }
+        .c5-res .c5-stars i.on { animation-fill-mode: backwards, none; }
+        .c5-card, .c5-pr, .c5-lab { animation: c5In .35s ease-out; } .c5-res { animation: c5Slide .4s cubic-bezier(.2,.9,.3,1); }
+        @media (prefers-reduced-motion: reduce) { .c5-enter, .c5-card, .c5-pr, .c5-lab, .c5-res, .c5-bulb, .c5-st .stars i, .c5-st .em, .c5-q .gm-opt.ok, .c5-sc.ok { animation: none !important; } }
+        .c5-btns .pri, .c5-card .pri { background: linear-gradient(135deg, rgba(40,110,230,.92), rgba(30,70,180,.85)); color: #fff; border: 1px solid rgba(255,255,255,.4); box-shadow: var(--edge); text-shadow: 0 1px 2px rgba(0,10,40,.6); font-weight: 700; }
+        .c5-btns .pri.ghost, .c5-card .pri.ghost { background: rgba(10,20,40,.72); color: #fff; }
+        .c5-btns .pri { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -9379,8 +9405,12 @@ færre|меньше (о числе)`;
         const c5Praise = ['Riktig!', 'Flott!', 'Veldig bra!', 'Supert!', 'Fint!'], c5Oops = ['Nesten!', 'Ikke helt.', 'Det går bra!'];
         const c5Pick1 = a => a[rnd(a.length)];
         const c5Opts = (ok, pool, n, key) => { const o = shuffled(pool.filter(x => (key ? x[key] : x) !== (key ? ok[key] : ok))).slice(0, n - 1).map(x => ({ x, ok: false })); o.push({ x: ok, ok: true }); return shuffled(o); };
-        const c5Stars = () => { S.gm = S.gm || {}; if (!Array.isArray(S.gm.c5s)) S.gm.c5s = []; return S.gm.c5s; };
-        const c5Lock = i => i > 0 && !((c5Stars()[i - 1] || 0) >= 1);
+        const c5Stars = () => {
+            S.gm = S.gm || {}; if (!Array.isArray(S.gm.c5s)) S.gm.c5s = [];
+            if (!S.gm.c5m) { const a = S.gm.c5s; S.gm.c5m = 1; if (a.length) { let L = -1; a.forEach((v, i) => { if (v > 0) L = i; }); for (let i = L + 2; i < a.length; i++) a[i] = null; } }   // старые данные: нули для непройденных станций
+            return S.gm.c5s;
+        };
+        const c5Lock = i => i > 0 && c5Stars()[i - 1] == null;   // станция открывается после прохождения предыдущей (звёзды не обязательны)
 
         function c5Init(g) { document.body.classList.add('zbon'); Object.assign(g, { stage: 'map', sc: 'weather', say: { pose: 'wave', b: 'Hei! Været i dag!', s: 'Пройди 6 станций — от погоды до дат.' } }); }
         function c5Go(st) { const g = G; if (!g) return; clearTimeout(g.adv); g.stage = st; renderGame(); window.scrollTo(0, 0); }
@@ -9394,12 +9424,12 @@ færre|меньше (о числе)`;
             return { map: c5MapHtml, intro: c5IntroHtml, q: c5QHtml, res: c5ResHtml }[g.stage]();
         }
         function c5MapHtml() {
-            const st = c5Stars(), tot = st.reduce((a, b) => a + (b || 0), 0), cur = st.findIndex((v, i) => !(v >= 1)), all = st.length >= 6 && st.slice(0, 6).every(v => v >= 1);
-            const list = C5_ST.map((s, i) => { const lk = c5Lock(i), v = st[i] || 0, isCur = !lk && (cur === i || (cur < 0 && false)); return `<button class="c5-st ${lk ? 'lock' : ''} ${isCur ? 'cur' : ''}" style="--i:${i};--ebg:${s.bg}" ${lk ? 'disabled' : ''} onclick="c5Open(${i})"><span class="em">${lk ? '🔒' : s.em}</span><span><b>${i + 1}. ${esc(s.n)}</b><small>${esc(lk ? 'Сначала пройди предыдущую станцию' : s.sub)}</small></span><span class="stars">${[0, 1, 2].map(k => `<i class="${k < v ? 'on' : ''}">★</i>`).join('')}</span></button>`; }).join('');
+            const st = c5Stars(), tot = st.reduce((a, b) => a + (b || 0), 0), cur = [0, 1, 2, 3, 4, 5].find(i => st[i] == null), all = [0, 1, 2, 3, 4, 5].every(i => st[i] != null);
+            const list = C5_ST.map((s, i) => { const lk = c5Lock(i), v = st[i] || 0, isCur = !lk && cur === i; return `<button class="c5-st ${lk ? 'lock' : ''} ${isCur ? 'cur' : ''}" style="--i:${i};--ebg:${s.bg}" onclick="c5Open(${i},this)"><span class="em">${lk ? '🔒' : s.em}</span><span><b>${i + 1}. ${esc(s.n)}</b><small>${esc(lk ? 'Сначала пройди предыдущую станцию' : s.sub)}</small></span><span class="stars">${[0, 1, 2].map(k => `<i class="${k < v ? 'on' : ''}">★</i>`).join('')}</span></button>`; }).join('');
             G.say = all ? { pose: 'up', b: 'Du er et værgud!', s: 'Глава 5 пройдена. Можно улучшать звёзды!' } : { pose: 'wave', b: 'Hei! Været i dag!', s: tot ? 'Продолжай — следующая станция ждёт.' : 'Пройди 6 станций — от погоды до дат.' };
             return c5Shell(`<div class="c5-sum"><span>★ ${tot} из 18</span></div><div class="c5-map">${list}</div>`, null, '');
         }
-        function c5Open(i) { if (c5Lock(i)) return; G.si = i; if (i === 5 && G.elig.length < 8) { G.say = { pose: 'down', b: 'Мало слов', s: 'В 5-й главе пока нет нужных карточек.' }; renderGame(); return; } c5Go('intro'); }
+        function c5Open(i, el) { if (c5Lock(i)) { hap(false); if (el) { el.classList.remove('wob'); void el.offsetWidth; el.classList.add('wob'); } return; } G.si = i; if (i === 5 && G.elig.length < 8) { G.say = { pose: 'down', b: 'Мало слов', s: 'В 5-й главе пока нет нужных карточек.' }; renderGame(); return; } c5Go('intro'); }
         function c5IntroHtml() {
             const s = C5_ST[G.si]; G.say = { pose: 'wave', b: s.no, s: s.sub };
             const rows = s.rows.map((r, i) => `<div class="rw" style="--i:${i}"><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div>`).join('');
@@ -9471,7 +9501,7 @@ færre|меньше (о числе)`;
         const c5Sgn = v => v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0';
         function c5Thermo(q) {
             const v = q.val, pct = (v + 20) / 55 * 100, d = q.done ? 'disabled' : '';
-            return `<div class="c5-th" id="c5-th" style="--mc:${c5ThCol(v)}"><div class="c5-tw"><div class="c5-tube"><div class="zr" style="bottom:${20 / 55 * 100}%"></div><div class="mr" id="c5-mr" style="height:${pct}%"></div></div><div class="c5-bulb"></div></div>
+            return `<div class="c5-th ${q.done ? (q.ok ? 'ok' : 'bad') : ''}" id="c5-th" style="--mc:${c5ThCol(v)}"><div class="c5-tw"><div class="c5-tube"><div class="zr" style="bottom:${20 / 55 * 100}%"></div><div class="mr" id="c5-mr" style="height:${pct}%"></div></div><div class="c5-bulb"></div></div>
                 <div class="c5-rc"><div class="c5-big"><b id="c5-bv">${c5Sgn(v)}°</b><span id="c5-be">${c5ThEm(v)}</span><small id="c5-bs">${v < 0 ? 'мороз' : v > 0 ? 'тепло' : 'ноль'}</small></div>
                 <div class="c5-pm"><button ${d} onclick="c5TempD(-5)">−5</button><button ${d} onclick="c5TempD(5)">+5</button><button ${d} onclick="c5TempD(-1)">−1</button><button ${d} onclick="c5TempD(1)">+1</button></div></div>
                 <input class="c5-rng" id="c5-rng" type="range" min="-20" max="35" step="1" value="${v}" ${d} oninput="c5Temp(+this.value)" aria-label="Температура"></div>
@@ -9479,7 +9509,7 @@ færre|меньше (о числе)`;
         }
         function c5Temp(v) {
             const q = G.qs[G.qi]; if (!q || q.t !== 'temp' || q.done) return; v = Math.max(-20, Math.min(35, v)); q.val = v;
-            const th = $('c5-th'); if (!th) return; th.style.setProperty('--mc', c5ThCol(v)); $('c5-mr').style.height = (v + 20) / 55 * 100 + '%'; $('c5-bv').textContent = c5Sgn(v) + '°'; $('c5-be').textContent = c5ThEm(v); $('c5-bs').textContent = v < 0 ? 'мороз' : v > 0 ? 'тепло' : 'ноль'; $('c5-rng').value = v; try { if (v % 5 === 0) tg?.HapticFeedback?.selectionChanged(); } catch (e) { }
+            const th = $('c5-th'); if (!th) return; th.style.setProperty('--mc', c5ThCol(v)); $('c5-mr').style.height = (v + 20) / 55 * 100 + '%'; $('c5-bv').textContent = c5Sgn(v) + '°'; { const e = $('c5-be'); e.classList.remove('bn'); void e.offsetWidth; e.classList.add('bn'); } $('c5-be').textContent = c5ThEm(v); $('c5-bs').textContent = v < 0 ? 'мороз' : v > 0 ? 'тепло' : 'ноль'; $('c5-rng').value = v; try { if (v % 5 === 0) tg?.HapticFeedback?.selectionChanged(); } catch (e) { }
         }
         const c5TempD = d => { const q = G.qs[G.qi]; if (q) c5Temp(q.val + d); };
         function c5TempCheck() { const q = G.qs[G.qi]; if (!q || q.done) return; q.done = true; q.ok = q.val === q.v; if (!q.ok) q.ans = [q.ans[0], q.ans[1] + ` (у тебя ${c5Sgn(q.val)}°)`]; c5Fin(q); }
@@ -9509,35 +9539,35 @@ færre|меньше (о числе)`;
             else if (q.t === 'temp') main = `<div class="c5-pr">${esc(q.ans[0])}<small>Выставь эту температуру на градуснике</small></div><div id="c5-ans" class="c5-ans">${c5Thermo(q)}</div>`;
             else if (q.t === 'build') main = `<div class="c5-pr" style="font-size:18px">${esc(q.ans[1])}<small>Составь эту фразу по-норвежски</small></div><div id="c5-bd" class="c5-ans">${c5BuildHtml(q)}</div>`;
             else main = `<div class="gm-q"><div class="gm-w">${esc(q.dir ? q.c.ru : q.c.no)}</div></div><div class="gm-opts c5-ans" id="c5-ans">${q.opts.map((o, k) => btn(k)).join('')}</div>`;
-            return c5Shell(`<div class="c5-q"><div class="c5-lab">${g.si + 1}. ${esc(T.n)} · вопрос ${g.qi + 1} из ${n}${q.t === 'word' ? (q.dir ? ' · Как по-норвежски?' : ' · Что это значит?') : ''}</div>${main}<div id="c5-fb">${d ? c5Fb(q) : ''}</div></div>`, (g.qi + (d ? 1 : 0)) / n * 100, g.ok + ' / ' + n, 1, 1);
+            return c5Shell(`<div class="c5-q c5-enter"><div class="c5-lab">${g.si + 1}. ${esc(T.n)} · вопрос ${g.qi + 1} из ${n}${q.t === 'word' ? (q.dir ? ' · Как по-норвежски?' : ' · Что это значит?') : ''}</div>${main}<div id="c5-fb">${d ? c5Fb(q) : ''}</div></div>`, (g.qi + (d ? 1 : 0)) / n * 100, g.ok + ' / ' + n, 1, 1);
         }
         function c5Pick(k) { const q = G && G.qs && G.qs[G.qi]; if (!q || q.done || !q.opts) return; q.pick = k; q.done = true; q.ok = !!q.opts[k].ok; if (!q.ok) q.ans = q.ans; c5Fin(q); }
         function c5Fin(q) {
-            const g = G; if (q.ok) { g.ok++; hap(true); } else { hap(false); g.miss.push(q); if (q.c) gWrong(q.c); }
+            const g = G; if (q.ok) { g.ok++; hap(true); try { const e = document.querySelector('#c5-ans .ok') || document.querySelector('#c5-ans'); if (e) { const r = e.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, 9); } } catch (e) { } } else { hap(false); g.miss.push(q); if (q.c) gWrong(q.c); }
             g.say = q.ok ? { pose: 'up', b: c5Pick1(c5Praise), s: q.ans[0] + ' — ' + q.ans[1] } : { pose: 'down', b: c5Pick1(c5Oops), s: 'Правильно: ' + q.ans[0] };
             const fb = $('c5-fb'); if (!fb) { renderGame(); return; }
             document.querySelectorAll('#c5-ans [data-k]').forEach(b => { const k = +b.dataset.k; b.classList.remove('ok', 'bad', 'dim'); const c = q.opts[k].ok ? 'ok' : k === q.pick ? 'bad' : 'dim'; b.classList.add(c); b.disabled = true; });
-            if (q.t === 'build') c5BPatch(); if (q.t === 'temp') { const a = $('c5-ans'); if (a) { a.innerHTML = c5Thermo(q); } }
+            if (q.t === 'build') c5BPatch(); if (q.t === 'temp') { const a = $('c5-ans'); if (a) { a.classList.remove('c5-ans'); a.innerHTML = c5Thermo(q); } }
             fb.innerHTML = c5Fb(q); const bi = $('gm-bi'); if (bi) bi.style.width = (g.qi + 1) / g.qs.length * 100 + '%'; const sc = $('gm-sc'); if (sc) sc.textContent = g.ok + ' / ' + g.qs.length;
-            const sb = $('c5-sb'), ss = $('c5-ss'); if (sb) sb.textContent = g.say.b; if (ss) ss.textContent = g.say.s;
+            const sb = $('c5-sb'), ss = $('c5-ss'); if (sb) sb.textContent = g.say.b; if (ss) ss.textContent = g.say.s; const bub = sb && sb.closest('p,.gm-say'); if (bub) { bub.classList.remove('bmp'); void bub.offsetWidth; bub.classList.add('bmp'); } const kz = document.querySelector('.c5-say .zb-kim'); if (kz) { kz.innerHTML = gmSvg(g.say.pose); kz.classList.remove('hp'); void kz.offsetWidth; kz.classList.add('hp'); }
             setTimeout(() => { try { fb.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { } }, 60);
             clearTimeout(g.adv); if (q.ok) g.adv = setTimeout(() => { if (G === g && g.qs[g.qi] === q) c5Next(); }, 1500);
         }
         function c5Next() { const g = G; if (!g) return; clearTimeout(g.adv); if (!g.qs[g.qi].done) return; g.qi++; if (g.qi >= g.qs.length) { c5Finish(); return; } g.say = { pose: 'wave', b: C5_ST[g.si].no, s: C5_ST[g.si].sub }; renderGame(); window.scrollTo(0, 0); }
         function c5Finish() {
             const g = G, r = g.ok / g.qs.length, stars = r >= .9 ? 3 : r >= .65 ? 2 : r >= .34 ? 1 : 0, st = c5Stars(); g.stars = stars; g.fresh = stars > (st[g.si] || 0);
-            if (stars > (st[g.si] || 0)) st[g.si] = stars; for (let i = 0; i < 6; i++) st[i] = st[i] || 0;
-            S.gm.c5 = st.reduce((a, b) => a + b, 0); save(); bump(1); g.stage = 'res';
+            st[g.si] = Math.max(st[g.si] || 0, stars); for (let i = 0; i < 6; i++) if (st[i] === undefined) st[i] = null;
+            S.gm.c5 = st.reduce((a, b) => a + (b || 0), 0); save(); bump(1); g.stage = 'res';
             g.say = stars >= 2 ? { pose: 'up', b: 'Fantastisk!', s: 'Станция пройдена' } : { pose: stars ? 'wave' : 'down', b: stars ? 'Bra jobba!' : 'Ikke gi opp!', s: stars ? 'Можно ещё лучше' : 'Попробуем ещё раз?' };
             renderGame(); window.scrollTo(0, 0); if (stars >= 2) setTimeout(() => { try { burst(innerWidth / 2, innerHeight / 3, 26); } catch (e) { } }, 350);
         }
         function c5ResHtml() {
-            const g = G, T = C5_ST[g.si], n = g.qs.length, stars = g.stars, nextOk = g.si < 5 && !c5Lock(g.si + 1), all = c5Stars().slice(0, 6).filter(v => v >= 1).length === 6;
+            const g = G, T = C5_ST[g.si], n = g.qs.length, stars = g.stars, nextOk = g.si < 5 && !c5Lock(g.si + 1), all = [0, 1, 2, 3, 4, 5].every(i => c5Stars()[i] != null);
             const miss = g.miss.slice(0, 6).map(q => `<div class="rw"><b>${esc(q.ans[0])}</b><span>${esc(q.ans[1])}</span></div>`).join('');
             const title = stars === 3 ? 'Отлично!' : stars === 2 ? 'Хорошо!' : stars === 1 ? 'Станция пройдена' : 'Пока не получилось';
-            return c5Shell(`<div class="c5-card c5-res"><div class="c5-stars">${[0, 1, 2].map(k => `<i class="${k < stars ? 'on' : ''}" style="--i:${k}">★</i>`).join('')}</div><h2>${title}</h2><p>${g.ok} из ${n} верно · ${esc(T.n)}${g.fresh && stars ? ' · новые звёзды!' : ''}</p>${all && g.si === 5 && stars ? '<p><b>Глава 5 пройдена! 🎉</b></p>' : ''}</div>
-                ${miss ? `<div class="c5-card c5-miss"><h3>Повтори</h3>${miss}</div>` : ''}
-                <div class="c5-btns">${stars && nextOk ? `<button class="pri" onclick="c5Open(${g.si + 1})">Следующая станция</button>` : ''}<button class="pri ${stars && nextOk ? 'ghost' : ''}" onclick="c5Start()">Ещё раз</button><button class="pri ghost" onclick="c5Go('map')">К карте станций</button></div>`, null, '★'.repeat(stars) || '–', 1);
+            return c5Shell(`<div class="c5-card c5-res"><div class="c5-stars">${[0, 1, 2].map(k => `<i class="${k < stars ? 'on' : ''}" style="--i:${k}">★</i>`).join('')}</div><h2>${title}</h2><p>${g.ok} из ${n} верно · ${esc(T.n)}${g.fresh && stars ? ' · новые звёзды!' : ''}</p>${all && g.si === 5 ? '<p><b>Глава 5 пройдена! 🎉</b></p>' : ''}${stars === 0 ? '<p>Звёзд нет, но следующая станция уже открыта. Вернуться и улучшить результат можно в любой момент.</p>' : ''}</div>
+                <div class="c5-btns">${nextOk ? `<button class="pri" onclick="c5Open(${g.si + 1})">Следующая станция</button>` : ''}<button class="pri ${nextOk ? 'ghost' : ''}" onclick="c5Start()">Ещё раз</button><button class="pri ghost" onclick="c5Go('map')">К карте станций</button></div>
+                ${miss ? `<div class="c5-card c5-miss"><h3>Повтори</h3>${miss}</div>` : ''}`, null, '★'.repeat(stars) || '–', 1);
         }
 
         /* --- 1. Выбери перевод --- */
